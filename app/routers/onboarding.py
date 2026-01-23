@@ -41,9 +41,9 @@ ONBOARDING_FIELDS = [
     },
     {
         "key": "linkedin",
-        "label": "LinkedIn Profile URL",
-        "type": "url",
-        "placeholder": "https://www.linkedin.com/in/yourprofile",
+        "label": "LinkedIn URL",
+        "type": "text",
+        "placeholder": "linkedin.com/in/yourprofile",
         "help": "Optional. Share your professional profile.",
     },
     {
