@@ -8,7 +8,7 @@ from fastapi import Cookie, Depends, HTTPException, Request, status
 from fastapi.templating import Jinja2Templates
 
 from app.config import settings
-from app.models.student import Student
+from app.models.roster import RosterEntry
 from app.services.sessions import COOKIE_NAME, SessionData, verify_session_token
 from app.services.sheets import get_sheets_client
 
@@ -51,14 +51,14 @@ def require_session(
 
 def get_current_student(
     session: Annotated[SessionData, Depends(require_session)],
-) -> Student:
+) -> RosterEntry:
     """
     Get the current student from session.
 
     Raises 401 if session invalid or student not found.
     """
     sheets = get_sheets_client()
-    student = sheets.get_student_by_id(session.student_id)
+    student = sheets.get_roster_by_id(session.student_id)
 
     if not student:
         logger.warning("Student not found for session: %s", session.student_id)
@@ -71,14 +71,14 @@ def get_current_student(
 
 
 def require_onboarded(
-    student: Annotated[Student, Depends(get_current_student)],
-) -> Student:
+    student: Annotated[RosterEntry, Depends(get_current_student)],
+) -> RosterEntry:
     """
     Require that the student has completed onboarding.
 
     Raises 403 if not onboarded (should redirect to /onboarding).
     """
-    if not student.onboarded_at:
+    if not student.onboarding_completed_at:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Onboarding required",
@@ -89,5 +89,5 @@ def require_onboarded(
 # Type aliases for cleaner dependency injection
 CurrentSession = Annotated[SessionData | None, Depends(get_current_session)]
 RequiredSession = Annotated[SessionData, Depends(require_session)]
-CurrentStudent = Annotated[Student, Depends(get_current_student)]
-OnboardedStudent = Annotated[Student, Depends(require_onboarded)]
+CurrentStudent = Annotated[RosterEntry, Depends(get_current_student)]
+OnboardedStudent = Annotated[RosterEntry, Depends(require_onboarded)]

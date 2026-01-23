@@ -9,7 +9,8 @@ from google.oauth2.service_account import Credentials
 
 from app.config import settings
 from app.models.quiz import QuizMeta, QuizSubmission
-from app.models.student import Student
+from app.models.roster import RosterEntry
+from app.models.schedule import ScheduleEntry
 from app.services.cache import cached, invalidate
 
 logger = logging.getLogger(__name__)
@@ -21,8 +22,9 @@ SCOPES = [
 
 # Cache TTLs (in seconds)
 CACHE_TTL_CONFIG = 300  # 5 minutes
-CACHE_TTL_STUDENT = 120  # 2 minutes
+CACHE_TTL_ROSTER = 120  # 2 minutes
 CACHE_TTL_QUIZZES = 300  # 5 minutes
+CACHE_TTL_SCHEDULE = 300  # 5 minutes
 CACHE_TTL_SUBMISSIONS = 120  # 2 minutes
 
 
@@ -112,61 +114,56 @@ class SheetsClient:
             return {}
 
     # -------------------------------------------------------------------------
-    # Student methods
+    # Roster methods
     # -------------------------------------------------------------------------
 
-    @cached(ttl_seconds=CACHE_TTL_STUDENT, prefix="student")
-    def get_student_by_email(self, email: str) -> Student | None:
-        """Get student by email address."""
+    @cached(ttl_seconds=CACHE_TTL_ROSTER, prefix="roster")
+    def get_roster_by_email(self, email: str) -> RosterEntry | None:
+        """Get roster entry by email address."""
         try:
-            worksheet = self._get_worksheet("Students")
+            worksheet = self._get_worksheet("Roster")
             records = worksheet.get_all_records()
 
             for record in records:
-                if record.get("email", "").lower() == email.lower():
-                    return Student.from_row(record)
+                if record.get("preferred_email", "").lower() == email.lower():
+                    return RosterEntry.from_row(record)
 
             return None
         except Exception as e:
-            logger.error("Failed to get student by email '%s': %s", email, e)
+            logger.error("Failed to get roster by email '%s': %s", email, e)
             return None
 
-    @cached(ttl_seconds=CACHE_TTL_STUDENT, prefix="student")
-    def get_student_by_id(self, student_id: str) -> Student | None:
-        """Get student by student_id."""
+    @cached(ttl_seconds=CACHE_TTL_ROSTER, prefix="roster")
+    def get_roster_by_id(self, student_id: str) -> RosterEntry | None:
+        """Get roster entry by student_id."""
         try:
-            worksheet = self._get_worksheet("Students")
+            worksheet = self._get_worksheet("Roster")
             records = worksheet.get_all_records()
 
             for record in records:
-                if record.get("student_id") == student_id:
-                    return Student.from_row(record)
+                if str(record.get("student_id")) == str(student_id):
+                    return RosterEntry.from_row(record)
 
             return None
         except Exception as e:
-            logger.error("Failed to get student by id '%s': %s", student_id, e)
+            logger.error("Failed to get roster by id '%s': %s", student_id, e)
             return None
 
-    def claim_student(self, student_id: str, claim_code: str, email: str) -> bool:
+    def claim_student(self, student_id: str, email: str) -> bool:
         """
         Claim a student account by binding email to student_id.
 
         Returns True if successful, False otherwise.
         """
         try:
-            worksheet = self._get_worksheet("Students")
+            worksheet = self._get_worksheet("Roster")
             records = worksheet.get_all_records()
 
             # Find the student row
             for idx, record in enumerate(records):
-                if record.get("student_id") == student_id:
-                    # Verify claim code
-                    if record.get("claim_code") != claim_code:
-                        logger.warning("Invalid claim code for student %s", student_id)
-                        return False
-
+                if str(record.get("student_id")) == str(student_id):
                     # Check not already claimed
-                    if record.get("email"):
+                    if record.get("preferred_email"):
                         logger.warning("Student %s already claimed", student_id)
                         return False
 
@@ -175,7 +172,7 @@ class SheetsClient:
 
                     # Find column indices
                     headers = worksheet.row_values(1)
-                    email_col = headers.index("email") + 1
+                    email_col = headers.index("preferred_email") + 1
                     claimed_at_col = headers.index("claimed_at") + 1
 
                     # Update cells
@@ -184,7 +181,7 @@ class SheetsClient:
                     worksheet.update_cell(row_num, claimed_at_col, now)
 
                     # Invalidate cache
-                    invalidate("student")
+                    invalidate("roster")
 
                     logger.info("Student %s claimed by %s", student_id, email)
                     return True
@@ -196,44 +193,60 @@ class SheetsClient:
             logger.error("Failed to claim student %s: %s", student_id, e)
             return False
 
-    def update_student(self, student_id: str, **fields) -> bool:
+    def update_roster(self, student_id: str, **fields) -> bool:
         """
-        Update student fields.
+        Update roster entry fields.
 
         Args:
             student_id: Student ID to update
-            **fields: Fields to update (e.g., preferred_name="Alex", onboarded_at="...")
+            **fields: Fields to update (e.g., preferred_name="Alex")
 
         Returns True if successful.
         """
         try:
-            worksheet = self._get_worksheet("Students")
+            worksheet = self._get_worksheet("Roster")
             records = worksheet.get_all_records()
             headers = worksheet.row_values(1)
 
             # Find the student row
             for idx, record in enumerate(records):
-                if record.get("student_id") == student_id:
+                if str(record.get("student_id")) == str(student_id):
                     row_num = idx + 2
 
                     # Update each field
                     for field_name, value in fields.items():
                         if field_name in headers:
                             col_num = headers.index(field_name) + 1
-                            worksheet.update_cell(row_num, col_num, value)
+                            worksheet.update_cell(row_num, col_num, value if value else "")
 
                     # Invalidate cache
-                    invalidate("student")
+                    invalidate("roster")
 
-                    logger.info("Updated student %s: %s", student_id, list(fields.keys()))
+                    logger.info("Updated roster %s: %s", student_id, list(fields.keys()))
                     return True
 
             logger.warning("Student not found for update: %s", student_id)
             return False
 
         except Exception as e:
-            logger.error("Failed to update student %s: %s", student_id, e)
+            logger.error("Failed to update roster %s: %s", student_id, e)
             return False
+
+    # -------------------------------------------------------------------------
+    # Schedule methods
+    # -------------------------------------------------------------------------
+
+    @cached(ttl_seconds=CACHE_TTL_SCHEDULE, prefix="schedule")
+    def get_schedule(self) -> list[ScheduleEntry]:
+        """Get all schedule entries."""
+        try:
+            worksheet = self._get_worksheet("Schedule")
+            records = worksheet.get_all_records()
+
+            return [ScheduleEntry.from_row(r) for r in records if r.get("session")]
+        except Exception as e:
+            logger.error("Failed to get schedule: %s", e)
+            return []
 
     # -------------------------------------------------------------------------
     # Quiz methods
@@ -269,7 +282,7 @@ class SheetsClient:
 
             submissions = []
             for record in records:
-                if record.get("student_id") == student_id and record.get("quiz_id") == quiz_id:
+                if str(record.get("student_id")) == str(student_id) and record.get("quiz_id") == quiz_id:
                     submissions.append(QuizSubmission.from_row(record))
 
             return submissions
@@ -332,6 +345,22 @@ class SheetsClient:
         except Exception as e:
             logger.error("Failed to append magic link request: %s", e)
             return False
+
+    # -------------------------------------------------------------------------
+    # Backward compatibility aliases
+    # -------------------------------------------------------------------------
+
+    def get_student_by_email(self, email: str) -> RosterEntry | None:
+        """Alias for get_roster_by_email for backward compatibility."""
+        return self.get_roster_by_email(email)
+
+    def get_student_by_id(self, student_id: str) -> RosterEntry | None:
+        """Alias for get_roster_by_id for backward compatibility."""
+        return self.get_roster_by_id(student_id)
+
+    def update_student(self, student_id: str, **fields) -> bool:
+        """Alias for update_roster for backward compatibility."""
+        return self.update_roster(student_id, **fields)
 
 
 # Singleton instance

@@ -123,15 +123,15 @@ async def verify_magic_link(request: Request, token: str, response: Response):
     # Look up student by email
     student = sheets.get_student_by_email(email)
 
-    if student and student.claimed_at:
+    if student and student.is_claimed:
         # Existing claimed student - create session
         session_token = create_session_token(email, student.student_id)
 
         # Update last_login_at
-        sheets.update_student(student.student_id, last_login_at=datetime.utcnow().isoformat())
+        sheets.update_roster(student.student_id, last_login_at=datetime.utcnow().isoformat())
 
         # Check if onboarding is needed
-        redirect_url = "/home" if student.onboarded_at else "/onboarding"
+        redirect_url = "/home" if student.is_onboarded else "/onboarding"
 
         response = RedirectResponse(url=redirect_url, status_code=302)
         cookie_settings = get_cookie_settings()

@@ -3,28 +3,25 @@
 {% block title %}Complete Your Profile - Class Portal{% endblock %}
 
 {% block content %}
-<h1>Welcome, {{ student.first_name }}!</h1>
-<p>Let's set up your profile. This helps us personalize your experience.</p>
+<h1>Welcome, {{ student.display_name }}!</h1>
+<p>Let's set up your profile. All fields are optional - fill in what you'd like to share.</p>
 
 {% if error %}
 <div class="flash error">{{ error }}</div>
 {% endif %}
 
+{% if fields %}
 <form method="post" action="/onboarding">
     {% for field in fields %}
     <div class="mb-2">
-        <label for="{{ field.key }}">
-            {{ field.label }}
-            {% if field.required %}<span style="color: #c00;">*</span>{% endif %}
-        </label>
+        <label for="{{ field.key }}">{{ field.label }}</label>
 
-        {% if field.type == "text" %}
+        {% if field.type == "text" or field.type == "url" %}
         <input
-            type="text"
+            type="{{ field.type }}"
             id="{{ field.key }}"
             name="{{ field.key }}"
             placeholder="{{ field.placeholder }}"
-            {% if field.required %}required{% endif %}
         >
         {% elif field.type == "textarea" %}
         <textarea
@@ -33,13 +30,11 @@
             placeholder="{{ field.placeholder }}"
             rows="3"
             style="width: 100%; padding: 0.75rem; font-size: 1rem; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; resize: vertical;"
-            {% if field.required %}required{% endif %}
         ></textarea>
         {% elif field.type == "select" %}
         <select
             id="{{ field.key }}"
             name="{{ field.key }}"
-            {% if field.required %}required{% endif %}
         >
             {% for option in field.options %}
             <option value="{{ option.value }}">{{ option.label }}</option>
@@ -55,8 +50,14 @@
 
     <button type="submit" class="mt-2">Complete Setup</button>
 </form>
+{% else %}
+<p>Your profile is already complete!</p>
+<form method="post" action="/onboarding">
+    <button type="submit" class="mt-2">Continue to Home</button>
+</form>
+{% endif %}
 
 <p class="text-muted mt-3">
-    <span style="color: #c00;">*</span> Required field
+    All fields are optional. You can update your profile later from the Profile page.
 </p>
 {% endblock %}

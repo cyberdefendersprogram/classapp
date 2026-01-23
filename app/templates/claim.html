@@ -4,7 +4,7 @@
 
 {% block content %}
 <h1>Claim Your Account</h1>
-<p>Enter your student ID and claim code to link your email address to your account.</p>
+<p>Enter your student ID to link your email address to your account.</p>
 
 {% if error %}
 <div class="flash error">{{ error }}</div>
@@ -25,24 +25,11 @@
             type="text"
             id="student_id"
             name="student_id"
-            placeholder="e.g., stu_001"
+            placeholder="e.g., 10844370"
             required
             autofocus
         >
         <p class="text-muted">Your student ID was provided by your instructor.</p>
-    </div>
-
-    <div class="mb-2">
-        <label for="claim_code">Claim Code</label>
-        <input
-            type="text"
-            id="claim_code"
-            name="claim_code"
-            placeholder="e.g., ABC123"
-            required
-            style="text-transform: uppercase;"
-        >
-        <p class="text-muted">Your claim code was provided by your instructor.</p>
     </div>
 
     <button type="submit" class="mt-2">Claim Account</button>

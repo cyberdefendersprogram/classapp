@@ -5,6 +5,7 @@
 {% block content %}
 <nav class="nav">
     <a href="/home">Home</a>
+    <a href="/schedule">Schedule</a>
     <a href="/quizzes">Quizzes</a>
     <a href="/me">Profile</a>
     <a href="/auth/logout">Sign Out</a>
@@ -12,27 +13,107 @@
 
 <h1>My Profile</h1>
 
-<div class="mt-2">
-    <h2>Personal Information</h2>
+{% if success %}
+<div class="flash success">{{ success }}</div>
+{% endif %}
 
-    <div style="background: #f9f9f9; padding: 1rem; border-radius: 4px; margin-top: 1rem;">
-        <p><strong>Name:</strong> {{ student.full_name }}</p>
-        <p><strong>Preferred Name:</strong> {{ student.display_name }}</p>
-        {% if student.pronouns %}
-        <p><strong>Pronouns:</strong> {{ student.pronouns }}</p>
-        {% endif %}
+{% if error %}
+<div class="flash error">{{ error }}</div>
+{% endif %}
+
+<form method="post" action="/me">
+    <div class="mt-2">
+        <h2>Personal Information</h2>
+
+        <div class="mb-2">
+            <label for="preferred_name">Preferred Name</label>
+            <input type="text" id="preferred_name" name="preferred_name" value="{{ student.preferred_name or '' }}" placeholder="What should we call you?">
+        </div>
+
+        <div class="mb-2">
+            <label for="preferred_name_phonetic">How to pronounce your name</label>
+            <input type="text" id="preferred_name_phonetic" name="preferred_name_phonetic" value="{{ student.preferred_name_phonetic or '' }}" placeholder="e.g., Vai-bha-v">
+        </div>
+
+        <div class="mb-2">
+            <label for="preferred_pronoun">Preferred Pronouns</label>
+            <input type="text" id="preferred_pronoun" name="preferred_pronoun" value="{{ student.preferred_pronoun or '' }}" placeholder="e.g., she/her, he/him, they/them">
+        </div>
+
+        <div class="mb-2">
+            <label for="linkedin">LinkedIn Profile URL</label>
+            <input type="url" id="linkedin" name="linkedin" value="{{ student.linkedin or '' }}" placeholder="https://www.linkedin.com/in/yourprofile">
+        </div>
+
+        <div class="mb-2">
+            <label for="hobbies">Hobbies</label>
+            <input type="text" id="hobbies" name="hobbies" value="{{ student.hobbies or '' }}" placeholder="What do you enjoy doing outside of class?">
+        </div>
     </div>
-</div>
+
+    <div class="mt-3">
+        <h2>Technical Background</h2>
+
+        <div class="mb-2">
+            <label for="cs_experience">CS/Tech Experience</label>
+            <input type="text" id="cs_experience" name="cs_experience" value="{{ student.cs_experience or '' }}" placeholder="e.g., 2 years of programming, beginner">
+        </div>
+
+        <div class="mb-2">
+            <label for="computer_system">What Computer System (H/W-OS)</label>
+            <input type="text" id="computer_system" name="computer_system" value="{{ student.computer_system or '' }}" placeholder="e.g., Mac Pro M1 (OSX 13), Windows 11 laptop">
+        </div>
+
+        <div class="mb-2">
+            <label for="used_netlabs">Have you used Netlabs before?</label>
+            <select id="used_netlabs" name="used_netlabs">
+                <option value="">-- Select --</option>
+                <option value="Yes" {% if student.used_netlabs == "Yes" %}selected{% endif %}>Yes</option>
+                <option value="No" {% if student.used_netlabs == "No" %}selected{% endif %}>No</option>
+            </select>
+        </div>
+
+        <div class="mb-2">
+            <label for="used_tryhackme">Have you used TryHackMe before?</label>
+            <select id="used_tryhackme" name="used_tryhackme">
+                <option value="">-- Select --</option>
+                <option value="Yes" {% if student.used_tryhackme == "Yes" %}selected{% endif %}>Yes</option>
+                <option value="No" {% if student.used_tryhackme == "No" %}selected{% endif %}>No</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <h2>Goals & Support</h2>
+
+        <div class="mb-2">
+            <label for="class_goals">What do you want from this class?</label>
+            <textarea id="class_goals" name="class_goals" rows="3" style="width: 100%; padding: 0.75rem; font-size: 1rem; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; resize: vertical;" placeholder="What do you hope to learn or achieve?">{{ student.class_goals or '' }}</textarea>
+        </div>
+
+        <div class="mb-2">
+            <label for="support_request">Any special support request for the teacher?</label>
+            <textarea id="support_request" name="support_request" rows="3" style="width: 100%; padding: 0.75rem; font-size: 1rem; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; resize: vertical;" placeholder="Anything we should know to support your learning?">{{ student.support_request or '' }}</textarea>
+        </div>
+    </div>
+
+    <button type="submit" class="mt-2">Save Changes</button>
+</form>
 
 <div class="mt-3">
     <h2>Account Details</h2>
-
     <div style="background: #f9f9f9; padding: 1rem; border-radius: 4px; margin-top: 1rem;">
+        <p><strong>Full Name:</strong> {{ student.full_name }}</p>
         <p><strong>Student ID:</strong> {{ student.student_id }}</p>
-        <p><strong>Email:</strong> {{ student.email }}</p>
-        <p><strong>Status:</strong> {{ student.status }}</p>
+        <p><strong>Email:</strong> {{ student.preferred_email }}</p>
+        {% if student.program_plan %}
+        <p><strong>Program:</strong> {{ student.program_plan }}</p>
+        {% endif %}
+        {% if student.student_level %}
+        <p><strong>Level:</strong> {{ student.student_level }}</p>
+        {% endif %}
         {% if student.claimed_at %}
-        <p><strong>Account Created:</strong> {{ student.claimed_at[:10] }}</p>
+        <p><strong>Account Created:</strong> {{ student.claimed_at.strftime('%Y-%m-%d') if student.claimed_at else '' }}</p>
         {% endif %}
     </div>
 </div>

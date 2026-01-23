@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Schedule - {{ course_title }}{% endblock %}
+
+{% block content %}
+<nav class="nav">
+    <a href="/home">Home</a>
+    <a href="/schedule">Schedule</a>
+    <a href="/quizzes">Quizzes</a>
+    <a href="/me">Profile</a>
+    <a href="/auth/logout">Sign Out</a>
+</nav>
+
+<h1>Class Schedule</h1>
+
+{% if schedule %}
+<div class="schedule-table" style="overflow-x: auto;">
+    <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+        <thead>
+            <tr style="background: #f5f5f5;">
+                <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #ddd;">Date</th>
+                <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #ddd;">Session</th>
+                <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #ddd;">Notes</th>
+                <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #ddd;">Materials</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for entry in schedule %}
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 0.75rem; vertical-align: top; white-space: nowrap;">{{ entry.session }}</td>
+                <td style="padding: 0.75rem; vertical-align: top;">{{ entry.desc }}</td>
+                <td style="padding: 0.75rem; vertical-align: top;">{{ entry.notes | replace('\n', '<br>') | safe }}</td>
+                <td style="padding: 0.75rem; vertical-align: top;">
+                    {% if entry.slides_link %}
+                    <a href="{{ entry.slides_link }}" target="_blank" style="margin-right: 0.5rem;">Slides</a>
+                    {% endif %}
+                    {% if entry.recording_link %}
+                    <a href="{{ entry.recording_link }}" target="_blank">Recording</a>
+                    {% endif %}
+                    {% if not entry.slides_link and not entry.recording_link %}
+                    <span class="text-muted">—</span>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p class="text-muted">No schedule available yet. Check back later!</p>
+{% endif %}
+
+<div class="mt-3">
+    <a href="/home" class="btn btn-outline">Back to Home</a>
+</div>
+{% endblock %}
