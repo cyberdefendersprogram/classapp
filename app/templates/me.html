@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - Class Portal{% endblock %}
+
+{% block content %}
+<nav class="nav">
+    <a href="/home">Home</a>
+    <a href="/quizzes">Quizzes</a>
+    <a href="/me">Profile</a>
+    <a href="/auth/logout">Sign Out</a>
+</nav>
+
+<h1>My Profile</h1>
+
+<div class="mt-2">
+    <h2>Personal Information</h2>
+
+    <div style="background: #f9f9f9; padding: 1rem; border-radius: 4px; margin-top: 1rem;">
+        <p><strong>Name:</strong> {{ student.full_name }}</p>
+        <p><strong>Preferred Name:</strong> {{ student.display_name }}</p>
+        {% if student.pronouns %}
+        <p><strong>Pronouns:</strong> {{ student.pronouns }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="mt-3">
+    <h2>Account Details</h2>
+
+    <div style="background: #f9f9f9; padding: 1rem; border-radius: 4px; margin-top: 1rem;">
+        <p><strong>Student ID:</strong> {{ student.student_id }}</p>
+        <p><strong>Email:</strong> {{ student.email }}</p>
+        <p><strong>Status:</strong> {{ student.status }}</p>
+        {% if student.claimed_at %}
+        <p><strong>Account Created:</strong> {{ student.claimed_at[:10] }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="mt-3">
+    <a href="/home" class="btn btn-outline">Back to Home</a>
+</div>
+{% endblock %}

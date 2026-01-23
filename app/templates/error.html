@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Error - Class Portal{% endblock %}
+
+{% block content %}
+<nav class="nav">
+    <a href="/home">Home</a>
+    <a href="/quizzes">Quizzes</a>
+    <a href="/me">Profile</a>
+    <a href="/auth/logout">Sign Out</a>
+</nav>
+
+<div style="text-align: center; padding: 2rem 0;">
+    <h1 style="color: #dc3545;">Oops!</h1>
+    <p style="font-size: 1.1rem; margin: 1rem 0;">{{ error }}</p>
+
+    <div style="margin-top: 2rem;">
+        <a href="/quizzes" class="btn">Back to Quizzes</a>
+    </div>
+</div>
+{% endblock %}

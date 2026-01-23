@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Complete Your Profile - Class Portal{% endblock %}
+
+{% block content %}
+<h1>Welcome, {{ student.first_name }}!</h1>
+<p>Let's set up your profile. This helps us personalize your experience.</p>
+
+{% if error %}
+<div class="flash error">{{ error }}</div>
+{% endif %}
+
+<form method="post" action="/onboarding">
+    {% for field in fields %}
+    <div class="mb-2">
+        <label for="{{ field.key }}">
+            {{ field.label }}
+            {% if field.required %}<span style="color: #c00;">*</span>{% endif %}
+        </label>
+
+        {% if field.type == "text" %}
+        <input
+            type="text"
+            id="{{ field.key }}"
+            name="{{ field.key }}"
+            placeholder="{{ field.placeholder }}"
+            {% if field.required %}required{% endif %}
+        >
+        {% elif field.type == "textarea" %}
+        <textarea
+            id="{{ field.key }}"
+            name="{{ field.key }}"
+            placeholder="{{ field.placeholder }}"
+            rows="3"
+            style="width: 100%; padding: 0.75rem; font-size: 1rem; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; resize: vertical;"
+            {% if field.required %}required{% endif %}
+        ></textarea>
+        {% elif field.type == "select" %}
+        <select
+            id="{{ field.key }}"
+            name="{{ field.key }}"
+            {% if field.required %}required{% endif %}
+        >
+            {% for option in field.options %}
+            <option value="{{ option.value }}">{{ option.label }}</option>
+            {% endfor %}
+        </select>
+        {% endif %}
+
+        {% if field.help %}
+        <p class="text-muted" style="margin-top: 0.25rem;">{{ field.help }}</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    <button type="submit" class="mt-2">Complete Setup</button>
+</form>
+
+<p class="text-muted mt-3">
+    <span style="color: #c00;">*</span> Required field
+</p>
+{% endblock %}

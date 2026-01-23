@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz Results - Class Portal{% endblock %}
+
+{% block content %}
+<nav class="nav">
+    <a href="/home">Home</a>
+    <a href="/quizzes">Quizzes</a>
+    <a href="/me">Profile</a>
+    <a href="/auth/logout">Sign Out</a>
+</nav>
+
+<h1>Quiz Results</h1>
+
+<div class="result-summary" style="background: {% if result.percentage >= 70 %}#d4edda{% elif result.percentage >= 50 %}#fff3cd{% else %}#f8d7da{% endif %}; padding: 1.5rem; border-radius: 4px; margin-bottom: 1.5rem; text-align: center;">
+    <h2 style="margin-bottom: 0.5rem;">
+        {{ result.score }} / {{ result.max_score }}
+    </h2>
+    <p class="text-muted">
+        {{ "%.0f"|format(result.percentage) }}% &bull;
+        {{ quiz.title }} &bull;
+        Attempt #{{ attempt_number }}
+    </p>
+</div>
+
+<h2>Question Review</h2>
+
+{% for question in quiz.questions %}
+{% set q_result = result.questions[question.id] %}
+<div class="question-result" style="background: #f9f9f9; padding: 1rem; border-radius: 4px; margin-bottom: 1rem; border-left: 4px solid {% if q_result.correct %}#28a745{% else %}#dc3545{% endif %};">
+    <div class="question-header" style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+        <strong>
+            {% if q_result.correct %}
+            <span style="color: #28a745;">&#10003;</span>
+            {% else %}
+            <span style="color: #dc3545;">&#10007;</span>
+            {% endif %}
+            Question {{ loop.index }}
+        </strong>
+        <span>{{ q_result.points }}/{{ q_result.max_points }} pts</span>
+    </div>
+
+    <div class="question-text" style="margin-bottom: 0.75rem;">
+        {{ question.text }}
+    </div>
+
+    <div class="answer-info" style="font-size: 0.9rem;">
+        {% if question.type in ['mcq_single', 'mcq_multi'] %}
+            <p><strong>Your answer:</strong>
+                {% if answers[question.id] %}
+                    {% if answers[question.id] is string %}
+                        {{ answers[question.id] }}
+                    {% else %}
+                        {{ answers[question.id]|join(', ') }}
+                    {% endif %}
+                {% else %}
+                    <em>No answer</em>
+                {% endif %}
+            </p>
+        {% else %}
+            <p><strong>Your answer:</strong> {{ answers[question.id] or '<em>No answer</em>'|safe }}</p>
+        {% endif %}
+
+        {% if not q_result.correct and q_result.expected %}
+        <p style="color: #28a745;">
+            <strong>Correct answer:</strong>
+            {% if q_result.expected is string %}
+                {{ q_result.expected }}
+            {% else %}
+                {{ q_result.expected|join(', ') }}
+            {% endif %}
+        </p>
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
+
+<div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem;">
+    <a href="/quizzes" class="btn">Back to Quizzes</a>
+    <a href="/home" class="btn btn-outline">Home</a>
+</div>
+{% endblock %}

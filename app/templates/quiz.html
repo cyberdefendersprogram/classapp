@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}{{ quiz.title }} - Class Portal{% endblock %}
+
+{% block content %}
+<nav class="nav">
+    <a href="/home">Home</a>
+    <a href="/quizzes">Quizzes</a>
+    <a href="/me">Profile</a>
+    <a href="/auth/logout">Sign Out</a>
+</nav>
+
+<h1>{{ quiz.title }}</h1>
+
+<div class="quiz-info text-muted" style="margin-bottom: 1.5rem;">
+    <p>
+        <strong>Total Points:</strong> {{ quiz.total_points }} &bull;
+        <strong>Attempt:</strong> #{{ attempt_number }}
+        {% if attempts_remaining is not none %}
+        ({{ attempts_remaining }} remaining)
+        {% endif %}
+    </p>
+</div>
+
+<form method="post" action="/quiz/{{ quiz.quiz_id }}">
+    {% for question in quiz.questions %}
+    <div class="question" style="background: #f9f9f9; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem;">
+        <div class="question-header" style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+            <strong>Question {{ loop.index }}</strong>
+            <span class="text-muted">{{ question.points }} pt{{ 's' if question.points != 1 else '' }}</span>
+        </div>
+
+        <div class="question-text" style="margin-bottom: 1rem;">
+            {{ question.text }}
+        </div>
+
+        {% if question.type == 'mcq_single' %}
+        <div class="options">
+            {% for option in question.options %}
+            <label style="display: block; padding: 0.5rem; margin-bottom: 0.25rem; cursor: pointer;">
+                <input type="radio" name="{{ question.id }}" value="{{ option }}" required>
+                {{ option }}
+            </label>
+            {% endfor %}
+        </div>
+
+        {% elif question.type == 'mcq_multi' %}
+        <div class="options">
+            <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 0.5rem;">Select all that apply:</p>
+            {% for option in question.options %}
+            <label style="display: block; padding: 0.5rem; margin-bottom: 0.25rem; cursor: pointer;">
+                <input type="checkbox" name="{{ question.id }}" value="{{ option }}">
+                {{ option }}
+            </label>
+            {% endfor %}
+        </div>
+
+        {% elif question.type == 'numeric' %}
+        <input
+            type="number"
+            name="{{ question.id }}"
+            placeholder="Enter a number"
+            required
+            style="max-width: 200px;"
+        >
+
+        {% elif question.type == 'short_text' %}
+        <input
+            type="text"
+            name="{{ question.id }}"
+            placeholder="Enter your answer"
+            required
+        >
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <button type="submit">Submit Quiz</button>
+        <a href="/quizzes" class="btn btn-outline">Cancel</a>
+    </div>
+</form>
+{% endblock %}

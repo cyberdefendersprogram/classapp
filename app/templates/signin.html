@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In - Class Portal{% endblock %}
+
+{% block content %}
+<h1>Class Portal</h1>
+<p>Enter your email to receive a sign-in link.</p>
+
+<form method="post" action="/auth/request-link">
+    <label for="email">Email Address</label>
+    <input
+        type="email"
+        id="email"
+        name="email"
+        placeholder="you@example.com"
+        required
+        autofocus
+    >
+
+    <button type="submit">Send Sign-In Link</button>
+</form>
+
+<p class="text-muted mt-3">
+    No password needed. We'll email you a secure link to sign in.
+</p>
+{% endblock %}

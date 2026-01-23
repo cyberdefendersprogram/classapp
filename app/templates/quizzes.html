@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Quizzes - Class Portal{% endblock %}
+
+{% block content %}
+<nav class="nav">
+    <a href="/home">Home</a>
+    <a href="/quizzes">Quizzes</a>
+    <a href="/me">Profile</a>
+    <a href="/auth/logout">Sign Out</a>
+</nav>
+
+<h1>Quizzes</h1>
+
+{% if quiz_info %}
+<div class="quiz-list">
+    {% for info in quiz_info %}
+    <div class="quiz-card" style="background: #f9f9f9; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+        <h3 style="margin-bottom: 0.5rem;">{{ info.quiz.title }}</h3>
+
+        <div class="quiz-meta text-muted" style="font-size: 0.9rem; margin-bottom: 0.75rem;">
+            {% if info.quiz.total_points %}
+            <span>{{ info.quiz.total_points }} points</span> &bull;
+            {% endif %}
+
+            {% if info.quiz.attempts_allowed == 0 %}
+            <span>Unlimited attempts</span>
+            {% else %}
+            <span>{{ info.attempts_remaining }} attempt{{ 's' if info.attempts_remaining != 1 else '' }} remaining</span>
+            {% endif %}
+
+            {% if info.best_score is not none %}
+            &bull; <span>Best: {{ info.best_score|int }}/{{ info.quiz.total_points }}</span>
+            {% endif %}
+        </div>
+
+        {% if not info.quiz.is_published %}
+        <span class="badge" style="background: #ffc107; color: #000; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">
+            Not Published
+        </span>
+        {% elif not info.quiz.is_open %}
+        <span class="badge" style="background: #6c757d; color: #fff; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">
+            {% if info.quiz.open_at and info.quiz.open_at > now %}
+            Opens {{ info.quiz.open_at.strftime('%b %d') }}
+            {% else %}
+            Closed
+            {% endif %}
+        </span>
+        {% elif info.can_attempt %}
+        <a href="/quiz/{{ info.quiz.quiz_id }}" class="btn" style="width: auto; display: inline-block;">
+            {% if info.attempt_count == 0 %}Start Quiz{% else %}Retake Quiz{% endif %}
+        </a>
+        {% else %}
+        <span class="badge" style="background: #28a745; color: #fff; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">
+            Completed
+        </span>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-muted">No quizzes available yet.</p>
+{% endif %}
+
+<div class="mt-3">
+    <a href="/home" class="btn btn-outline">Back to Home</a>
+</div>
+{% endblock %}

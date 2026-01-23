@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Claim Your Account - Class Portal{% endblock %}
+
+{% block content %}
+<h1>Claim Your Account</h1>
+<p>Enter your student ID and claim code to link your email address to your account.</p>
+
+{% if error %}
+<div class="flash error">{{ error }}</div>
+{% endif %}
+
+<form method="post" action="/claim">
+    <input type="hidden" name="email" value="{{ email }}">
+
+    <div class="mb-2">
+        <label>Email Address</label>
+        <input type="email" value="{{ email }}" disabled>
+        <p class="text-muted">This email will be linked to your account.</p>
+    </div>
+
+    <div class="mb-2">
+        <label for="student_id">Student ID</label>
+        <input
+            type="text"
+            id="student_id"
+            name="student_id"
+            placeholder="e.g., stu_001"
+            required
+            autofocus
+        >
+        <p class="text-muted">Your student ID was provided by your instructor.</p>
+    </div>
+
+    <div class="mb-2">
+        <label for="claim_code">Claim Code</label>
+        <input
+            type="text"
+            id="claim_code"
+            name="claim_code"
+            placeholder="e.g., ABC123"
+            required
+            style="text-transform: uppercase;"
+        >
+        <p class="text-muted">Your claim code was provided by your instructor.</p>
+    </div>
+
+    <button type="submit" class="mt-2">Claim Account</button>
+</form>
+
+<p class="text-muted mt-3">
+    Already have an account? <a href="/">Sign in here</a>
+</p>
+{% endblock %}
