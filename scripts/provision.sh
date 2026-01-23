@@ -2,7 +2,7 @@
 #
 # Provision a fresh Ubuntu 24.04 droplet for Class Portal
 #
-# Usage: curl -sSL https://raw.githubusercontent.com/USER/classapp/main/scripts/provision.sh | bash
+# Usage: curl -sSL https://raw.githubusercontent.com/cyberdefendersprogram/classapp/main/scripts/provision.sh | bash
 #
 
 set -euo pipefail
