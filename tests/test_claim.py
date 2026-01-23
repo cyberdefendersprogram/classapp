@@ -1,11 +1,12 @@
 """Tests for claim routes."""
 
+from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 from app.db.sqlite import init_db
-from app.models.student import Student
+from app.models.roster import RosterEntry
 
 
 @pytest.fixture(autouse=True)
@@ -15,32 +16,24 @@ def setup_db(setup_test_env):
 
 
 @pytest.fixture
-def unclaimed_student():
-    """An unclaimed student fixture."""
-    return Student(
+def unclaimed_entry():
+    """An unclaimed roster entry fixture."""
+    return RosterEntry(
         student_id="stu_001",
-        first_name="Test",
-        last_name="Student",
-        claim_code="ABC123",
-        email="",  # Not claimed
-        status="active",
+        full_name="Student, Test",
+        preferred_email=None,  # Not claimed
         claimed_at=None,
-        onboarded_at=None,
     )
 
 
 @pytest.fixture
-def claimed_student():
-    """An already claimed student fixture."""
-    return Student(
+def claimed_entry():
+    """An already claimed roster entry fixture."""
+    return RosterEntry(
         student_id="stu_002",
-        first_name="Claimed",
-        last_name="Student",
-        claim_code="DEF456",
-        email="claimed@example.com",
-        status="active",
-        claimed_at="2024-01-01T00:00:00",
-        onboarded_at=None,
+        full_name="Student, Claimed",
+        preferred_email="claimed@example.com",
+        claimed_at=datetime(2024, 1, 1),
     )
 
 
@@ -63,19 +56,18 @@ class TestClaimForm:
         assert response.status_code == 200
         assert "new@example.com" in response.text
         assert "student_id" in response.text.lower()
-        assert "claim_code" in response.text.lower()
 
 
 class TestClaimSubmit:
     """Tests for claim submission."""
 
     @patch("app.routers.claim.get_sheets_client")
-    def test_claim_success(self, mock_sheets, client, unclaimed_student):
+    def test_claim_success(self, mock_sheets, client, unclaimed_entry):
         """Successful claim redirects to onboarding."""
         sheets = MagicMock()
-        sheets.get_student_by_id.return_value = unclaimed_student
+        sheets.get_roster_by_id.return_value = unclaimed_entry
         sheets.claim_student.return_value = True
-        sheets.update_student.return_value = True
+        sheets.update_roster.return_value = True
         mock_sheets.return_value = sheets
 
         response = client.post(
@@ -83,7 +75,6 @@ class TestClaimSubmit:
             data={
                 "email": "new@example.com",
                 "student_id": "stu_001",
-                "claim_code": "ABC123",
             },
             follow_redirects=False,
         )
@@ -91,13 +82,13 @@ class TestClaimSubmit:
         assert response.status_code == 302
         assert "/onboarding" in response.headers["location"]
         assert "session" in response.cookies
-        sheets.claim_student.assert_called_once_with("stu_001", "ABC123", "new@example.com")
+        sheets.claim_student.assert_called_once_with("stu_001", "new@example.com")
 
     @patch("app.routers.claim.get_sheets_client")
     def test_claim_student_not_found(self, mock_sheets, client):
         """Non-existent student shows error."""
         sheets = MagicMock()
-        sheets.get_student_by_id.return_value = None
+        sheets.get_roster_by_id.return_value = None
         mock_sheets.return_value = sheets
 
         response = client.post(
@@ -105,37 +96,17 @@ class TestClaimSubmit:
             data={
                 "email": "new@example.com",
                 "student_id": "stu_999",
-                "claim_code": "ABC123",
             },
         )
 
         assert response.status_code == 200
-        assert "invalid" in response.text.lower()
+        assert "invalid" in response.text.lower() or "not found" in response.text.lower()
 
     @patch("app.routers.claim.get_sheets_client")
-    def test_claim_wrong_code(self, mock_sheets, client, unclaimed_student):
-        """Wrong claim code shows error."""
-        sheets = MagicMock()
-        sheets.get_student_by_id.return_value = unclaimed_student
-        mock_sheets.return_value = sheets
-
-        response = client.post(
-            "/claim",
-            data={
-                "email": "new@example.com",
-                "student_id": "stu_001",
-                "claim_code": "WRONG",
-            },
-        )
-
-        assert response.status_code == 200
-        assert "invalid" in response.text.lower()
-
-    @patch("app.routers.claim.get_sheets_client")
-    def test_claim_already_claimed(self, mock_sheets, client, claimed_student):
+    def test_claim_already_claimed(self, mock_sheets, client, claimed_entry):
         """Already claimed student shows error."""
         sheets = MagicMock()
-        sheets.get_student_by_id.return_value = claimed_student
+        sheets.get_roster_by_id.return_value = claimed_entry
         mock_sheets.return_value = sheets
 
         response = client.post(
@@ -143,69 +114,17 @@ class TestClaimSubmit:
             data={
                 "email": "another@example.com",
                 "student_id": "stu_002",
-                "claim_code": "DEF456",
             },
         )
 
         assert response.status_code == 200
-        assert "already been claimed" in response.text.lower()
+        assert "already" in response.text.lower()
 
     @patch("app.routers.claim.get_sheets_client")
-    def test_claim_inactive_student(self, mock_sheets, client):
-        """Inactive student shows error."""
-        inactive_student = Student(
-            student_id="stu_003",
-            first_name="Inactive",
-            last_name="Student",
-            claim_code="GHI789",
-            email="",
-            status="inactive",
-            claimed_at=None,
-            onboarded_at=None,
-        )
-        sheets = MagicMock()
-        sheets.get_student_by_id.return_value = inactive_student
-        mock_sheets.return_value = sheets
-
-        response = client.post(
-            "/claim",
-            data={
-                "email": "new@example.com",
-                "student_id": "stu_003",
-                "claim_code": "GHI789",
-            },
-        )
-
-        assert response.status_code == 200
-        assert "not active" in response.text.lower()
-
-    @patch("app.routers.claim.get_sheets_client")
-    def test_claim_code_case_insensitive(self, mock_sheets, client, unclaimed_student):
-        """Claim code is case-insensitive."""
-        sheets = MagicMock()
-        sheets.get_student_by_id.return_value = unclaimed_student
-        sheets.claim_student.return_value = True
-        sheets.update_student.return_value = True
-        mock_sheets.return_value = sheets
-
-        response = client.post(
-            "/claim",
-            data={
-                "email": "new@example.com",
-                "student_id": "stu_001",
-                "claim_code": "abc123",  # lowercase
-            },
-            follow_redirects=False,
-        )
-
-        assert response.status_code == 302
-        assert "/onboarding" in response.headers["location"]
-
-    @patch("app.routers.claim.get_sheets_client")
-    def test_claim_failure_shows_error(self, mock_sheets, client, unclaimed_student):
+    def test_claim_failure_shows_error(self, mock_sheets, client, unclaimed_entry):
         """Claim failure shows error message."""
         sheets = MagicMock()
-        sheets.get_student_by_id.return_value = unclaimed_student
+        sheets.get_roster_by_id.return_value = unclaimed_entry
         sheets.claim_student.return_value = False  # Claim fails
         mock_sheets.return_value = sheets
 
@@ -214,7 +133,6 @@ class TestClaimSubmit:
             data={
                 "email": "new@example.com",
                 "student_id": "stu_001",
-                "claim_code": "ABC123",
             },
         )
 

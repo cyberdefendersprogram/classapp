@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from app.models.student import Student
+from app.models.roster import RosterEntry
 from app.models.quiz import QuizMeta
 from app.services.cache import invalidate_all
 
@@ -131,19 +131,16 @@ class TestSheetsClientConfig:
         }
 
 
-class TestSheetsClientStudents:
-    """Tests for student methods."""
+class TestSheetsClientRoster:
+    """Tests for roster methods."""
 
     def test_get_student_by_email(self, sheets_client, mock_worksheet):
-        """Test getting a student by email."""
+        """Test getting a roster entry by email."""
         mock_worksheet.get_all_records.return_value = [
             {
                 "student_id": "stu_001",
-                "first_name": "Alice",
-                "last_name": "Smith",
-                "claim_code": "ABC123",
-                "email": "alice@example.com",
-                "status": "active",
+                "full_name": "Smith, Alice",
+                "preferred_email": "alice@example.com",
                 "claimed_at": "2025-01-01T10:00:00",
             },
         ]
@@ -151,12 +148,12 @@ class TestSheetsClientStudents:
         result = sheets_client.get_student_by_email("alice@example.com")
 
         assert result is not None
-        assert isinstance(result, Student)
+        assert isinstance(result, RosterEntry)
         assert result.student_id == "stu_001"
-        assert result.email == "alice@example.com"
+        assert result.preferred_email == "alice@example.com"
 
     def test_get_student_by_email_not_found(self, sheets_client, mock_worksheet):
-        """Test getting a non-existent student."""
+        """Test getting a non-existent roster entry."""
         mock_worksheet.get_all_records.return_value = []
 
         result = sheets_client.get_student_by_email("unknown@example.com")
@@ -168,11 +165,8 @@ class TestSheetsClientStudents:
         mock_worksheet.get_all_records.return_value = [
             {
                 "student_id": "stu_001",
-                "first_name": "Alice",
-                "last_name": "Smith",
-                "claim_code": "ABC123",
-                "email": "Alice@Example.com",
-                "status": "active",
+                "full_name": "Smith, Alice",
+                "preferred_email": "Alice@Example.com",
             },
         ]
 
@@ -181,77 +175,50 @@ class TestSheetsClientStudents:
         assert result is not None
         assert result.student_id == "stu_001"
 
-    def test_get_student_by_id(self, sheets_client, mock_worksheet):
-        """Test getting a student by ID."""
+    def test_get_roster_by_id(self, sheets_client, mock_worksheet):
+        """Test getting a roster entry by ID."""
         mock_worksheet.get_all_records.return_value = [
             {
                 "student_id": "stu_001",
-                "first_name": "Alice",
-                "last_name": "Smith",
-                "claim_code": "ABC123",
-                "email": "",
-                "status": "active",
+                "full_name": "Smith, Alice",
+                "preferred_email": "",
             },
         ]
 
-        result = sheets_client.get_student_by_id("stu_001")
+        result = sheets_client.get_roster_by_id("stu_001")
 
         assert result is not None
         assert result.student_id == "stu_001"
 
     def test_claim_student_success(self, sheets_client, mock_worksheet):
-        """Test successful student claim."""
+        """Test successful student claim (no claim code needed)."""
         mock_worksheet.get_all_records.return_value = [
             {
                 "student_id": "stu_001",
-                "first_name": "Alice",
-                "last_name": "Smith",
-                "claim_code": "ABC123",
-                "email": "",
-                "status": "active",
+                "full_name": "Smith, Alice",
+                "preferred_email": "",  # Not yet claimed
             },
         ]
         mock_worksheet.row_values.return_value = [
-            "student_id", "first_name", "last_name", "claim_code",
-            "email", "status", "claimed_at",
+            "student_id", "full_name", "preferred_email", "claimed_at",
         ]
 
-        result = sheets_client.claim_student("stu_001", "ABC123", "alice@example.com")
+        result = sheets_client.claim_student("stu_001", "alice@example.com")
 
         assert result is True
-        assert mock_worksheet.update_cell.call_count == 2
-
-    def test_claim_student_wrong_code(self, sheets_client, mock_worksheet):
-        """Test claim with wrong code."""
-        mock_worksheet.get_all_records.return_value = [
-            {
-                "student_id": "stu_001",
-                "first_name": "Alice",
-                "last_name": "Smith",
-                "claim_code": "ABC123",
-                "email": "",
-                "status": "active",
-            },
-        ]
-
-        result = sheets_client.claim_student("stu_001", "WRONG", "alice@example.com")
-
-        assert result is False
+        assert mock_worksheet.update_cell.call_count == 2  # email + claimed_at
 
     def test_claim_student_already_claimed(self, sheets_client, mock_worksheet):
         """Test claim on already claimed student."""
         mock_worksheet.get_all_records.return_value = [
             {
                 "student_id": "stu_001",
-                "first_name": "Alice",
-                "last_name": "Smith",
-                "claim_code": "ABC123",
-                "email": "existing@example.com",
-                "status": "active",
+                "full_name": "Smith, Alice",
+                "preferred_email": "existing@example.com",  # Already claimed
             },
         ]
 
-        result = sheets_client.claim_student("stu_001", "ABC123", "alice@example.com")
+        result = sheets_client.claim_student("stu_001", "alice@example.com")
 
         assert result is False
 

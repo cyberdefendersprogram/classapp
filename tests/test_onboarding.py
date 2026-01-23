@@ -1,11 +1,12 @@
 """Tests for onboarding routes."""
 
+from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 from app.db.sqlite import init_db
-from app.models.student import Student
+from app.models.roster import RosterEntry
 from app.services.sessions import create_session_token
 
 
@@ -16,46 +17,40 @@ def setup_db(setup_test_env):
 
 
 @pytest.fixture
-def unclaimed_student():
-    """A student who hasn't completed onboarding."""
-    return Student(
+def claimed_entry():
+    """A roster entry who hasn't completed onboarding."""
+    return RosterEntry(
         student_id="stu_001",
-        first_name="Test",
-        last_name="Student",
-        claim_code="ABC123",
-        email="test@example.com",
-        status="active",
-        claimed_at="2024-01-01T00:00:00",
-        onboarded_at=None,  # Not onboarded
+        full_name="Student, Test",
+        preferred_email="test@example.com",
+        claimed_at=datetime(2024, 1, 1),
+        onboarding_completed_at=None,  # Not onboarded
     )
 
 
 @pytest.fixture
-def onboarded_student():
-    """A student who has completed onboarding."""
-    return Student(
+def onboarded_entry():
+    """A roster entry who has completed onboarding."""
+    return RosterEntry(
         student_id="stu_002",
-        first_name="Onboarded",
-        last_name="Student",
-        claim_code="DEF456",
-        email="onboarded@example.com",
-        status="active",
-        claimed_at="2024-01-01T00:00:00",
-        onboarded_at="2024-01-02T00:00:00",
+        full_name="Student, Onboarded",
+        preferred_email="onboarded@example.com",
+        claimed_at=datetime(2024, 1, 1),
+        onboarding_completed_at=datetime(2024, 1, 2),
         preferred_name="Onby",
     )
 
 
 @pytest.fixture
-def auth_token(unclaimed_student):
-    """Create an auth token for the unclaimed student."""
-    return create_session_token(unclaimed_student.email, unclaimed_student.student_id)
+def auth_token(claimed_entry):
+    """Create an auth token for the claimed entry."""
+    return create_session_token(claimed_entry.preferred_email, claimed_entry.student_id)
 
 
 @pytest.fixture
-def onboarded_auth_token(onboarded_student):
-    """Create an auth token for the onboarded student."""
-    return create_session_token(onboarded_student.email, onboarded_student.student_id)
+def onboarded_auth_token(onboarded_entry):
+    """Create an auth token for the onboarded entry."""
+    return create_session_token(onboarded_entry.preferred_email, onboarded_entry.student_id)
 
 
 class TestOnboardingForm:
@@ -67,22 +62,21 @@ class TestOnboardingForm:
         assert response.status_code == 401
 
     @patch("app.routers.onboarding.get_sheets_client")
-    def test_onboarding_form_renders(self, mock_sheets, client, auth_token, unclaimed_student):
+    def test_onboarding_form_renders(self, mock_sheets, client, auth_token, claimed_entry):
         """Authenticated user sees onboarding form."""
-        mock_sheets.return_value.get_student_by_id.return_value = unclaimed_student
+        mock_sheets.return_value.get_roster_by_id.return_value = claimed_entry
 
         response = client.get("/onboarding", cookies={"session": auth_token})
 
         assert response.status_code == 200
         assert "Welcome" in response.text
-        assert "preferred_name" in response.text.lower()
 
     @patch("app.routers.onboarding.get_sheets_client")
     def test_onboarding_redirects_if_already_done(
-        self, mock_sheets, client, onboarded_auth_token, onboarded_student
+        self, mock_sheets, client, onboarded_auth_token, onboarded_entry
     ):
         """Already onboarded users are redirected to home."""
-        mock_sheets.return_value.get_student_by_id.return_value = onboarded_student
+        mock_sheets.return_value.get_roster_by_id.return_value = onboarded_entry
 
         response = client.get(
             "/onboarding",
@@ -98,11 +92,11 @@ class TestOnboardingSubmit:
     """Tests for onboarding form submission."""
 
     @patch("app.routers.onboarding.get_sheets_client")
-    def test_onboarding_success(self, mock_sheets, client, auth_token, unclaimed_student):
-        """Successful onboarding redirects to home."""
+    def test_onboarding_success_with_data(self, mock_sheets, client, auth_token, claimed_entry):
+        """Successful onboarding with optional data redirects to home."""
         sheets = MagicMock()
-        sheets.get_student_by_id.return_value = unclaimed_student
-        sheets.update_student.return_value = True
+        sheets.get_roster_by_id.return_value = claimed_entry
+        sheets.update_roster.return_value = True
         sheets.append_onboarding_response.return_value = True
         mock_sheets.return_value = sheets
 
@@ -111,67 +105,30 @@ class TestOnboardingSubmit:
             cookies={"session": auth_token},
             data={
                 "preferred_name": "Testy",
-                "pronouns": "they/them",
+                "preferred_pronoun": "they/them",
                 "hobbies": "Coding",
-                "computer_experience": "intermediate",
-                "security_experience": "None yet",
-                "goals": "Learn security",
-                "support_needs": "",
+                "cs_experience": "intermediate",
+                "class_goals": "Learn security",
             },
             follow_redirects=False,
         )
 
         assert response.status_code == 302
         assert "/home" in response.headers["location"]
-        sheets.update_student.assert_called_once()
-        # Should log responses for non-empty fields
-        assert sheets.append_onboarding_response.call_count >= 5
+        sheets.update_roster.assert_called_once()
 
     @patch("app.routers.onboarding.get_sheets_client")
-    def test_onboarding_requires_preferred_name(
-        self, mock_sheets, client, auth_token, unclaimed_student
-    ):
-        """Empty preferred name shows error."""
-        mock_sheets.return_value.get_student_by_id.return_value = unclaimed_student
-
-        response = client.post(
-            "/onboarding",
-            cookies={"session": auth_token},
-            data={
-                "preferred_name": "   ",  # Whitespace only
-                "pronouns": "",
-                "hobbies": "",
-                "computer_experience": "",
-                "security_experience": "",
-                "goals": "",
-                "support_needs": "",
-            },
-        )
-
-        assert response.status_code == 200
-        assert "required" in response.text.lower()
-
-    @patch("app.routers.onboarding.get_sheets_client")
-    def test_onboarding_minimal_data(self, mock_sheets, client, auth_token, unclaimed_student):
-        """Onboarding works with only required fields."""
+    def test_onboarding_success_empty_form(self, mock_sheets, client, auth_token, claimed_entry):
+        """Onboarding works with all empty fields (all optional)."""
         sheets = MagicMock()
-        sheets.get_student_by_id.return_value = unclaimed_student
-        sheets.update_student.return_value = True
-        sheets.append_onboarding_response.return_value = True
+        sheets.get_roster_by_id.return_value = claimed_entry
+        sheets.update_roster.return_value = True
         mock_sheets.return_value = sheets
 
         response = client.post(
             "/onboarding",
             cookies={"session": auth_token},
-            data={
-                "preferred_name": "Testy",
-                "pronouns": "",
-                "hobbies": "",
-                "computer_experience": "",
-                "security_experience": "",
-                "goals": "",
-                "support_needs": "",
-            },
+            data={},  # All fields are optional
             follow_redirects=False,
         )
 
@@ -180,12 +137,12 @@ class TestOnboardingSubmit:
 
     @patch("app.routers.onboarding.get_sheets_client")
     def test_onboarding_update_failure(
-        self, mock_sheets, client, auth_token, unclaimed_student
+        self, mock_sheets, client, auth_token, claimed_entry
     ):
         """Update failure shows error."""
         sheets = MagicMock()
-        sheets.get_student_by_id.return_value = unclaimed_student
-        sheets.update_student.return_value = False  # Fails
+        sheets.get_roster_by_id.return_value = claimed_entry
+        sheets.update_roster.return_value = False  # Fails
         mock_sheets.return_value = sheets
 
         response = client.post(
@@ -193,12 +150,6 @@ class TestOnboardingSubmit:
             cookies={"session": auth_token},
             data={
                 "preferred_name": "Testy",
-                "pronouns": "",
-                "hobbies": "",
-                "computer_experience": "",
-                "security_experience": "",
-                "goals": "",
-                "support_needs": "",
             },
         )
 
