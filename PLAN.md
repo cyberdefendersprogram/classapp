@@ -19,6 +19,7 @@ classapp/
 │   │   ├── claim.py            # Account claiming
 │   │   ├── onboarding.py       # Onboarding form
 │   │   ├── quizzes.py          # Quiz list and submission
+│   │   ├── schedule.py         # Class schedule
 │   │   ├── pages.py            # Home, profile pages
 │   │   └── health.py           # Health check
 │   ├── services/
@@ -31,8 +32,9 @@ classapp/
 │   │   └── grading.py          # Quiz auto-grader
 │   ├── models/
 │   │   ├── __init__.py
-│   │   ├── student.py          # Student dataclass
+│   │   ├── roster.py           # RosterEntry dataclass
 │   │   ├── quiz.py             # Quiz/Question dataclasses
+│   │   ├── schedule.py         # ScheduleEntry dataclass
 │   │   └── schemas.py          # Pydantic request/response
 │   ├── db/
 │   │   ├── __init__.py
@@ -45,6 +47,7 @@ classapp/
 │       ├── home.html
 │       ├── quizzes.html
 │       ├── quiz.html
+│       ├── schedule.html
 │       └── me.html
 ├── content/
 │   └── quizzes/                # Quiz markdown files
@@ -60,7 +63,8 @@ classapp/
 │   ├── test_onboarding.py
 │   ├── test_quiz_parser.py
 │   ├── test_grading.py
-│   └── test_quizzes.py
+│   ├── test_quizzes.py
+│   └── test_schedule.py
 ├── scripts/
 │   ├── provision.sh            # Droplet setup
 │   └── seed_sheets.py          # Test data seeder
@@ -348,11 +352,12 @@ def test_health_ok(client):
 ```python
 # app/services/sheets.py
 class SheetsClient:
-    def get_student_by_email(self, email: str) -> Student | None
-    def get_student_by_id(self, student_id: str) -> Student | None
-    def claim_student(self, student_id: str, claim_code: str, email: str) -> bool
-    def update_student(self, student_id: str, **fields) -> bool
+    def get_roster_by_email(self, email: str) -> RosterEntry | None
+    def get_roster_by_id(self, student_id: str) -> RosterEntry | None
+    def claim_student(self, student_id: str, email: str) -> bool
+    def update_roster(self, student_id: str, **fields) -> bool
     def get_config(self, key: str) -> str | None
+    def get_schedule(self) -> list[ScheduleEntry]
     def get_quizzes(self) -> list[Quiz]
     def get_quiz_submissions(self, student_id: str, quiz_id: str) -> list[Submission]
     def append_onboarding_response(self, data: dict) -> None
@@ -540,14 +545,14 @@ def test_token_expiry():
 
 ## Phase 4: Claim Flow
 
-**Goal**: New students can claim their account with student_id + claim_code.
+**Goal**: New students can claim their account with student_id.
 
 ### 4.1 Tasks
 
 - [ ] Create `app/routers/claim.py`
 - [ ] Add template: `claim.html`
 - [ ] Implement claim validation logic
-- [ ] Update student record on successful claim
+- [ ] Update roster record on successful claim
 
 ### 4.2 Claim Route
 
@@ -555,19 +560,17 @@ def test_token_expiry():
 # app/routers/claim.py
 @router.get("/claim")
 async def claim_form(request: Request, token: str):
-    # Verify token is valid (not magic token, but a short-lived claim token)
+    # Verify token is valid (short-lived claim token)
     # Show form
 
 @router.post("/claim")
 async def claim_submit(
     student_id: str = Form(...),
-    claim_code: str = Form(...),
     email: str = Form(...)  # From hidden field
 ):
-    # Validate student exists
-    # Validate claim_code matches
+    # Validate student exists in Roster
     # Validate not already claimed
-    # Update student: set email, claimed_at
+    # Update roster: set preferred_email, claimed_at
     # Create session
     # Redirect to /onboarding
 ```
@@ -578,17 +581,15 @@ async def claim_submit(
 # tests/test_claim.py
 def test_claim_success(client, mock_sheets):
     response = client.post("/claim", data={
-        "student_id": "stu_001",
-        "claim_code": "ABC123",
+        "student_id": "10844370",
         "email": "new@example.com"
     })
     assert response.status_code == 302
     assert "/onboarding" in response.headers["location"]
 
-def test_claim_wrong_code(client, mock_sheets):
+def test_claim_invalid_student_id(client, mock_sheets):
     response = client.post("/claim", data={
-        "student_id": "stu_001",
-        "claim_code": "WRONG",
+        "student_id": "99999999",
         "email": "new@example.com"
     })
     assert response.status_code == 400
@@ -596,8 +597,7 @@ def test_claim_wrong_code(client, mock_sheets):
 def test_claim_already_claimed(client, mock_sheets):
     # Student already has email set
     response = client.post("/claim", data={
-        "student_id": "stu_002",
-        "claim_code": "DEF456",
+        "student_id": "10844370",
         "email": "another@example.com"
     })
     assert response.status_code == 400
@@ -607,7 +607,7 @@ def test_claim_already_claimed(client, mock_sheets):
 
 ## Phase 5: Onboarding
 
-**Goal**: Claimed students complete onboarding form.
+**Goal**: Claimed students complete onboarding form. All fields are optional. Only empty fields are shown.
 
 ### 5.1 Tasks
 
@@ -615,6 +615,7 @@ def test_claim_already_claimed(client, mock_sheets):
 - [ ] Add template: `onboarding.html`
 - [ ] Write responses to Sheets
 - [ ] Add middleware to redirect non-onboarded users
+- [ ] Only show fields that are empty in Roster
 
 ### 5.2 Onboarding Route
 
@@ -624,21 +625,28 @@ def test_claim_already_claimed(client, mock_sheets):
 async def onboarding_form(request: Request):
     # Check session
     # Check if already onboarded → redirect to /home
+    # Get current roster data
+    # Filter to only show empty fields
     # Show form
 
 @router.post("/onboarding")
 async def onboarding_submit(
     request: Request,
-    preferred_name: str = Form(...),
-    pronouns: str = Form(""),
+    preferred_name: str = Form(""),
+    preferred_name_phonetic: str = Form(""),
+    preferred_pronoun: str = Form(""),
+    linkedin: str = Form(""),
+    cs_experience: str = Form(""),
+    computer_system: str = Form(""),
     hobbies: str = Form(""),
-    computer_experience: str = Form(""),
-    security_experience: str = Form(""),
-    goals: str = Form(""),
-    support_needs: str = Form("")
+    used_netlabs: str = Form(""),
+    used_tryhackme: str = Form(""),
+    class_goals: str = Form(""),
+    support_request: str = Form("")
 ):
-    # Validate preferred_name not empty
-    # Update Students row
+    # All fields are optional
+    # Update Roster row with non-empty fields
+    # Set onboarding_completed_at timestamp
     # Append to Onboarding_Responses (one row per field)
     # Invalidate cache
     # Redirect to /home
@@ -651,18 +659,17 @@ async def onboarding_submit(
 def test_onboarding_success(authed_client, mock_sheets):
     response = authed_client.post("/onboarding", data={
         "preferred_name": "Alex",
-        "pronouns": "they/them",
-        "goals": "Learn security"
+        "preferred_pronoun": "they/them",
+        "class_goals": "Learn security"
     })
     assert response.status_code == 302
-    assert mock_sheets.update_student.called
+    assert mock_sheets.update_roster.called
     assert mock_sheets.append_onboarding_response.called
 
-def test_onboarding_missing_name(authed_client):
-    response = authed_client.post("/onboarding", data={
-        "preferred_name": ""
-    })
-    assert response.status_code == 400
+def test_onboarding_all_optional(authed_client, mock_sheets):
+    # Empty form is valid - all fields optional
+    response = authed_client.post("/onboarding", data={})
+    assert response.status_code == 302
 ```
 
 ---
@@ -701,6 +708,15 @@ class Quiz:
     title: str
     questions: list[Question]
     total_points: int
+
+# app/models/schedule.py
+@dataclass
+class ScheduleEntry:
+    session: str
+    desc: str
+    notes: str
+    slides_link: str
+    recording_link: str
 ```
 
 ### 6.3 Quiz Parser
@@ -885,12 +901,148 @@ def test_grade_mcq_multi_partial():
 | Template | Content |
 |----------|---------|
 | `signin.html` | Email input, submit button |
-| `claim.html` | student_id + claim_code inputs |
-| `onboarding.html` | All onboarding fields |
+| `claim.html` | student_id input |
+| `onboarding.html` | Empty profile fields only (all optional) |
 | `home.html` | Welcome message, nav links |
 | `quizzes.html` | Quiz cards with status |
 | `quiz.html` | Questions rendered as form |
-| `me.html` | Profile view, edit name |
+| `me.html` | Profile view/edit all fields |
+| `schedule.html` | Class schedule with session details and links |
+
+### 7.4 Schedule Route
+
+```python
+# app/routers/schedule.py
+from fastapi import APIRouter, Request
+from app.services.sheets import sheets_client
+
+router = APIRouter()
+
+@router.get("/schedule")
+async def schedule(request: Request):
+    # Get schedule from Sheets
+    schedule_entries = sheets_client.get_schedule()
+    # Render schedule page
+```
+
+### 7.5 Schedule Template
+
+```html
+<!-- templates/schedule.html -->
+{% extends "base.html" %}
+{% block title %}Schedule{% endblock %}
+{% block content %}
+<h1>Class Schedule</h1>
+<table>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Session</th>
+            <th>Notes</th>
+            <th>Materials</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for entry in schedule %}
+        <tr>
+            <td>{{ entry.session }}</td>
+            <td>{{ entry.desc }}</td>
+            <td>{{ entry.notes | replace('\n', '<br>') | safe }}</td>
+            <td>
+                {% if entry.slides_link %}<a href="{{ entry.slides_link }}">Slides</a>{% endif %}
+                {% if entry.recording_link %}<a href="{{ entry.recording_link }}">Recording</a>{% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+```
+
+### 7.6 Profile Route
+
+```python
+# app/routers/pages.py
+@router.get("/me")
+async def profile(request: Request):
+    # Get current user from session
+    # Get roster data
+    # Render profile with all fields
+
+@router.post("/me")
+async def profile_update(
+    request: Request,
+    preferred_name: str = Form(""),
+    preferred_name_phonetic: str = Form(""),
+    preferred_pronoun: str = Form(""),
+    linkedin: str = Form(""),
+    cs_experience: str = Form(""),
+    computer_system: str = Form(""),
+    hobbies: str = Form(""),
+    used_netlabs: str = Form(""),
+    used_tryhackme: str = Form(""),
+    class_goals: str = Form(""),
+    support_request: str = Form("")
+):
+    # Update Roster with new values
+    # Invalidate cache
+    # Redirect back to /me with success message
+```
+
+### 7.7 Profile Template
+
+```html
+<!-- templates/me.html -->
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+{% block content %}
+<h1>My Profile</h1>
+<form method="POST">
+    <label>Preferred Name</label>
+    <input type="text" name="preferred_name" value="{{ student.preferred_name }}">
+
+    <label>How to pronounce your name</label>
+    <input type="text" name="preferred_name_phonetic" value="{{ student.preferred_name_phonetic }}">
+
+    <label>Preferred Pronouns</label>
+    <input type="text" name="preferred_pronoun" value="{{ student.preferred_pronoun }}">
+
+    <label>LinkedIn Profile URL</label>
+    <input type="url" name="linkedin" value="{{ student.linkedin }}">
+
+    <label>CS/Tech Experience</label>
+    <input type="text" name="cs_experience" value="{{ student.cs_experience }}">
+
+    <label>What Computer System (H/W-OS)</label>
+    <input type="text" name="computer_system" value="{{ student.computer_system }}">
+
+    <label>Hobbies</label>
+    <input type="text" name="hobbies" value="{{ student.hobbies }}">
+
+    <label>Have you used Netlabs before?</label>
+    <select name="used_netlabs">
+        <option value="">-- Select --</option>
+        <option value="Yes" {% if student.used_netlabs == "Yes" %}selected{% endif %}>Yes</option>
+        <option value="No" {% if student.used_netlabs == "No" %}selected{% endif %}>No</option>
+    </select>
+
+    <label>Have you used TryHackMe before?</label>
+    <select name="used_tryhackme">
+        <option value="">-- Select --</option>
+        <option value="Yes" {% if student.used_tryhackme == "Yes" %}selected{% endif %}>Yes</option>
+        <option value="No" {% if student.used_tryhackme == "No" %}selected{% endif %}>No</option>
+    </select>
+
+    <label>What do you want from this class?</label>
+    <textarea name="class_goals">{{ student.class_goals }}</textarea>
+
+    <label>Any special support request for the teacher?</label>
+    <textarea name="support_request">{{ student.support_request }}</textarea>
+
+    <button type="submit">Save Changes</button>
+</form>
+{% endblock %}
+```
 
 ---
 

@@ -14,8 +14,6 @@ Requires:
 
 import argparse
 import os
-import secrets
-import string
 import sys
 from pathlib import Path
 
@@ -29,20 +27,26 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
 # Sheet structures: name -> headers
 SHEET_STRUCTURES = {
-    "Students": [
+    "Roster": [
         "student_id",
-        "first_name",
-        "last_name",
-        "claim_code",
-        "email",
-        "status",
-        "claimed_at",
-        "first_seen_at",
-        "onboarded_at",
-        "last_login_at",
+        "full_name",
+        "preferred_email",
         "preferred_name",
-        "pronouns",
-        "notes",
+        "preferred_name_phonetic",
+        "preferred_pronoun",
+        "linkedin",
+        "program_plan",
+        "student_level",
+        "cs_experience",
+        "computer_system",
+        "hobbies",
+        "used_netlabs",
+        "used_tryhackme",
+        "class_goals",
+        "support_request",
+        "claimed_at",
+        "onboarding_completed_at",
+        "last_login_at",
     ],
     "Onboarding_Responses": [
         "timestamp",
@@ -83,6 +87,13 @@ SHEET_STRUCTURES = {
         "autograde_json",
         "source",
     ],
+    "Schedule": [
+        "session",
+        "desc",
+        "notes",
+        "slides_link",
+        "recording_link",
+    ],
     "Config": [
         "key",
         "value",
@@ -98,15 +109,6 @@ DEFAULT_CONFIG = {
     "onboarding_form_version": "v1",
 }
 
-# Test students data
-TEST_STUDENTS = [
-    {"student_id": "stu_001", "first_name": "Alice", "last_name": "Smith", "status": "active"},
-    {"student_id": "stu_002", "first_name": "Bob", "last_name": "Johnson", "status": "active"},
-    {"student_id": "stu_003", "first_name": "Charlie", "last_name": "Williams", "status": "active"},
-    {"student_id": "stu_004", "first_name": "Diana", "last_name": "Brown", "status": "active"},
-    {"student_id": "stu_005", "first_name": "Eve", "last_name": "Davis", "status": "active"},
-]
-
 # Test quiz data
 TEST_QUIZZES = [
     {
@@ -121,11 +123,17 @@ TEST_QUIZZES = [
     },
 ]
 
-
-def generate_claim_code() -> str:
-    """Generate a random 6-character claim code."""
-    chars = string.ascii_uppercase + string.digits
-    return "".join(secrets.choice(chars) for _ in range(6))
+# Test schedule data
+TEST_SCHEDULE = [
+    {"session": "1/23/2026", "desc": "1 - Introduction", "notes": "Quiz 1", "slides_link": "", "recording_link": ""},
+    {"session": "1/30/2026", "desc": "2 - Cryptography & Incident Response", "notes": "Lab 1\nQuiz 2", "slides_link": "", "recording_link": ""},
+    {"session": "2/6/2026", "desc": "3 - Pentesting Tools (Nmap, Nessus, Metasploit, SQLMap)", "notes": "Lab 2\nQuiz 2", "slides_link": "", "recording_link": ""},
+    {"session": "2/13/2026", "desc": "Holiday (President's Day)", "notes": "", "slides_link": "", "recording_link": ""},
+    {"session": "2/20/2026", "desc": "4 - Threat Modeling, OSINT, OWASP", "notes": "Lab 3\nQuiz 3", "slides_link": "", "recording_link": ""},
+    {"session": "2/27/2026", "desc": "5 - Cloud Security, LLM Security", "notes": "Lab 4\nQuiz 4", "slides_link": "", "recording_link": ""},
+    {"session": "3/6/2026", "desc": "6 - Security Careers and Presentations", "notes": "Lab 5, Quiz 5", "slides_link": "", "recording_link": ""},
+    {"session": "3/13/2026", "desc": "BONUS - Bug Bounty Session", "notes": "", "slides_link": "", "recording_link": ""},
+]
 
 
 def get_client() -> gspread.Client:
@@ -196,35 +204,6 @@ def seed_config(spreadsheet: gspread.Spreadsheet) -> None:
         print("    Config already seeded")
 
 
-def seed_students(spreadsheet: gspread.Spreadsheet) -> None:
-    """Seed the Students sheet with test data."""
-    print("  Seeding Students...")
-    worksheet = spreadsheet.worksheet("Students")
-
-    # Check if already has data
-    existing = worksheet.get_all_records()
-    existing_ids = {r.get("student_id") for r in existing}
-
-    headers = SHEET_STRUCTURES["Students"]
-    rows_to_add = []
-
-    for student in TEST_STUDENTS:
-        if student["student_id"] in existing_ids:
-            continue
-
-        row_data = {h: "" for h in headers}
-        row_data.update(student)
-        row_data["claim_code"] = generate_claim_code()
-
-        rows_to_add.append([row_data.get(h, "") for h in headers])
-
-    if rows_to_add:
-        worksheet.append_rows(rows_to_add, value_input_option="RAW")
-        print(f"    Added {len(rows_to_add)} students")
-    else:
-        print("    Students already seeded")
-
-
 def seed_quizzes(spreadsheet: gspread.Spreadsheet) -> None:
     """Seed the Quizzes sheet with test data."""
     print("  Seeding Quizzes...")
@@ -248,6 +227,31 @@ def seed_quizzes(spreadsheet: gspread.Spreadsheet) -> None:
         print(f"    Added {len(rows_to_add)} quizzes")
     else:
         print("    Quizzes already seeded")
+
+
+def seed_schedule(spreadsheet: gspread.Spreadsheet) -> None:
+    """Seed the Schedule sheet with test data."""
+    print("  Seeding Schedule...")
+    worksheet = spreadsheet.worksheet("Schedule")
+
+    # Check if already has data
+    existing = worksheet.get_all_records()
+    existing_sessions = {r.get("session") for r in existing}
+
+    headers = SHEET_STRUCTURES["Schedule"]
+    rows_to_add = []
+
+    for entry in TEST_SCHEDULE:
+        if entry["session"] in existing_sessions:
+            continue
+
+        rows_to_add.append([entry.get(h, "") for h in headers])
+
+    if rows_to_add:
+        worksheet.append_rows(rows_to_add, value_input_option="RAW")
+        print(f"    Added {len(rows_to_add)} schedule entries")
+    else:
+        print("    Schedule already seeded")
 
 
 def main():
@@ -274,8 +278,8 @@ def main():
     if args.seed_test_data or args.all:
         print("\nSeeding test data...")
         seed_config(spreadsheet)
-        seed_students(spreadsheet)
         seed_quizzes(spreadsheet)
+        seed_schedule(spreadsheet)
 
     print("\nDone!")
 

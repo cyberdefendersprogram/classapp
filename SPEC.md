@@ -70,7 +70,7 @@ Browser
 | Docker | Runtime isolation |
 | FastAPI | Application server |
 | SQLite | Magic tokens, rate limits, sessions |
-| Google Sheets | Students, quizzes, submissions |
+| Google Sheets | Roster, quizzes, submissions |
 | GitHub Actions | CI/CD pipeline |
 | ForwardEmail SMTP | Magic link delivery |
 
@@ -169,9 +169,9 @@ Secrets never leave the droplet. GitHub Actions only triggers deployment.
 
 ### 7.1 Identity Model
 
-- Students pre-provisioned by `student_id` in Sheets
+- Students pre-provisioned by `student_id` in Roster sheet
 - Email unknown until student claims account
-- Claim code distributed in class (one-time use)
+- Students claim by entering their `student_id` (no claim code needed)
 - Email becomes permanent login identifier
 
 ### 7.2 Authentication Flow
@@ -201,7 +201,6 @@ Secrets never leave the droplet. GitHub Actions only triggers deployment.
                                           ▼
                                 ┌──────────────────┐
                                 │ Enter student_id │
-                                │ + claim_code     │
                                 └──────────────────┘
                                           │
                                           ▼
@@ -227,7 +226,7 @@ After successful authentication:
 
 - No passwords stored
 - Magic tokens: one-time use, 15 min TTL
-- Claim codes: one-time use
+- Student ID required for claim (must exist in Roster)
 - No user enumeration (same response for known/unknown emails)
 - Rate limiting: 3 requests per email per 15 minutes
 - All traffic over TLS
@@ -238,30 +237,35 @@ After successful authentication:
 
 Single spreadsheet with these tabs (exact names required):
 
-### 8.1 `Students`
+### 8.1 `Roster`
 
-Primary roster. One row per student.
+Primary roster. One row per student. Instructor pre-populates `student_id`, `full_name`, `program_plan`, and `student_level`. Other fields are filled by students during onboarding or via profile updates.
 
 | Column | Type | Description |
 |--------|------|-------------|
-| student_id | string | Unique identifier (e.g., `stu_001`) |
-| first_name | string | Legal first name |
-| last_name | string | Legal last name |
-| claim_code | string | One-time claim code (e.g., `ABC123`) |
-| email | string | Empty until claimed |
-| status | string | `active`, `inactive`, `dropped` |
-| claimed_at | ISO timestamp | When email was bound |
-| first_seen_at | ISO timestamp | First magic link request |
-| onboarded_at | ISO timestamp | When onboarding completed |
+| student_id | string | Unique identifier (e.g., `10844370`) |
+| full_name | string | Full name as "Last, First" (e.g., `Bhandari, Vaibhav`) |
+| preferred_email | string | Student's preferred email (set during claim) |
+| preferred_name | string | Display name (optional) |
+| preferred_name_phonetic | string | Phonetic pronunciation (optional) |
+| preferred_pronoun | string | Pronouns (optional, e.g., `he/him`) |
+| linkedin | string | LinkedIn profile URL (optional) |
+| program_plan | string | Academic program (pre-filled by instructor) |
+| student_level | string | `Freshman`, `Sophomore`, etc. (pre-filled) |
+| cs_experience | string | CS/tech experience level (optional) |
+| computer_system | string | Hardware/OS description (optional) |
+| hobbies | string | Personal interests (optional) |
+| used_netlabs | string | `Yes`/`No` - prior Netlabs experience (optional) |
+| used_tryhackme | string | `Yes`/`No` - prior TryHackMe experience (optional) |
+| class_goals | string | What they want from the class (optional) |
+| support_request | string | Special support needs (optional) |
+| claimed_at | ISO timestamp | When account was claimed |
+| onboarding_completed_at | ISO timestamp | When onboarding was completed |
 | last_login_at | ISO timestamp | Most recent login |
-| preferred_name | string | Display name (from onboarding) |
-| pronouns | string | Optional pronouns |
-| notes | string | Instructor notes |
 
 **Constraints**:
 - `student_id` must be unique
-- `claim_code` must be unique
-- `email` blank until claimed, then immutable
+- `preferred_email` blank until claimed, then immutable
 - Claim rejected if `claimed_at` is set
 
 ### 8.2 `Onboarding_Responses`
@@ -271,7 +275,7 @@ Append-only log of onboarding answers. One row per question per student.
 | Column | Type | Description |
 |--------|------|-------------|
 | timestamp | ISO timestamp | Submission time |
-| student_id | string | FK to Students |
+| student_id | string | FK to Roster |
 | email | string | Student email |
 | form_version | string | Version identifier (e.g., `v1`) |
 | question_key | string | Field name (e.g., `goals`) |
@@ -315,7 +319,7 @@ Append-only log of quiz attempts.
 | submitted_at | ISO timestamp | Submission time |
 | quiz_id | string | FK to Quizzes |
 | attempt | integer | Attempt number (1, 2, ...) |
-| student_id | string | FK to Students |
+| student_id | string | FK to Roster |
 | email | string | Student email |
 | answers_json | JSON string | `{"q1": "A", "q2": ["B","C"]}` |
 | score | number | Points earned |
@@ -323,7 +327,19 @@ Append-only log of quiz attempts.
 | autograde_json | JSON string | Per-question results |
 | source | string | `web` |
 
-### 8.6 `Config`
+### 8.6 `Schedule`
+
+Class schedule. One row per session. Instructor updates this directly in Sheets.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| session | string | Session date (e.g., `1/23/2026`) |
+| desc | string | Session title/description (e.g., `1 - Introduction`) |
+| notes | string | Additional notes (e.g., `Quiz 1`, `Lab 2\nQuiz 2`) |
+| slides_link | string | URL to slides (optional) |
+| recording_link | string | URL to recording (optional) |
+
+### 8.7 `Config`
 
 Key-value configuration.
 
@@ -371,20 +387,26 @@ CREATE TABLE rate_limits (
 
 ### 10.1 Form Fields
 
-| Field | Type | Required | Options |
-|-------|------|----------|---------|
-| preferred_name | text | yes | — |
-| pronouns | text | no | — |
-| hobbies | text | no | — |
-| computer_experience | select | no | beginner, intermediate, advanced |
-| security_experience | text | no | — |
-| goals | text | no | — |
-| support_needs | text | no | — |
+All fields are optional. Only fields that are empty in the Roster are shown during onboarding. Pre-filled fields (e.g., `program_plan`, `student_level`) are skipped.
+
+| Field | Type | Label |
+|-------|------|-------|
+| preferred_name | text | Preferred Name |
+| preferred_name_phonetic | text | How to pronounce your name |
+| preferred_pronoun | text | Preferred Pronouns |
+| linkedin | url | LinkedIn Profile URL |
+| cs_experience | text | CS/Tech Experience |
+| computer_system | text | What Computer System (H/W-OS) |
+| hobbies | text | Hobbies |
+| used_netlabs | select | Have you used Netlabs before? (Yes/No) |
+| used_tryhackme | select | Have you used TryHackMe before? (Yes/No) |
+| class_goals | textarea | What do you want from this class? |
+| support_request | textarea | Any special support request for the teacher? |
 
 ### 10.2 On Submit
 
-1. Validate `preferred_name` is non-empty
-2. Update `Students` row: set `preferred_name`, `onboarded_at`
+1. Update `Roster` row with submitted fields
+2. Set `onboarding_completed_at` timestamp
 3. Append one row per field to `Onboarding_Responses`
 4. Invalidate cache for this student
 5. Redirect to `/home`
@@ -499,6 +521,7 @@ answer: ls
 | GET | `/quiz/{id}` | yes | Quiz form |
 | POST | `/quiz/{id}` | yes | Submit quiz |
 | GET | `/me` | yes | Profile page |
+| GET | `/schedule` | yes | Class schedule |
 | GET | `/health` | no | Health check |
 
 ### 12.2 Health Check
@@ -580,10 +603,11 @@ In-memory cache (single process). Invalidate on writes.
 | Data | TTL | Invalidate On |
 |------|-----|---------------|
 | Config values | 5 min | — |
-| Student by email | 2 min | claim, onboarding |
-| Student by ID | 2 min | claim, onboarding |
+| Roster by email | 2 min | claim, onboarding, profile update |
+| Roster by ID | 2 min | claim, onboarding, profile update |
 | Quizzes list | 5 min | — |
 | Parsed quiz content | 15 min | — |
+| Schedule entries | 5 min | — |
 | Student submissions | 2 min | quiz submit |
 
 ---
@@ -595,12 +619,13 @@ In-memory cache (single process). Invalidate on writes.
 | Path | Screen | Description |
 |------|--------|-------------|
 | `/` | Sign-in | Email input form |
-| `/claim` | Claim | student_id + claim_code form |
+| `/claim` | Claim | student_id form |
 | `/onboarding` | Onboarding | Multi-field form |
 | `/home` | Dashboard | Welcome, quick links |
 | `/quizzes` | Quiz list | Available quizzes with status |
 | `/quiz/{id}` | Quiz | Questions and submit |
-| `/me` | Profile | View/edit preferred name |
+| `/me` | Profile | View/edit all profile fields |
+| `/schedule` | Schedule | Class schedule with links |
 
 ### 15.2 Characteristics
 
