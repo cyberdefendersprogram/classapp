@@ -112,25 +112,23 @@ class TestVerifyMagicLink:
     @patch("app.routers.auth.get_sheets_client")
     def test_valid_token_claimed_user_redirects_to_home(self, mock_sheets, client):
         """Valid token for claimed user redirects to home."""
-        from app.models.student import Student
+        from datetime import datetime
+        from app.models.roster import RosterEntry
         from app.services.tokens import create_magic_token
 
         # Create a token
         token = create_magic_token("claimed@example.com")
 
-        # Mock a claimed student
-        mock_student = Student(
+        # Mock a claimed roster entry
+        mock_entry = RosterEntry(
             student_id="stu_001",
-            first_name="Test",
-            last_name="User",
-            claim_code="ABC123",
-            email="claimed@example.com",
-            status="active",
-            claimed_at="2024-01-01T00:00:00",
-            onboarded_at="2024-01-01T00:00:00",
+            full_name="User, Test",
+            preferred_email="claimed@example.com",
+            claimed_at=datetime(2024, 1, 1),
+            onboarding_completed_at=datetime(2024, 1, 1),
         )
-        mock_sheets.return_value.get_student_by_email.return_value = mock_student
-        mock_sheets.return_value.update_student.return_value = True
+        mock_sheets.return_value.get_student_by_email.return_value = mock_entry
+        mock_sheets.return_value.update_roster.return_value = True
 
         response = client.get(f"/auth/verify?token={token}", follow_redirects=False)
 
