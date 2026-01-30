@@ -53,12 +53,14 @@ async def request_magic_link(request: Request, email: str = Form(...)):
     if not allowed:
         logger.warning("Rate limited magic link request for %s (count: %d)", email, count)
         # Log to sheets
-        sheets.append_magic_link_request({
-            "requested_at": datetime.utcnow().isoformat(),
-            "email": email,
-            "result": "rate_limited",
-            "note": f"Count: {count}",
-        })
+        sheets.append_magic_link_request(
+            {
+                "requested_at": datetime.utcnow().isoformat(),
+                "email": email,
+                "result": "rate_limited",
+                "note": f"Count: {count}",
+            }
+        )
         return templates.TemplateResponse(
             "signin.html",
             {
@@ -76,12 +78,14 @@ async def request_magic_link(request: Request, email: str = Form(...)):
     result = await send_magic_link_email(email, magic_link)
 
     # Log to sheets
-    sheets.append_magic_link_request({
-        "requested_at": datetime.utcnow().isoformat(),
-        "email": email,
-        "result": "sent" if result.success else "error",
-        "note": result.error or "",
-    })
+    sheets.append_magic_link_request(
+        {
+            "requested_at": datetime.utcnow().isoformat(),
+            "email": email,
+            "result": "sent" if result.success else "error",
+            "note": result.error or "",
+        }
+    )
 
     if not result.success:
         logger.error("Failed to send magic link to %s: %s", email, result.error)

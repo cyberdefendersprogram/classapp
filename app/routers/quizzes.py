@@ -37,18 +37,20 @@ async def list_quizzes(request: Request, student: OnboardedStudent, session: Cur
         if submissions:
             best_score = max(s.score for s in submissions)
 
-        quiz_info.append({
-            "quiz": quiz,
-            "attempt_count": attempt_count,
-            "best_score": best_score,
-            "can_attempt": quiz.is_open and (
-                quiz.attempts_allowed == 0 or attempt_count < quiz.attempts_allowed
-            ),
-            "attempts_remaining": (
-                None if quiz.attempts_allowed == 0
-                else max(0, quiz.attempts_allowed - attempt_count)
-            ),
-        })
+        quiz_info.append(
+            {
+                "quiz": quiz,
+                "attempt_count": attempt_count,
+                "best_score": best_score,
+                "can_attempt": quiz.is_open
+                and (quiz.attempts_allowed == 0 or attempt_count < quiz.attempts_allowed),
+                "attempts_remaining": (
+                    None
+                    if quiz.attempts_allowed == 0
+                    else max(0, quiz.attempts_allowed - attempt_count)
+                ),
+            }
+        )
 
     return templates.TemplateResponse(
         "quizzes.html",
@@ -62,7 +64,9 @@ async def list_quizzes(request: Request, student: OnboardedStudent, session: Cur
 
 
 @router.get("/quiz/{quiz_id}", response_class=HTMLResponse)
-async def quiz_form(request: Request, quiz_id: str, student: OnboardedStudent, session: CurrentSession):
+async def quiz_form(
+    request: Request, quiz_id: str, student: OnboardedStudent, session: CurrentSession
+):
     """
     Display a quiz form for the student to take.
     """
@@ -136,7 +140,8 @@ async def quiz_form(request: Request, quiz_id: str, student: OnboardedStudent, s
             "quiz": quiz,
             "attempt_number": attempt_count + 1,
             "attempts_remaining": (
-                None if quiz_meta.attempts_allowed == 0
+                None
+                if quiz_meta.attempts_allowed == 0
                 else quiz_meta.attempts_allowed - attempt_count
             ),
             "is_admin": admin_flag,
@@ -145,7 +150,9 @@ async def quiz_form(request: Request, quiz_id: str, student: OnboardedStudent, s
 
 
 @router.post("/quiz/{quiz_id}", response_class=HTMLResponse)
-async def quiz_submit(request: Request, quiz_id: str, student: OnboardedStudent, session: CurrentSession):
+async def quiz_submit(
+    request: Request, quiz_id: str, student: OnboardedStudent, session: CurrentSession
+):
     """
     Submit a quiz for grading.
     """

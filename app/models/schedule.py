@@ -9,7 +9,7 @@ class ScheduleEntry:
 
     session: str  # Date string like "1/23/2026"
     desc: str  # Session description
-    desc_link: str # Description link
+    desc_link: str  # Description link
     notes: str  # Additional notes (can contain newlines)
     slides_link: str  # URL to slides (optional)
     recording_link: str  # URL to recording (optional)

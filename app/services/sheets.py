@@ -282,7 +282,9 @@ class SheetsClient:
 
             submissions = []
             for record in records:
-                if str(record.get("student_id")) == str(student_id) and str(record.get("quiz_id", "")) == str(quiz_id):
+                if str(record.get("student_id")) == str(student_id) and str(
+                    record.get("quiz_id", "")
+                ) == str(quiz_id):
                     submissions.append(QuizSubmission.from_row(record))
 
             return submissions
@@ -346,7 +348,9 @@ class SheetsClient:
             invalidate("submissions")
             invalidate("all_submissions")
 
-            logger.info("Appended quiz submission: %s/%s", data.get("student_id"), data.get("quiz_id"))
+            logger.info(
+                "Appended quiz submission: %s/%s", data.get("student_id"), data.get("quiz_id")
+            )
             return True
         except Exception as e:
             logger.error("Failed to append quiz submission: %s", e)

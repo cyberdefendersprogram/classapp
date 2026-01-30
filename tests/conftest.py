@@ -49,5 +49,6 @@ def mock_email():
     """Mock the email sending function."""
     with patch("app.services.email.send_magic_link_email") as mock:
         from app.services.email import EmailResult
+
         mock.return_value = EmailResult(success=True, message_id="test-123")
         yield mock

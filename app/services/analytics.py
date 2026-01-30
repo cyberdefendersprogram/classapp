@@ -118,11 +118,7 @@ def compute_quiz_analytics(
                         option_dist[answer] += 1
 
         # Calculate correct percentage
-        correct_pct = (
-            (correct_count / completed_students * 100)
-            if completed_students > 0
-            else 0.0
-        )
+        correct_pct = (correct_count / completed_students * 100) if completed_students > 0 else 0.0
 
         question_stats.append(
             QuestionStats(

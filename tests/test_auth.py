@@ -80,9 +80,7 @@ class TestRequestMagicLink:
 
     @patch("app.routers.auth.send_magic_link_email")
     @patch("app.routers.auth.get_sheets_client")
-    def test_request_link_same_response_for_unknown_email(
-        self, mock_sheets, mock_email, client
-    ):
+    def test_request_link_same_response_for_unknown_email(self, mock_sheets, mock_email, client):
         """Unknown emails get same response to prevent enumeration."""
         mock_sheets.return_value.append_magic_link_request.return_value = True
         mock_email.return_value = EmailResult(success=True)

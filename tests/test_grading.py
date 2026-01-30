@@ -1,6 +1,5 @@
 """Tests for quiz grading service."""
 
-
 from app.models.quiz import Question, Quiz
 from app.services.grading import grade_question, grade_quiz
 

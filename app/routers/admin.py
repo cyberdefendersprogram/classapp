@@ -47,9 +47,7 @@ async def analytics_overview(request: Request, session: AdminSession):
         else:
             avg_score = 0.0
 
-        completion_rate = (
-            (unique_students / total_students * 100) if total_students > 0 else 0.0
-        )
+        completion_rate = (unique_students / total_students * 100) if total_students > 0 else 0.0
 
         quiz_summaries.append(
             {

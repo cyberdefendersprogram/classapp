@@ -65,9 +65,11 @@ def sheets_client(mock_gspread, mock_credentials, mock_sa_file):
     """Create a SheetsClient with mocked dependencies."""
     # Reset the singleton
     import app.services.sheets as sheets_module
+
     sheets_module._sheets_client = None
 
     from app.services.sheets import SheetsClient
+
     return SheetsClient()
 
 
@@ -200,7 +202,10 @@ class TestSheetsClientRoster:
             },
         ]
         mock_worksheet.row_values.return_value = [
-            "student_id", "full_name", "preferred_email", "claimed_at",
+            "student_id",
+            "full_name",
+            "preferred_email",
+            "claimed_at",
         ]
 
         result = sheets_client.claim_student("stu_001", "alice@example.com")
@@ -271,8 +276,16 @@ class TestSheetsClientQuizzes:
     def test_append_quiz_submission(self, sheets_client, mock_worksheet):
         """Test appending a quiz submission."""
         mock_worksheet.row_values.return_value = [
-            "submitted_at", "quiz_id", "attempt", "student_id", "email",
-            "answers_json", "score", "max_score", "autograde_json", "source",
+            "submitted_at",
+            "quiz_id",
+            "attempt",
+            "student_id",
+            "email",
+            "answers_json",
+            "score",
+            "max_score",
+            "autograde_json",
+            "source",
         ]
 
         data = {

@@ -154,6 +154,7 @@ async def schedule_page(request: Request, student: OnboardedStudent, session: Cu
         },
     )
 
+
 # Map class IDs to markdown files on disk
 CLASS_CONTENT_PATHS = {
     "1": "content/notes/001-intro.md",
@@ -199,8 +200,7 @@ async def class_page(request: Request, id: str, student: OnboardedStudent, sessi
     try:
         markdown_text = file_path.read_text(encoding="utf-8")
         html_content = markdown.markdown(
-                markdown_text,
-                extensions=["fenced_code", "tables", "toc", "codehilite"]
+            markdown_text, extensions=["fenced_code", "tables", "toc", "codehilite"]
         )
     except Exception as e:
         logger.exception("Failed reading class content %s: %s", id, e)

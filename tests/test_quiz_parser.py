@@ -1,6 +1,5 @@
 """Tests for quiz markdown parser."""
 
-
 from app.services.quiz_parser import parse_quiz_content
 
 

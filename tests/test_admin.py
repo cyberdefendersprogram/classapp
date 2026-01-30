@@ -113,9 +113,7 @@ class TestAdminAccessControl:
 
     @patch("app.routers.admin.get_sheets_client")
     @patch("app.dependencies.get_sheets_client")
-    def test_admin_email_case_insensitive(
-        self, mock_dep_sheets, mock_router_sheets, client
-    ):
+    def test_admin_email_case_insensitive(self, mock_dep_sheets, mock_router_sheets, client):
         """Admin email check is case insensitive."""
         mock_dep_sheets.return_value.get_config.return_value = "Admin@Example.com"
 
@@ -161,9 +159,7 @@ class TestAnalyticsOverview:
 
     @patch("app.routers.admin.get_sheets_client")
     @patch("app.dependencies.get_sheets_client")
-    def test_calculates_completion_rate(
-        self, mock_dep_sheets, mock_router_sheets, client
-    ):
+    def test_calculates_completion_rate(self, mock_dep_sheets, mock_router_sheets, client):
         """Analytics overview calculates completion rate."""
         mock_dep_sheets.return_value.get_config.return_value = "admin@example.com"
 
@@ -194,9 +190,7 @@ class TestQuizAnalytics:
 
     @patch("app.routers.admin.get_sheets_client")
     @patch("app.dependencies.get_sheets_client")
-    def test_quiz_not_found_returns_404(
-        self, mock_dep_sheets, mock_router_sheets, client
-    ):
+    def test_quiz_not_found_returns_404(self, mock_dep_sheets, mock_router_sheets, client):
         """Non-existent quiz returns 404."""
         mock_dep_sheets.return_value.get_config.return_value = "admin@example.com"
         mock_router_sheets.return_value.get_quiz_by_id.return_value = None
@@ -235,9 +229,7 @@ class TestQuizAnalytics:
     @patch("app.routers.admin.get_parsed_quiz")
     @patch("app.routers.admin.get_sheets_client")
     @patch("app.dependencies.get_sheets_client")
-    def test_shows_quiz_analytics(
-        self, mock_dep_sheets, mock_router_sheets, mock_parser, client
-    ):
+    def test_shows_quiz_analytics(self, mock_dep_sheets, mock_router_sheets, mock_parser, client):
         """Quiz analytics page shows statistics."""
         from app.models.quiz import Question, Quiz
 
@@ -423,9 +415,7 @@ class TestGradingCSV:
 
     @patch("app.routers.admin.get_sheets_client")
     @patch("app.dependencies.get_sheets_client")
-    def test_csv_returns_correct_content_type(
-        self, mock_dep_sheets, mock_router_sheets, client
-    ):
+    def test_csv_returns_correct_content_type(self, mock_dep_sheets, mock_router_sheets, client):
         """CSV download returns correct content type."""
         mock_dep_sheets.return_value.get_config.return_value = "admin@example.com"
 
@@ -465,9 +455,7 @@ class TestGradingCSV:
                 return [make_submission("stu_001", "q001", 8)]
             return []
 
-        mock_router_sheets.return_value.get_all_quiz_submissions.side_effect = (
-            mock_submissions
-        )
+        mock_router_sheets.return_value.get_all_quiz_submissions.side_effect = mock_submissions
 
         token = create_session_token("admin@example.com", "stu_admin")
 

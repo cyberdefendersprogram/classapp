@@ -136,9 +136,7 @@ class TestOnboardingSubmit:
         assert "/home" in response.headers["location"]
 
     @patch("app.routers.onboarding.get_sheets_client")
-    def test_onboarding_update_failure(
-        self, mock_sheets, client, auth_token, claimed_entry
-    ):
+    def test_onboarding_update_failure(self, mock_sheets, client, auth_token, claimed_entry):
         """Update failure shows error."""
         sheets = MagicMock()
         sheets.get_roster_by_id.return_value = claimed_entry

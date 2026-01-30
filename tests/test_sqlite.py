@@ -27,9 +27,7 @@ def test_init_db_creates_tables(temp_db):
     init_db()
 
     with get_db() as db:
-        cursor = db.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
-        )
+        cursor = db.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
         tables = [row["name"] for row in cursor.fetchall()]
 
     assert "magic_tokens" in tables
@@ -95,9 +93,7 @@ def test_get_db_rolls_back_on_error(temp_db):
 
     # Verify data was rolled back
     with get_db() as db:
-        cursor = db.execute(
-            "SELECT * FROM rate_limits WHERE key = ?", ("rollback_test",)
-        )
+        cursor = db.execute("SELECT * FROM rate_limits WHERE key = ?", ("rollback_test",))
         assert cursor.fetchone() is None
 
 
@@ -112,7 +108,13 @@ def test_magic_tokens_table_schema(temp_db):
             INSERT INTO magic_tokens (token_hash, email, created_at, expires_at, status)
             VALUES (?, ?, ?, ?, ?)
             """,
-            ("hash123", "test@example.com", "2025-01-01T00:00:00", "2025-01-01T00:15:00", "pending"),
+            (
+                "hash123",
+                "test@example.com",
+                "2025-01-01T00:00:00",
+                "2025-01-01T00:15:00",
+                "pending",
+            ),
         )
 
         cursor = db.execute("SELECT * FROM magic_tokens WHERE token_hash = ?", ("hash123",))
@@ -135,5 +137,11 @@ def test_magic_tokens_status_constraint(temp_db):
                 INSERT INTO magic_tokens (token_hash, email, created_at, expires_at, status)
                 VALUES (?, ?, ?, ?, ?)
                 """,
-                ("hash456", "test@example.com", "2025-01-01T00:00:00", "2025-01-01T00:15:00", "invalid_status"),
+                (
+                    "hash456",
+                    "test@example.com",
+                    "2025-01-01T00:00:00",
+                    "2025-01-01T00:15:00",
+                    "invalid_status",
+                ),
             )
