@@ -1,12 +1,13 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse, RedirectResponse
 
 from app.config import settings
 from app.db.sqlite import init_db
 from app.routers import admin, auth, claim, health, onboarding, pages, quizzes
+from app.services.sessions import COOKIE_NAME
 
 # Configure logging
 logging.basicConfig(
@@ -44,6 +45,23 @@ app.include_router(onboarding.router)
 app.include_router(pages.router)
 app.include_router(quizzes.router)
 app.include_router(admin.router)
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """Handle HTTP exceptions with appropriate responses."""
+    if exc.status_code == 401:
+        # Redirect to login and clear session cookie
+        response = RedirectResponse(url="/", status_code=302)
+        response.delete_cookie(COOKIE_NAME)
+        logger.info("Redirecting unauthenticated request to login: %s", request.url.path)
+        return response
+
+    # For other HTTP exceptions, return JSON
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+    )
 
 
 @app.exception_handler(Exception)

@@ -63,10 +63,11 @@ def make_roster_entry(student_id: str, full_name: str, email: str = None) -> Ros
 class TestAdminAccessControl:
     """Tests for admin access control."""
 
-    def test_unauthenticated_returns_401(self, client):
-        """Unauthenticated user gets 401."""
-        response = client.get("/admin/analytics")
-        assert response.status_code == 401
+    def test_unauthenticated_redirects_to_login(self, client):
+        """Unauthenticated user gets redirected to login."""
+        response = client.get("/admin/analytics", follow_redirects=False)
+        assert response.status_code == 302
+        assert response.headers["location"] == "/"
 
     @patch("app.dependencies.get_sheets_client")
     def test_non_admin_returns_403(self, mock_sheets, client):
@@ -273,10 +274,11 @@ class TestQuizAnalytics:
 class TestGradingPage:
     """Tests for grading page."""
 
-    def test_unauthenticated_returns_401(self, client):
-        """Unauthenticated user gets 401."""
-        response = client.get("/admin/grading")
-        assert response.status_code == 401
+    def test_unauthenticated_redirects_to_login(self, client):
+        """Unauthenticated user gets redirected to login."""
+        response = client.get("/admin/grading", follow_redirects=False)
+        assert response.status_code == 302
+        assert response.headers["location"] == "/"
 
     @patch("app.dependencies.get_sheets_client")
     def test_non_admin_returns_403(self, mock_sheets, client):
@@ -395,10 +397,11 @@ class TestGradingPage:
 class TestGradingCSV:
     """Tests for grading CSV download."""
 
-    def test_unauthenticated_returns_401(self, client):
-        """Unauthenticated user gets 401."""
-        response = client.get("/admin/grading/csv")
-        assert response.status_code == 401
+    def test_unauthenticated_redirects_to_login(self, client):
+        """Unauthenticated user gets redirected to login."""
+        response = client.get("/admin/grading/csv", follow_redirects=False)
+        assert response.status_code == 302
+        assert response.headers["location"] == "/"
 
     @patch("app.dependencies.get_sheets_client")
     def test_non_admin_returns_403(self, mock_sheets, client):

@@ -57,9 +57,10 @@ class TestOnboardingForm:
     """Tests for onboarding form page."""
 
     def test_onboarding_requires_auth(self, client):
-        """Unauthenticated users get 401."""
-        response = client.get("/onboarding")
-        assert response.status_code == 401
+        """Unauthenticated users get redirected to login."""
+        response = client.get("/onboarding", follow_redirects=False)
+        assert response.status_code == 302
+        assert response.headers["location"] == "/"
 
     @patch("app.routers.onboarding.get_sheets_client")
     def test_onboarding_form_renders(self, mock_sheets, client, auth_token, claimed_entry):
@@ -155,9 +156,11 @@ class TestOnboardingSubmit:
         assert "error" in response.text.lower()
 
     def test_onboarding_requires_auth(self, client):
-        """Unauthenticated submission returns 401."""
+        """Unauthenticated submission redirects to login."""
         response = client.post(
             "/onboarding",
             data={"preferred_name": "Test"},
+            follow_redirects=False,
         )
-        assert response.status_code == 401
+        assert response.status_code == 302
+        assert response.headers["location"] == "/"
