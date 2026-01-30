@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from app.models.quiz import QuizMeta, QuizSubmission, Question, Quiz
+from app.models.quiz import Question, Quiz, QuizMeta
 from app.models.roster import RosterEntry
 
 

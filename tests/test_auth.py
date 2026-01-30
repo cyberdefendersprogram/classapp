@@ -1,7 +1,7 @@
 """Tests for authentication routes."""
 
 import uuid
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -113,6 +113,7 @@ class TestVerifyMagicLink:
     def test_valid_token_claimed_user_redirects_to_home(self, mock_sheets, client):
         """Valid token for claimed user redirects to home."""
         from datetime import datetime
+
         from app.models.roster import RosterEntry
         from app.services.tokens import create_magic_token
 

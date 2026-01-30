@@ -4,8 +4,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from app.models.roster import RosterEntry
 from app.models.quiz import QuizMeta
+from app.models.roster import RosterEntry
 from app.services.cache import invalidate_all
 
 

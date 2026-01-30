@@ -7,6 +7,7 @@ from fastapi import APIRouter, Form, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from app.config import settings
+from app.dependencies import templates
 from app.services.email import send_magic_link_email
 from app.services.sessions import (
     COOKIE_NAME,
@@ -16,7 +17,6 @@ from app.services.sessions import (
 )
 from app.services.sheets import get_sheets_client
 from app.services.tokens import check_rate_limit, create_magic_token, validate_magic_token
-from app.dependencies import templates
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

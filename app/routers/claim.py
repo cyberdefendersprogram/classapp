@@ -1,7 +1,6 @@
 """Claim routes for new student account binding."""
 
 import logging
-from datetime import datetime
 
 from fastapi import APIRouter, Form, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse

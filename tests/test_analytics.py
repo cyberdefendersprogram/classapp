@@ -7,7 +7,6 @@ import pytest
 
 from app.models.quiz import Question, Quiz, QuizSubmission
 from app.services.analytics import (
-    QuestionStats,
     QuizAnalytics,
     compute_quiz_analytics,
     get_best_submissions,

@@ -4,8 +4,8 @@ import json
 import logging
 from datetime import datetime
 
-from fastapi import APIRouter, Form, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import APIRouter, Request
+from fastapi.responses import HTMLResponse
 
 from app.dependencies import CurrentSession, OnboardedStudent, is_admin, templates
 from app.services.grading import grade_quiz

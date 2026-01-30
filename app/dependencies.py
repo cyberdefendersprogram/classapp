@@ -4,10 +4,9 @@ import logging
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import Cookie, Depends, HTTPException, Request, status
+from fastapi import Cookie, Depends, HTTPException, status
 from fastapi.templating import Jinja2Templates
 
-from app.config import settings
 from app.models.roster import RosterEntry
 from app.services.sessions import COOKIE_NAME, SessionData, verify_session_token
 from app.services.sheets import get_sheets_client

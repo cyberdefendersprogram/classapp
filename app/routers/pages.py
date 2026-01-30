@@ -2,11 +2,10 @@
 
 import logging
 from pathlib import Path
-import markdown
-from datetime import datetime
 
+import markdown
 from fastapi import APIRouter, Form, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse
 
 from app.dependencies import CurrentSession, OnboardedStudent, is_admin, templates
 from app.services.sheets import get_sheets_client

@@ -6,7 +6,7 @@ from datetime import datetime
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from app.dependencies import CurrentStudent, RequiredSession, templates
+from app.dependencies import RequiredSession, templates
 from app.services.sheets import get_sheets_client
 
 logger = logging.getLogger(__name__)
