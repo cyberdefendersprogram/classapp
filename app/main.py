@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 
 from app.config import settings
 from app.db.sqlite import init_db
-from app.routers import auth, claim, health, onboarding, pages, quizzes
+from app.routers import admin, auth, claim, health, onboarding, pages, quizzes
 
 # Configure logging
 logging.basicConfig(
@@ -43,6 +43,7 @@ app.include_router(claim.router)
 app.include_router(onboarding.router)
 app.include_router(pages.router)
 app.include_router(quizzes.router)
+app.include_router(admin.router)
 
 
 @app.exception_handler(Exception)

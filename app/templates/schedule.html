@@ -8,6 +8,7 @@
     <a href="/schedule">Schedule</a>
     <a href="/quizzes">Quizzes</a>
     <a href="/me">Profile</a>
+    {% if is_admin %}<a href="/admin/analytics">Admin</a>{% endif %}
     <a href="/auth/logout">Sign Out</a>
 </nav>
 
@@ -28,7 +29,13 @@
         {% for entry in schedule %}
             <tr style="border-bottom: 1px solid #eee;">
                 <td style="padding: 0.75rem; vertical-align: top; white-space: nowrap;">{{ entry.session }}</td>
-                <td style="padding: 0.75rem; vertical-align: top;">{{ entry.desc }}</td>
+                <td style="padding: 0.75rem; vertical-align: top;">
+                    {% if entry.desc_link %}
+                    <a href="/class/{{ entry.desc_link }}">{{ entry.desc }}</a>
+                    {% else %}
+                    {{ entry.desc }}
+                    {% endif %}
+                </td>
                 <td style="padding: 0.75rem; vertical-align: top;">{{ entry.notes | replace('\n', '<br>') | safe }}</td>
                 <td style="padding: 0.75rem; vertical-align: top;">
                     {% if entry.slides_link %}

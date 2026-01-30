@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}{{ quiz_meta.title }} Analytics - Admin{% endblock %}
+
+{% block content %}
+<nav class="nav">
+    <a href="/home">Home</a>
+    <a href="/admin/analytics">Analytics</a>
+    <a href="/admin/grading">Grading</a>
+</nav>
+
+<h1>{{ quiz_meta.title }}</h1>
+
+<div class="summary-stats">
+    <div class="stat">
+        <div class="stat-value">{{ analytics.completed_students }}/{{ analytics.total_students }}</div>
+        <div class="stat-label">Students Completed</div>
+    </div>
+    <div class="stat">
+        <div class="stat-value">{{ analytics.completion_rate | round(1) }}%</div>
+        <div class="stat-label">Completion Rate</div>
+    </div>
+    <div class="stat">
+        <div class="stat-value {% if analytics.avg_score >= 70 %}text-green{% elif analytics.avg_score >= 50 %}text-yellow{% else %}text-red{% endif %}">
+            {{ analytics.avg_score | round(1) }}%
+        </div>
+        <div class="stat-label">Average Score</div>
+    </div>
+</div>
+
+<h2>Per-Question Analysis</h2>
+
+{% for qs in analytics.question_stats %}
+<div class="question-card">
+    <div class="question-header">
+        <span class="question-num">Q{{ loop.index }}</span>
+        <span class="question-text">{{ qs.text[:100] }}{% if qs.text|length > 100 %}...{% endif %}</span>
+    </div>
+
+    <div class="correct-rate">
+        <div class="rate-bar-container">
+            <div class="rate-bar {% if qs.correct_pct >= 70 %}bg-green{% elif qs.correct_pct >= 50 %}bg-yellow{% else %}bg-red{% endif %}" style="width: {{ qs.correct_pct }}%"></div>
+        </div>
+        <span class="rate-text {% if qs.correct_pct >= 70 %}text-green{% elif qs.correct_pct >= 50 %}text-yellow{% else %}text-red{% endif %}">
+            {{ qs.correct_pct | round(1) }}% correct ({{ qs.correct_count }}/{{ qs.total_count }})
+        </span>
+    </div>
+
+    {% if qs.option_distribution %}
+    <div class="option-distribution">
+        <div class="dist-label">Answer Distribution:</div>
+        {% set max_count = qs.option_distribution.values() | max if qs.option_distribution.values() | list else 1 %}
+        {% for option, count in qs.option_distribution.items() %}
+        {% set is_correct = (qs.correct_answer == option) or (qs.correct_answer is iterable and qs.correct_answer is not string and option in qs.correct_answer) %}
+        <div class="option-row">
+            <div class="option-label {% if is_correct %}option-correct{% endif %}">
+                {% if is_correct %}<span class="correct-marker">&#10003;</span>{% endif %}
+                {{ option[:50] }}{% if option|length > 50 %}...{% endif %}
+            </div>
+            <div class="option-bar-container">
+                <div class="option-bar {% if is_correct %}bg-green{% else %}bg-gray{% endif %}" style="width: {{ (count / max_count * 100) if max_count > 0 else 0 }}%"></div>
+            </div>
+            <div class="option-count">{{ count }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endfor %}
+
+<div class="mt-3">
+    <a href="/admin/analytics" class="btn btn-secondary">Back to Overview</a>
+</div>
+{% endblock %}
+
+{% block head %}
+<style>
+    .summary-stats {
+        display: flex;
+        gap: 1rem;
+        margin: 1.5rem 0;
+    }
+
+    .stat {
+        flex: 1;
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: #666;
+        margin-top: 0.25rem;
+    }
+
+    .question-card {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .question-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .question-num {
+        background: #007bff;
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+
+    .question-text {
+        color: #333;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .correct-rate {
+        margin-bottom: 0.75rem;
+    }
+
+    .rate-bar-container {
+        height: 8px;
+        background: #e9ecef;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 0.25rem;
+    }
+
+    .rate-bar {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+
+    .rate-text {
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .bg-green { background: #28a745; }
+    .bg-yellow { background: #ffc107; }
+    .bg-red { background: #dc3545; }
+    .bg-gray { background: #6c757d; }
+
+    .text-green { color: #28a745; }
+    .text-yellow { color: #856404; }
+    .text-red { color: #dc3545; }
+
+    .option-distribution {
+        border-top: 1px solid #e9ecef;
+        padding-top: 0.75rem;
+    }
+
+    .dist-label {
+        font-size: 0.75rem;
+        color: #666;
+        margin-bottom: 0.5rem;
+    }
+
+    .option-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.375rem;
+    }
+
+    .option-label {
+        width: 40%;
+        font-size: 0.8rem;
+        color: #333;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .option-correct {
+        font-weight: 600;
+        color: #28a745;
+    }
+
+    .correct-marker {
+        margin-right: 0.25rem;
+    }
+
+    .option-bar-container {
+        flex: 1;
+        height: 12px;
+        background: #e9ecef;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .option-bar {
+        height: 100%;
+        border-radius: 4px;
+        min-width: 2px;
+    }
+
+    .option-count {
+        width: 30px;
+        text-align: right;
+        font-size: 0.8rem;
+        color: #666;
+    }
+
+    @media (max-width: 640px) {
+        .summary-stats {
+            flex-direction: column;
+        }
+
+        .option-label {
+            width: 30%;
+        }
+    }
+</style>
+{% endblock %}

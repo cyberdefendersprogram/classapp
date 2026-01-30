@@ -13,12 +13,15 @@ A lightweight course portal for ~30 students with Google Sheets as the backend.
 - [x] Health check endpoint (`/health`)
 - [x] Google Sheets integration (with caching)
 - [x] Data models (Student, Quiz, QuizSubmission)
+- [x] Magic link authentication
+- [x] Student account claiming
+- [x] Onboarding flow
+- [x] Quiz system with auto-grading
+- [x] Admin analytics dashboard (per-question quiz performance)
+- [x] Admin grading page (spreadsheet view of all student scores)
+- [x] CSV export of grades
 
 ### Planned
-- [ ] Magic link authentication
-- [ ] Student account claiming
-- [ ] Onboarding flow
-- [ ] Quiz system with auto-grading
 - [ ] CI/CD with GitHub Actions
 - [ ] Production deployment to DigitalOcean
 
@@ -177,7 +180,7 @@ GitHub Actions workflow will:
 | GET | `/` | Root endpoint (returns app info) |
 | GET | `/health` | Health check (SQLite + Sheets status) |
 
-### Planned
+### Authentication & User Routes
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -193,6 +196,32 @@ GitHub Actions workflow will:
 | GET | `/quiz/{id}` | Quiz form |
 | POST | `/quiz/{id}` | Submit quiz |
 | GET | `/me` | Profile |
+
+### Admin Routes (requires `admin_email` in Config sheet)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/admin/analytics` | Quiz analytics overview |
+| GET | `/admin/quiz/{id}` | Per-question analytics for a quiz |
+| GET | `/admin/grading` | Grading table (all students x all quizzes) |
+| GET | `/admin/grading/csv` | Download grades as CSV |
+
+## Admin Configuration
+
+The admin dashboard requires setting `admin_email` in the Config sheet of your Google Spreadsheet:
+
+| key | value |
+|-----|-------|
+| admin_email | admin@example.com |
+
+Only the user with this email can access admin pages:
+
+- **Analytics** (`/admin/analytics`) - Quiz completion rates and average scores
+- **Quiz Details** (`/admin/quiz/{id}`) - Per-question analytics with answer distribution
+- **Grading** (`/admin/grading`) - Spreadsheet view of all students' best scores per quiz
+- **CSV Export** (`/admin/grading/csv`) - Download grades as CSV file
+
+Admin users see an "Admin" link in the navigation bar on all pages.
 
 ## Documentation
 

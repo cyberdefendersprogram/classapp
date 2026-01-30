@@ -7,7 +7,7 @@ from datetime import datetime
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from app.dependencies import OnboardedStudent, templates
+from app.dependencies import CurrentSession, OnboardedStudent, is_admin, templates
 from app.services.grading import grade_quiz
 from app.services.quiz_parser import get_parsed_quiz
 from app.services.sheets import get_sheets_client
@@ -17,7 +17,7 @@ router = APIRouter()
 
 
 @router.get("/quizzes", response_class=HTMLResponse)
-async def list_quizzes(request: Request, student: OnboardedStudent):
+async def list_quizzes(request: Request, student: OnboardedStudent, session: CurrentSession):
     """
     List all available quizzes for the student.
     """
@@ -56,16 +56,18 @@ async def list_quizzes(request: Request, student: OnboardedStudent):
             "request": request,
             "student": student,
             "quiz_info": quiz_info,
+            "is_admin": is_admin(session),
         },
     )
 
 
 @router.get("/quiz/{quiz_id}", response_class=HTMLResponse)
-async def quiz_form(request: Request, quiz_id: str, student: OnboardedStudent):
+async def quiz_form(request: Request, quiz_id: str, student: OnboardedStudent, session: CurrentSession):
     """
     Display a quiz form for the student to take.
     """
     sheets = get_sheets_client()
+    admin_flag = is_admin(session)
 
     # Get quiz metadata
     quiz_meta = sheets.get_quiz_by_id(quiz_id)
@@ -76,6 +78,7 @@ async def quiz_form(request: Request, quiz_id: str, student: OnboardedStudent):
                 "request": request,
                 "student": student,
                 "error": "Quiz not found.",
+                "is_admin": admin_flag,
             },
             status_code=404,
         )
@@ -88,6 +91,7 @@ async def quiz_form(request: Request, quiz_id: str, student: OnboardedStudent):
                 "request": request,
                 "student": student,
                 "error": "This quiz is not currently available.",
+                "is_admin": admin_flag,
             },
             status_code=403,
         )
@@ -103,6 +107,7 @@ async def quiz_form(request: Request, quiz_id: str, student: OnboardedStudent):
                 "request": request,
                 "student": student,
                 "error": f"You have used all {quiz_meta.attempts_allowed} attempts for this quiz.",
+                "is_admin": admin_flag,
             },
             status_code=403,
         )
@@ -117,6 +122,7 @@ async def quiz_form(request: Request, quiz_id: str, student: OnboardedStudent):
                 "request": request,
                 "student": student,
                 "error": "Quiz content could not be loaded.",
+                "is_admin": admin_flag,
             },
             status_code=500,
         )
@@ -133,16 +139,18 @@ async def quiz_form(request: Request, quiz_id: str, student: OnboardedStudent):
                 None if quiz_meta.attempts_allowed == 0
                 else quiz_meta.attempts_allowed - attempt_count
             ),
+            "is_admin": admin_flag,
         },
     )
 
 
 @router.post("/quiz/{quiz_id}", response_class=HTMLResponse)
-async def quiz_submit(request: Request, quiz_id: str, student: OnboardedStudent):
+async def quiz_submit(request: Request, quiz_id: str, student: OnboardedStudent, session: CurrentSession):
     """
     Submit a quiz for grading.
     """
     sheets = get_sheets_client()
+    admin_flag = is_admin(session)
 
     # Get quiz metadata
     quiz_meta = sheets.get_quiz_by_id(quiz_id)
@@ -153,6 +161,7 @@ async def quiz_submit(request: Request, quiz_id: str, student: OnboardedStudent)
                 "request": request,
                 "student": student,
                 "error": "Quiz not found.",
+                "is_admin": admin_flag,
             },
             status_code=404,
         )
@@ -165,6 +174,7 @@ async def quiz_submit(request: Request, quiz_id: str, student: OnboardedStudent)
                 "request": request,
                 "student": student,
                 "error": "This quiz is no longer available for submission.",
+                "is_admin": admin_flag,
             },
             status_code=403,
         )
@@ -180,6 +190,7 @@ async def quiz_submit(request: Request, quiz_id: str, student: OnboardedStudent)
                 "request": request,
                 "student": student,
                 "error": "You have no attempts remaining for this quiz.",
+                "is_admin": admin_flag,
             },
             status_code=403,
         )
@@ -193,6 +204,7 @@ async def quiz_submit(request: Request, quiz_id: str, student: OnboardedStudent)
                 "request": request,
                 "student": student,
                 "error": "Quiz content could not be loaded.",
+                "is_admin": admin_flag,
             },
             status_code=500,
         )
@@ -250,5 +262,6 @@ async def quiz_submit(request: Request, quiz_id: str, student: OnboardedStudent)
             "answers": answers,
             "result": result,
             "attempt_number": attempt_count + 1,
+            "is_admin": admin_flag,
         },
     )

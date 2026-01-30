@@ -9,6 +9,7 @@ class ScheduleEntry:
 
     session: str  # Date string like "1/23/2026"
     desc: str  # Session description
+    desc_link: str # Description link
     notes: str  # Additional notes (can contain newlines)
     slides_link: str  # URL to slides (optional)
     recording_link: str  # URL to recording (optional)
@@ -19,6 +20,7 @@ class ScheduleEntry:
         return cls(
             session=row.get("session", ""),
             desc=row.get("desc", ""),
+            desc_link=row.get("desc_link", ""),
             notes=row.get("notes", ""),
             slides_link=row.get("slides_link", ""),
             recording_link=row.get("recording_link", ""),

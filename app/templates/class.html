@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<nav class="nav">
+    <a href="/home">Home</a>
+    <a href="/schedule">Schedule</a>
+    <a href="/quizzes">Quizzes</a>
+    <a href="/me">Profile</a>
+    {% if is_admin %}<a href="/admin/analytics">Admin</a>{% endif %}
+    <a href="/auth/logout">Sign Out</a>
+</nav>
+
+<h1>{{ title }}</h1>
+
+{% if content %}
+<div class="class-content" style="margin-top: 1rem;">
+    <div class="markdown-body">
+        {{ content | safe }}
+    </div>
+</div>
+{% else %}
+<p class="text-muted">No content available.</p>
+{% endif %}
+
+<div class="mt-3">
+    <a href="/home" class="btn btn-outline">Back to Home</a>
+</div>
+{% endblock %}

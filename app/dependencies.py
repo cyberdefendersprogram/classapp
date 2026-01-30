@@ -86,8 +86,42 @@ def require_onboarded(
     return student
 
 
+def require_admin(
+    session: Annotated[SessionData, Depends(require_session)],
+) -> SessionData:
+    """
+    Require admin access.
+
+    Raises 403 if user is not the admin.
+    """
+    sheets = get_sheets_client()
+    admin_email = sheets.get_config("admin_email")
+
+    if not admin_email or session.email.lower() != admin_email.lower():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
+        )
+    return session
+
+
 # Type aliases for cleaner dependency injection
 CurrentSession = Annotated[SessionData | None, Depends(get_current_session)]
 RequiredSession = Annotated[SessionData, Depends(require_session)]
 CurrentStudent = Annotated[RosterEntry, Depends(get_current_student)]
 OnboardedStudent = Annotated[RosterEntry, Depends(require_onboarded)]
+AdminSession = Annotated[SessionData, Depends(require_admin)]
+
+
+def is_admin(session: SessionData | None) -> bool:
+    """Check if session belongs to admin user."""
+    if not session:
+        return False
+
+    sheets = get_sheets_client()
+    admin_email = sheets.get_config("admin_email")
+
+    if not admin_email:
+        return False
+
+    return session.email.lower() == admin_email.lower()

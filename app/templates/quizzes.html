@@ -8,6 +8,7 @@
     <a href="/schedule">Schedule</a>
     <a href="/quizzes">Quizzes</a>
     <a href="/me">Profile</a>
+    {% if is_admin %}<a href="/admin/analytics">Admin</a>{% endif %}
     <a href="/auth/logout">Sign Out</a>
 </nav>
 

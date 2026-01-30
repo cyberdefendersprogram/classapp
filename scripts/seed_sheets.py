@@ -102,11 +102,12 @@ SHEET_STRUCTURES = {
 
 # Default config values
 DEFAULT_CONFIG = {
-    "course_title": "Security 101",
+    "course_title": "CIS 55",
     "term": "Spring 2025",
     "magic_link_ttl_minutes": "15",
     "rate_limit_per_email_15m": "3",
     "onboarding_form_version": "v1",
+    "admin_email": "",  # Set manually in sheet
 }
 
 # Test quiz data
@@ -183,9 +184,42 @@ def create_structure(spreadsheet: gspread.Spreadsheet) -> None:
     print("Structure creation complete!")
 
 
+def fix_config_headers(spreadsheet: gspread.Spreadsheet) -> None:
+    """Fix Config sheet by adding header row if missing."""
+    print("  Checking Config sheet headers...")
+    worksheet = spreadsheet.worksheet("Config")
+
+    # Get the first row
+    first_row = worksheet.row_values(1)
+
+    # Check if headers are correct
+    if first_row and first_row[0] == "key" and len(first_row) > 1 and first_row[1] == "value":
+        print("    Config headers are correct")
+        return
+
+    # Headers are missing or wrong - need to insert header row
+    print("    Config headers missing, adding header row...")
+
+    # Get all current data
+    all_data = worksheet.get_all_values()
+
+    # Clear and rewrite with headers
+    worksheet.clear()
+    worksheet.update("A1", [["key", "value"]] + all_data)
+
+    # Format header row (bold)
+    worksheet.format("A1:B1", {"textFormat": {"bold": True}})
+
+    print("    Added header row to Config sheet")
+
+
 def seed_config(spreadsheet: gspread.Spreadsheet) -> None:
     """Seed the Config sheet with default values."""
     print("  Seeding Config...")
+
+    # First fix headers if needed
+    fix_config_headers(spreadsheet)
+
     worksheet = spreadsheet.worksheet("Config")
 
     # Check if already has data

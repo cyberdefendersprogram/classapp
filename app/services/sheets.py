@@ -282,12 +282,54 @@ class SheetsClient:
 
             submissions = []
             for record in records:
-                if str(record.get("student_id")) == str(student_id) and record.get("quiz_id") == quiz_id:
+                if str(record.get("student_id")) == str(student_id) and str(record.get("quiz_id", "")) == str(quiz_id):
                     submissions.append(QuizSubmission.from_row(record))
 
             return submissions
         except Exception as e:
             logger.error("Failed to get submissions for %s/%s: %s", student_id, quiz_id, e)
+            return []
+
+    @cached(ttl_seconds=CACHE_TTL_SUBMISSIONS, prefix="all_submissions")
+    def get_all_quiz_submissions(self, quiz_id: str) -> list[QuizSubmission]:
+        """Get ALL submissions for a quiz (all students)."""
+        try:
+            worksheet = self._get_worksheet("Quiz_Submissions")
+            records = worksheet.get_all_records()
+
+            submissions = []
+            for record in records:
+                if str(record.get("quiz_id", "")) == str(quiz_id):
+                    submissions.append(QuizSubmission.from_row(record))
+
+            return submissions
+        except Exception as e:
+            logger.error("Failed to get all submissions for quiz %s: %s", quiz_id, e)
+            return []
+
+    @cached(ttl_seconds=CACHE_TTL_ROSTER, prefix="roster_count")
+    def get_roster_count(self) -> int:
+        """Get total number of students in roster."""
+        try:
+            worksheet = self._get_worksheet("Roster")
+            records = worksheet.get_all_records()
+
+            # Count only rows with a student_id
+            return sum(1 for r in records if r.get("student_id"))
+        except Exception as e:
+            logger.error("Failed to get roster count: %s", e)
+            return 0
+
+    @cached(ttl_seconds=CACHE_TTL_ROSTER, prefix="all_roster")
+    def get_all_roster(self) -> list[RosterEntry]:
+        """Get all roster entries."""
+        try:
+            worksheet = self._get_worksheet("Roster")
+            records = worksheet.get_all_records()
+
+            return [RosterEntry.from_row(r) for r in records if r.get("student_id")]
+        except Exception as e:
+            logger.error("Failed to get all roster: %s", e)
             return []
 
     def append_quiz_submission(self, data: dict) -> bool:
@@ -302,6 +344,7 @@ class SheetsClient:
 
             # Invalidate submissions cache
             invalidate("submissions")
+            invalidate("all_submissions")
 
             logger.info("Appended quiz submission: %s/%s", data.get("student_id"), data.get("quiz_id"))
             return True

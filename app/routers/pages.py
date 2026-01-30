@@ -1,12 +1,14 @@
 """General page routes for authenticated users."""
 
 import logging
+from pathlib import Path
+import markdown
 from datetime import datetime
 
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from app.dependencies import OnboardedStudent, templates
+from app.dependencies import CurrentSession, OnboardedStudent, is_admin, templates
 from app.services.sheets import get_sheets_client
 
 logger = logging.getLogger(__name__)
@@ -14,7 +16,7 @@ router = APIRouter()
 
 
 @router.get("/home", response_class=HTMLResponse)
-async def home_page(request: Request, student: OnboardedStudent):
+async def home_page(request: Request, student: OnboardedStudent, session: CurrentSession):
     """
     Render the home/dashboard page.
 
@@ -33,12 +35,13 @@ async def home_page(request: Request, student: OnboardedStudent):
             "student": student,
             "course_title": course_title,
             "term": term,
+            "is_admin": is_admin(session),
         },
     )
 
 
 @router.get("/me", response_class=HTMLResponse)
-async def profile_page(request: Request, student: OnboardedStudent):
+async def profile_page(request: Request, student: OnboardedStudent, session: CurrentSession):
     """
     Render the profile page with edit form.
 
@@ -51,6 +54,7 @@ async def profile_page(request: Request, student: OnboardedStudent):
             "student": student,
             "success": None,
             "error": None,
+            "is_admin": is_admin(session),
         },
     )
 
@@ -59,6 +63,7 @@ async def profile_page(request: Request, student: OnboardedStudent):
 async def profile_update(
     request: Request,
     student: OnboardedStudent,
+    session: CurrentSession,
     preferred_name: str = Form(""),
     preferred_name_phonetic: str = Form(""),
     preferred_pronoun: str = Form(""),
@@ -107,6 +112,7 @@ async def profile_update(
                 "student": updated_student,
                 "success": "Profile updated successfully.",
                 "error": None,
+                "is_admin": is_admin(session),
             },
         )
     else:
@@ -118,12 +124,13 @@ async def profile_update(
                 "student": updated_student,
                 "success": None,
                 "error": "An error occurred. Please try again.",
+                "is_admin": is_admin(session),
             },
         )
 
 
 @router.get("/schedule", response_class=HTMLResponse)
-async def schedule_page(request: Request, student: OnboardedStudent):
+async def schedule_page(request: Request, student: OnboardedStudent, session: CurrentSession):
     """
     Render the class schedule page.
 
@@ -144,5 +151,79 @@ async def schedule_page(request: Request, student: OnboardedStudent):
             "student": student,
             "schedule": schedule,
             "course_title": course_title,
+            "is_admin": is_admin(session),
+        },
+    )
+
+# Map class IDs to markdown files on disk
+CLASS_CONTENT_PATHS = {
+    "1": "content/notes/001-intro.md",
+    "2": "content/notes/002-ethics-ir-and-crypto.md",
+}
+
+
+@router.get("/class/{id}", response_class=HTMLResponse)
+async def class_page(request: Request, id: str, student: OnboardedStudent, session: CurrentSession):
+    """
+    Render lecture/class content page from markdown file on disk.
+    """
+    content_path = CLASS_CONTENT_PATHS.get(id)
+    if not content_path:
+        return templates.TemplateResponse(
+            "class.html",
+            {
+                "request": request,
+                "student": student,
+                "title": "Class Not Found",
+                "content": "<p>Lecture not found.</p>",
+                "is_admin": is_admin(session),
+            },
+            status_code=404,
+        )
+
+    base_path = Path(__file__).parent.parent.parent  # project root
+    file_path = base_path / content_path
+
+    if not file_path.exists():
+        return templates.TemplateResponse(
+            "class.html",
+            {
+                "request": request,
+                "student": student,
+                "title": "Content Missing",
+                "content": "<p>Lecture file missing on server.</p>",
+                "is_admin": is_admin(session),
+            },
+            status_code=500,
+        )
+
+    try:
+        markdown_text = file_path.read_text(encoding="utf-8")
+        html_content = markdown.markdown(
+                markdown_text,
+                extensions=["fenced_code", "tables", "toc", "codehilite"]
+        )
+    except Exception as e:
+        logger.exception("Failed reading class content %s: %s", id, e)
+        return templates.TemplateResponse(
+            "class.html",
+            {
+                "request": request,
+                "student": student,
+                "title": "Error",
+                "content": "<p>Error loading lecture content.</p>",
+                "is_admin": is_admin(session),
+            },
+            status_code=500,
+        )
+
+    return templates.TemplateResponse(
+        "class.html",
+        {
+            "request": request,
+            "student": student,
+            "title": id.replace("-", " ").title(),
+            "content": html_content,
+            "is_admin": is_admin(session),
         },
     )

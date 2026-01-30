@@ -21,7 +21,8 @@ classapp/
 │   │   ├── quizzes.py          # Quiz list and submission
 │   │   ├── schedule.py         # Class schedule
 │   │   ├── pages.py            # Home, profile pages
-│   │   └── health.py           # Health check
+│   │   ├── health.py           # Health check
+│   │   └── admin.py            # Admin analytics and grading
 │   ├── services/
 │   │   ├── __init__.py
 │   │   ├── sheets.py           # Google Sheets client
@@ -29,7 +30,8 @@ classapp/
 │   │   ├── tokens.py           # Magic token logic
 │   │   ├── sessions.py         # JWT session handling
 │   │   ├── cache.py            # In-memory TTL cache
-│   │   └── grading.py          # Quiz auto-grader
+│   │   ├── grading.py          # Quiz auto-grader
+│   │   └── analytics.py        # Quiz analytics computation
 │   ├── models/
 │   │   ├── __init__.py
 │   │   ├── roster.py           # RosterEntry dataclass
@@ -48,7 +50,11 @@ classapp/
 │       ├── quizzes.html
 │       ├── quiz.html
 │       ├── schedule.html
-│       └── me.html
+│       ├── me.html
+│       ├── error.html
+│       ├── admin_analytics.html
+│       ├── admin_quiz_analytics.html
+│       └── admin_grading.html
 ├── content/
 │   └── quizzes/                # Quiz markdown files
 │       └── 001-sample.md
@@ -64,7 +70,9 @@ classapp/
 │   ├── test_quiz_parser.py
 │   ├── test_grading.py
 │   ├── test_quizzes.py
-│   └── test_schedule.py
+│   ├── test_schedule.py
+│   ├── test_admin.py
+│   └── test_analytics.py
 ├── scripts/
 │   ├── provision.sh            # Droplet setup
 │   └── seed_sheets.py          # Test data seeder
@@ -1229,6 +1237,94 @@ server {
 
 ---
 
+## Phase 9: Admin Grading
+
+**Goal**: Grading page showing each student's best score per quiz in a spreadsheet-like table with CSV export.
+
+### 9.1 Tasks
+
+- [x] Add `get_all_roster()` method to `sheets.py`
+- [x] Add `is_admin()` helper to `dependencies.py`
+- [x] Add grading routes to `admin.py`
+- [x] Create `admin_grading.html` template
+- [x] Add "Grading" link to admin nav
+- [x] Add conditional "Admin" link to student-facing pages
+- [x] Update student routes to pass `is_admin` context
+- [x] Add grading tests
+
+### 9.2 Files Modified
+
+**app/services/sheets.py**
+- Added `get_all_roster()` - returns all roster entries
+- Fixed type comparison in `get_all_quiz_submissions()` and `get_quiz_submissions()` (convert quiz_id to string)
+- Added `all_submissions` cache invalidation in `append_quiz_submission()`
+
+**app/dependencies.py**
+- Added `is_admin(session)` helper function
+
+**app/routers/admin.py**
+- Added `_build_grade_table()` helper function
+- Added `GET /admin/grading` - HTML grading table
+- Added `GET /admin/grading/csv` - CSV download
+
+**app/templates/admin_grading.html** (new)
+- Spreadsheet-like table: Students as rows, quizzes as columns
+- Shows best score per student per quiz (0 if no submission)
+- CSV download button
+- Sticky first column for student names
+
+**app/templates/admin_analytics.html**
+- Added "Grading" link to nav
+
+**app/templates/admin_quiz_analytics.html**
+- Added "Grading" link to nav
+
+**Student-facing templates** (7 files)
+- home.html, schedule.html, quizzes.html, quiz.html, quiz_result.html, me.html, error.html
+- Added conditional `{% if is_admin %}<a href="/admin/analytics">Admin</a>{% endif %}`
+
+**app/routers/pages.py**
+- Updated home, me, schedule routes to pass `is_admin` context
+
+**app/routers/quizzes.py**
+- Updated list_quizzes, quiz_form, quiz_submit routes to pass `is_admin` context
+
+**tests/test_admin.py**
+- Added `TestGradingPage` class with access control and data display tests
+- Added `TestGradingCSV` class with CSV format tests
+
+### 9.3 Data Flow
+
+```
+GET /admin/grading
+    |
+    v
+require_admin dependency
+    |
+    v
+_build_grade_table()
+    - quizzes = get_quizzes()
+    - roster = get_all_roster()
+    - For each quiz: submissions = get_all_quiz_submissions(quiz_id)
+    - For each student/quiz: find best score or 0
+    |
+    v
+Render template (HTML) or StreamingResponse (CSV)
+```
+
+### 9.4 Verification
+
+1. Login as admin
+2. Navigate to `/home` - should see "Admin" link in nav
+3. Click Admin → see analytics page with "Grading" link
+4. Click Grading → see grade table with all students and quizzes
+5. Click "Download CSV" → downloads CSV file with correct data
+6. Login as non-admin
+7. Navigate to `/home` - should NOT see "Admin" link
+8. Navigate directly to `/admin/grading` - should get 403
+
+---
+
 ## Milestones
 
 | # | Milestone | Phases | Deliverable |
@@ -1239,6 +1335,7 @@ server {
 | M4 | Complete | 5-6 | Onboarding + quizzes work |
 | M5 | Polished | 7 | UI complete, mobile-ready |
 | M6 | Live | 8 | Deployed with TLS |
+| M7 | Admin | 9 | Grading page with CSV export |
 
 ---
 
