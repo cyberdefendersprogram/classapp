@@ -4,6 +4,7 @@ from datetime import datetime
 
 from app.models.quiz import Question, Quiz, QuizMeta
 from app.models.roster import RosterEntry
+from app.models.schedule import ScheduleEntry
 
 
 class TestRosterEntry:
@@ -222,3 +223,148 @@ class TestQuiz:
         )
 
         assert quiz.total_points == 10
+
+
+class TestScheduleEntry:
+    """Tests for ScheduleEntry model."""
+
+    def test_class_number_standard_format(self):
+        """Test class_number extraction from standard format '1 - Title'."""
+        entry = ScheduleEntry(
+            session="1/23/2026",
+            desc="1 - Introduction",
+            desc_link="content/notes/001-intro.md",
+            notes="",
+            slides_link="",
+            recording_link="",
+        )
+        assert entry.class_number == "1"
+
+    def test_class_number_double_digit(self):
+        """Test class_number extraction for double digit numbers."""
+        entry = ScheduleEntry(
+            session="3/6/2026",
+            desc="12 - Advanced Topics",
+            desc_link="content/notes/012-advanced.md",
+            notes="",
+            slides_link="",
+            recording_link="",
+        )
+        assert entry.class_number == "12"
+
+    def test_class_number_en_dash(self):
+        """Test class_number extraction with en dash."""
+        entry = ScheduleEntry(
+            session="1/23/2026",
+            desc="1 – Introduction",
+            desc_link="content/notes/001-intro.md",
+            notes="",
+            slides_link="",
+            recording_link="",
+        )
+        assert entry.class_number == "1"
+
+    def test_class_number_em_dash(self):
+        """Test class_number extraction with em dash."""
+        entry = ScheduleEntry(
+            session="1/23/2026",
+            desc="1 — Introduction",
+            desc_link="content/notes/001-intro.md",
+            notes="",
+            slides_link="",
+            recording_link="",
+        )
+        assert entry.class_number == "1"
+
+    def test_class_number_holiday(self):
+        """Test class_number returns None for holiday entries."""
+        entry = ScheduleEntry(
+            session="2/13/2026",
+            desc="Holiday (President's Day)",
+            desc_link="",
+            notes="",
+            slides_link="",
+            recording_link="",
+        )
+        assert entry.class_number is None
+
+    def test_class_number_bonus(self):
+        """Test class_number returns None for bonus sessions."""
+        entry = ScheduleEntry(
+            session="3/13/2026",
+            desc="BONUS - Bug Bounty Session",
+            desc_link="",
+            notes="",
+            slides_link="",
+            recording_link="",
+        )
+        assert entry.class_number is None
+
+    def test_class_number_empty_desc(self):
+        """Test class_number returns None for empty desc."""
+        entry = ScheduleEntry(
+            session="1/23/2026",
+            desc="",
+            desc_link="",
+            notes="",
+            slides_link="",
+            recording_link="",
+        )
+        assert entry.class_number is None
+
+    def test_has_content_true(self):
+        """Test has_content returns True when both class_number and desc_link exist."""
+        entry = ScheduleEntry(
+            session="1/23/2026",
+            desc="1 - Introduction",
+            desc_link="content/notes/001-intro.md",
+            notes="",
+            slides_link="",
+            recording_link="",
+        )
+        assert entry.has_content is True
+
+    def test_has_content_false_no_desc_link(self):
+        """Test has_content returns False when desc_link is empty."""
+        entry = ScheduleEntry(
+            session="2/6/2026",
+            desc="3 - Pentesting Tools",
+            desc_link="",
+            notes="",
+            slides_link="",
+            recording_link="",
+        )
+        assert entry.has_content is False
+
+    def test_has_content_false_no_class_number(self):
+        """Test has_content returns False when no class number in desc."""
+        entry = ScheduleEntry(
+            session="2/13/2026",
+            desc="Holiday (President's Day)",
+            desc_link="some/path.md",
+            notes="",
+            slides_link="",
+            recording_link="",
+        )
+        assert entry.has_content is False
+
+    def test_from_row(self):
+        """Test creating ScheduleEntry from row dictionary."""
+        row = {
+            "session": "1/23/2026",
+            "desc": "1 - Introduction",
+            "desc_link": "content/notes/001-intro.md",
+            "notes": "Quiz 1",
+            "slides_link": "https://slides.example.com",
+            "recording_link": "",
+        }
+        entry = ScheduleEntry.from_row(row)
+
+        assert entry.session == "1/23/2026"
+        assert entry.desc == "1 - Introduction"
+        assert entry.desc_link == "content/notes/001-intro.md"
+        assert entry.notes == "Quiz 1"
+        assert entry.slides_link == "https://slides.example.com"
+        assert entry.recording_link == ""
+        assert entry.class_number == "1"
+        assert entry.has_content is True

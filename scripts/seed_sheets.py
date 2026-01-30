@@ -90,6 +90,7 @@ SHEET_STRUCTURES = {
     "Schedule": [
         "session",
         "desc",
+        "desc_link",
         "notes",
         "slides_link",
         "recording_link",
@@ -126,14 +127,14 @@ TEST_QUIZZES = [
 
 # Test schedule data
 TEST_SCHEDULE = [
-    {"session": "1/23/2026", "desc": "1 - Introduction", "notes": "Quiz 1", "slides_link": "", "recording_link": ""},
-    {"session": "1/30/2026", "desc": "2 - Cryptography & Incident Response", "notes": "Lab 1\nQuiz 2", "slides_link": "", "recording_link": ""},
-    {"session": "2/6/2026", "desc": "3 - Pentesting Tools (Nmap, Nessus, Metasploit, SQLMap)", "notes": "Lab 2\nQuiz 2", "slides_link": "", "recording_link": ""},
-    {"session": "2/13/2026", "desc": "Holiday (President's Day)", "notes": "", "slides_link": "", "recording_link": ""},
-    {"session": "2/20/2026", "desc": "4 - Threat Modeling, OSINT, OWASP", "notes": "Lab 3\nQuiz 3", "slides_link": "", "recording_link": ""},
-    {"session": "2/27/2026", "desc": "5 - Cloud Security, LLM Security", "notes": "Lab 4\nQuiz 4", "slides_link": "", "recording_link": ""},
-    {"session": "3/6/2026", "desc": "6 - Security Careers and Presentations", "notes": "Lab 5, Quiz 5", "slides_link": "", "recording_link": ""},
-    {"session": "3/13/2026", "desc": "BONUS - Bug Bounty Session", "notes": "", "slides_link": "", "recording_link": ""},
+    {"session": "1/23/2026", "desc": "1 - Introduction", "desc_link": "content/notes/001-intro.md", "notes": "Quiz 1", "slides_link": "", "recording_link": ""},
+    {"session": "1/30/2026", "desc": "2 - Cryptography & Incident Response", "desc_link": "content/notes/002-ethics-ir-and-crypto.md", "notes": "Lab 1\nQuiz 2", "slides_link": "", "recording_link": ""},
+    {"session": "2/6/2026", "desc": "3 - Pentesting Tools (Nmap, Nessus, Metasploit, SQLMap)", "desc_link": "", "notes": "Lab 2\nQuiz 2", "slides_link": "", "recording_link": ""},
+    {"session": "2/13/2026", "desc": "Holiday (President's Day)", "desc_link": "", "notes": "", "slides_link": "", "recording_link": ""},
+    {"session": "2/20/2026", "desc": "4 - Threat Modeling, OSINT, OWASP", "desc_link": "", "notes": "Lab 3\nQuiz 3", "slides_link": "", "recording_link": ""},
+    {"session": "2/27/2026", "desc": "5 - Cloud Security, LLM Security", "desc_link": "", "notes": "Lab 4\nQuiz 4", "slides_link": "", "recording_link": ""},
+    {"session": "3/6/2026", "desc": "6 - Security Careers and Presentations", "desc_link": "", "notes": "Lab 5, Quiz 5", "slides_link": "", "recording_link": ""},
+    {"session": "3/13/2026", "desc": "BONUS - Bug Bounty Session", "desc_link": "", "notes": "", "slides_link": "", "recording_link": ""},
 ]
 
 

@@ -248,6 +248,13 @@ class SheetsClient:
             logger.error("Failed to get schedule: %s", e)
             return []
 
+    def get_schedule_entry_by_class_number(self, class_number: str) -> ScheduleEntry | None:
+        """Get schedule entry by class number extracted from desc."""
+        for entry in self.get_schedule():
+            if entry.class_number == class_number:
+                return entry
+        return None
+
     # -------------------------------------------------------------------------
     # Quiz methods
     # -------------------------------------------------------------------------

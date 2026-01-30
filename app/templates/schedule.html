@@ -30,8 +30,8 @@
             <tr style="border-bottom: 1px solid #eee;">
                 <td style="padding: 0.75rem; vertical-align: top; white-space: nowrap;">{{ entry.session }}</td>
                 <td style="padding: 0.75rem; vertical-align: top;">
-                    {% if entry.desc_link %}
-                    <a href="/class/{{ entry.desc_link }}">{{ entry.desc }}</a>
+                    {% if entry.class_number and entry.desc_link %}
+                    <a href="/class/{{ entry.class_number }}">{{ entry.desc }}</a>
                     {% else %}
                     {{ entry.desc }}
                     {% endif %}

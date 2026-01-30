@@ -155,20 +155,15 @@ async def schedule_page(request: Request, student: OnboardedStudent, session: Cu
     )
 
 
-# Map class IDs to markdown files on disk
-CLASS_CONTENT_PATHS = {
-    "1": "content/notes/001-intro.md",
-    "2": "content/notes/002-ethics-ir-and-crypto.md",
-}
-
-
 @router.get("/class/{id}", response_class=HTMLResponse)
 async def class_page(request: Request, id: str, student: OnboardedStudent, session: CurrentSession):
     """
     Render lecture/class content page from markdown file on disk.
     """
-    content_path = CLASS_CONTENT_PATHS.get(id)
-    if not content_path:
+    sheets = get_sheets_client()
+    entry = sheets.get_schedule_entry_by_class_number(id)
+
+    if not entry or not entry.has_content:
         return templates.TemplateResponse(
             "class.html",
             {
@@ -180,6 +175,8 @@ async def class_page(request: Request, id: str, student: OnboardedStudent, sessi
             },
             status_code=404,
         )
+
+    content_path = entry.desc_link
 
     base_path = Path(__file__).parent.parent.parent  # project root
     file_path = base_path / content_path
@@ -221,7 +218,7 @@ async def class_page(request: Request, id: str, student: OnboardedStudent, sessi
         {
             "request": request,
             "student": student,
-            "title": id.replace("-", " ").title(),
+            "title": entry.desc,
             "content": html_content,
             "is_admin": is_admin(session),
         },

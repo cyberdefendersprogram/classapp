@@ -1,5 +1,6 @@
 """Schedule data model."""
 
+import re
 from dataclasses import dataclass
 
 
@@ -30,3 +31,16 @@ class ScheduleEntry:
     def has_materials(self) -> bool:
         """Check if this session has any materials linked."""
         return bool(self.slides_link or self.recording_link)
+
+    @property
+    def class_number(self) -> str | None:
+        """Extract class number from desc (e.g., '1 - Introduction' → '1')."""
+        if not self.desc:
+            return None
+        match = re.match(r"^(\d+)\s*[-–—]\s*", self.desc)
+        return match.group(1) if match else None
+
+    @property
+    def has_content(self) -> bool:
+        """Check if this session has linked content."""
+        return bool(self.desc_link and self.class_number)
