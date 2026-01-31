@@ -2,29 +2,241 @@
 
 {% block title %}{{ title }}{% endblock %}
 
-{% block content %}
-<nav class="nav">
-    <a href="/home">Home</a>
-    <a href="/schedule">Schedule</a>
-    <a href="/quizzes">Quizzes</a>
-    <a href="/me">Profile</a>
-    {% if is_admin %}<a href="/admin/analytics">Admin</a>{% endif %}
-    <a href="/auth/logout">Sign Out</a>
-</nav>
+{% block body %}
+<div class="class-layout">
+    <!-- Left Sidebar: Classes Navigation -->
+    <aside class="sidebar-left">
+        <h3>Classes</h3>
+        <ul class="classes-nav">
+            {% for cls in numbered_classes %}
+            <li>
+                <a href="/class/{{ cls.class_number }}"
+                   {% if cls.class_number == current_class_number %}class="active"{% endif %}
+                   title="{{ cls.desc }}">
+                    {{ cls.desc }}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </aside>
 
-<h1>{{ title }}</h1>
+    <!-- Main Content -->
+    <main class="main-content">
+        {% if error %}
+        <div class="flash error">{{ error }}</div>
+        {% endif %}
 
-{% if content %}
-<div class="class-content" style="margin-top: 1rem;">
-    <div class="markdown-body">
-        {{ content | safe }}
-    </div>
+        {% if success %}
+        <div class="flash success">{{ success }}</div>
+        {% endif %}
+
+        {% if info %}
+        <div class="flash info">{{ info }}</div>
+        {% endif %}
+
+        <nav class="nav">
+            <a href="/home">Home</a>
+            <a href="/schedule">Schedule</a>
+            <a href="/quizzes">Quizzes</a>
+            <a href="/me">Profile</a>
+            {% if is_admin %}<a href="/admin/analytics">Admin</a>{% endif %}
+            <a href="/auth/logout">Sign Out</a>
+        </nav>
+
+        <h1>{{ title }}</h1>
+
+        {% if content %}
+        <!-- Mobile TOC (visible on small screens) -->
+        <div class="mobile-toc" id="mobile-toc">
+            <button class="mobile-toc-toggle" onclick="toggleMobileToc()">
+                <span>On This Page</span>
+                <span class="toc-icon">▼</span>
+            </button>
+            <div class="mobile-toc-content" id="mobile-toc-content"></div>
+        </div>
+
+        <div class="class-content">
+            <div class="markdown-body">
+                {{ content | safe }}
+            </div>
+        </div>
+        {% else %}
+        <p class="text-muted">No content available.</p>
+        {% endif %}
+
+        <div class="mt-3">
+            <a href="/home" class="btn btn-outline">Back to Home</a>
+        </div>
+    </main>
+
+    <!-- Right Sidebar: Content TOC -->
+    <aside class="sidebar-right">
+        <h3>On This Page</h3>
+        <nav class="toc-nav" id="toc-nav"></nav>
+    </aside>
 </div>
-{% else %}
-<p class="text-muted">No content available.</p>
-{% endif %}
 
-<div class="mt-3">
-    <a href="/home" class="btn btn-outline">Back to Home</a>
+<!-- Circular Progress Indicator -->
+<div class="progress-circle" id="progress-circle" onclick="scrollToTop()">
+    <svg viewBox="0 0 36 36">
+        <circle class="bg" cx="18" cy="18" r="15.5"></circle>
+        <circle class="progress" cx="18" cy="18" r="15.5"
+                stroke-dasharray="97.4" stroke-dashoffset="97.4" id="progress-ring"></circle>
+    </svg>
+    <span class="text" id="progress-text">0%</span>
 </div>
+
+<script>
+// Scroll to a section by ID
+function scrollToSection(targetId) {
+    const target = document.getElementById(targetId);
+    if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Close mobile TOC after click
+        const mobileContent = document.getElementById('mobile-toc-content');
+        if (mobileContent) {
+            mobileContent.classList.remove('open');
+            const icon = document.querySelector('.mobile-toc-toggle .toc-icon');
+            if (icon) icon.textContent = '▼';
+        }
+    }
+}
+
+// Build TOC from h2 headers only
+function buildToc() {
+    const headers = document.querySelectorAll('.markdown-body h2');
+    const tocNav = document.getElementById('toc-nav');
+    const mobileToc = document.getElementById('mobile-toc');
+    const mobileTocContent = document.getElementById('mobile-toc-content');
+
+    if (headers.length === 0) {
+        if (tocNav) tocNav.innerHTML = '<p style="color: #999; font-size: 0.8rem;">No sections</p>';
+        if (mobileToc) mobileToc.style.display = 'none';
+        return;
+    }
+
+    const ul = document.createElement('ul');
+    const mobileUl = document.createElement('ul');
+
+    headers.forEach((h, i) => {
+        // Ensure header has an ID for linking
+        if (!h.id) {
+            h.id = 'section-' + i;
+        }
+        const headerId = h.id;
+
+        // Desktop TOC
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#' + headerId;
+        a.textContent = h.textContent;
+        a.dataset.target = headerId;
+        a.onclick = function(e) {
+            e.preventDefault();
+            scrollToSection(headerId);
+        };
+        li.appendChild(a);
+        ul.appendChild(li);
+
+        // Mobile TOC
+        const mLi = document.createElement('li');
+        const mA = document.createElement('a');
+        mA.href = '#' + headerId;
+        mA.textContent = h.textContent;
+        mA.onclick = function(e) {
+            e.preventDefault();
+            scrollToSection(headerId);
+        };
+        mLi.appendChild(mA);
+        mobileUl.appendChild(mLi);
+    });
+
+    tocNav.appendChild(ul);
+    mobileTocContent.appendChild(mobileUl);
+}
+
+// Toggle mobile TOC
+function toggleMobileToc() {
+    const content = document.getElementById('mobile-toc-content');
+    content.classList.toggle('open');
+    const icon = document.querySelector('.mobile-toc-toggle .toc-icon');
+    icon.textContent = icon.textContent === '▼' ? '▲' : '▼';
+}
+
+// Update progress and highlight active TOC item
+function updateProgress() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.body.scrollHeight - window.innerHeight;
+    const progressCircle = document.getElementById('progress-circle');
+    const progressRing = document.getElementById('progress-ring');
+    const progressText = document.getElementById('progress-text');
+
+    // Calculate progress
+    let progress = 0;
+    if (docHeight > 0) {
+        progress = Math.min(100, Math.round((scrollTop / docHeight) * 100));
+    }
+
+    // Update circular progress
+    const circumference = 97.4; // 2 * PI * 15.5
+    const offset = circumference - (progress / 100) * circumference;
+    progressRing.style.strokeDashoffset = offset;
+    progressText.textContent = progress + '%';
+
+    // Show/hide progress circle
+    if (scrollTop > 200) {
+        progressCircle.classList.add('visible');
+    } else {
+        progressCircle.classList.remove('visible');
+    }
+
+    // Highlight active TOC item
+    highlightActiveToc();
+}
+
+function highlightActiveToc() {
+    const headers = document.querySelectorAll('.markdown-body h2');
+    const tocLinks = document.querySelectorAll('#toc-nav a');
+
+    let activeId = null;
+    const scrollPos = window.scrollY + 100; // Offset for better UX
+
+    headers.forEach(h => {
+        if (h.offsetTop <= scrollPos) {
+            activeId = h.id;
+        }
+    });
+
+    tocLinks.forEach(link => {
+        if (link.dataset.target === activeId) {
+            link.classList.add('active');
+        } else {
+            link.classList.remove('active');
+        }
+    });
+}
+
+// Scroll to top
+function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Throttle scroll handler
+let ticking = false;
+window.addEventListener('scroll', () => {
+    if (!ticking) {
+        window.requestAnimationFrame(() => {
+            updateProgress();
+            ticking = false;
+        });
+        ticking = true;
+    }
+});
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    buildToc();
+    updateProgress();
+});
+</script>
 {% endblock %}

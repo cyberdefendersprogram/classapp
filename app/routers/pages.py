@@ -163,6 +163,10 @@ async def class_page(request: Request, id: str, student: OnboardedStudent, sessi
     sheets = get_sheets_client()
     entry = sheets.get_schedule_entry_by_class_number(id)
 
+    # Get all numbered classes for sidebar navigation
+    all_schedule = sheets.get_schedule()
+    numbered_classes = [e for e in all_schedule if e.class_number and e.has_content]
+
     if not entry or not entry.has_content:
         return templates.TemplateResponse(
             "class.html",
@@ -172,6 +176,8 @@ async def class_page(request: Request, id: str, student: OnboardedStudent, sessi
                 "title": "Class Not Found",
                 "content": "<p>Lecture not found.</p>",
                 "is_admin": is_admin(session),
+                "numbered_classes": numbered_classes,
+                "current_class_number": id,
             },
             status_code=404,
         )
@@ -190,6 +196,8 @@ async def class_page(request: Request, id: str, student: OnboardedStudent, sessi
                 "title": "Content Missing",
                 "content": "<p>Lecture file missing on server.</p>",
                 "is_admin": is_admin(session),
+                "numbered_classes": numbered_classes,
+                "current_class_number": id,
             },
             status_code=500,
         )
@@ -209,6 +217,8 @@ async def class_page(request: Request, id: str, student: OnboardedStudent, sessi
                 "title": "Error",
                 "content": "<p>Error loading lecture content.</p>",
                 "is_admin": is_admin(session),
+                "numbered_classes": numbered_classes,
+                "current_class_number": id,
             },
             status_code=500,
         )
@@ -221,5 +231,7 @@ async def class_page(request: Request, id: str, student: OnboardedStudent, sessi
             "title": entry.desc,
             "content": html_content,
             "is_admin": is_admin(session),
+            "numbered_classes": numbered_classes,
+            "current_class_number": id,
         },
     )
