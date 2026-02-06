@@ -1,0 +1,737 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block body %}
+<div class="class-layout">
+    <!-- Left Sidebar: Tools Navigation -->
+    <aside class="sidebar-left">
+        <h3>Tools</h3>
+        <ul class="classes-nav">
+            {% for tool in tools %}
+            <li>
+                <a href="/tools/{{ tool.id }}"
+                   {% if tool.id == tool_id %}class="active"{% endif %}
+                   title="{{ tool.name }}">
+                    {{ tool.name }}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <nav class="nav">
+            <a href="/home">Home</a>
+            <a href="/schedule">Schedule</a>
+            <a href="/quizzes">Quizzes</a>
+            <a href="/tools" class="active">Tools</a>
+            <a href="/me">Profile</a>
+            {% if is_admin %}<a href="/admin/analytics">Admin</a>{% endif %}
+            <a href="/auth/logout">Sign Out</a>
+        </nav>
+
+        <h1>{{ title }}</h1>
+
+        <!-- Mobile TOC -->
+        <div class="mobile-toc" id="mobile-toc">
+            <button class="mobile-toc-toggle" onclick="toggleMobileToc()">
+                <span>On This Page</span>
+                <span class="toc-icon">&#9660;</span>
+            </button>
+            <div class="mobile-toc-content" id="mobile-toc-content"></div>
+        </div>
+
+        <div class="tool-content">
+            <!-- Command Builder -->
+            {% if command_builder %}
+            <div class="command-builder" id="command-builder">
+                <h2>Command Builder</h2>
+                <div class="builder-form">
+                    <div class="builder-row">
+                        <label for="scan-type">Scan Type</label>
+                        <select id="scan-type" onchange="updateCommand()">
+                            {% for st in command_builder.scan_types %}
+                            <option value="{{ st.flag }}" title="{{ st.desc }}">{{ st.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="builder-row">
+                        <label for="target">Target</label>
+                        <input type="text" id="target" value="{{ command_builder.target_placeholder }}"
+                               placeholder="{{ command_builder.target_placeholder }}" onkeyup="updateCommand()">
+                    </div>
+
+                    <div class="builder-row">
+                        <label>Options</label>
+                        <div class="options-grid">
+                            {% for opt in command_builder.options %}
+                            <label class="option-checkbox">
+                                <input type="checkbox" id="opt-{{ opt.flag | replace('-', '') }}"
+                                       value="{{ opt.flag }}" onchange="updateCommand()">
+                                <span title="{{ opt.desc }}">{{ opt.name }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="builder-output">
+                        <code id="generated-command">{{ command_builder.tool_name }}</code>
+                        <button type="button" class="copy-btn" onclick="copyCommand()">Copy</button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Main markdown content -->
+            <div class="markdown-body">
+                {{ content | safe }}
+            </div>
+
+            <!-- Scenarios -->
+            {% if scenarios %}
+            <div class="scenarios-section">
+                <h2 id="scenarios">Scenarios</h2>
+                {% for scenario in scenarios %}
+                <div class="scenario" data-scenario-id="{{ scenario.id }}">
+                    <div class="scenario-header">
+                        <label class="scenario-checkbox">
+                            <input type="checkbox" class="progress-checkbox"
+                                   data-scenario="{{ scenario.id }}"
+                                   onchange="updateScenarioProgress('{{ scenario.id }}', this.checked)">
+                            <span class="scenario-title">{{ scenario.title }}</span>
+                        </label>
+                        <span class="scenario-level level-{{ scenario.level }}">{{ scenario.level }}</span>
+                    </div>
+
+                    <p class="scenario-goal">{{ scenario.goal }}</p>
+
+                    {% if scenario.hint %}
+                    <details class="hint-block">
+                        <summary>Hint</summary>
+                        <div class="hint-content">{{ scenario.hint }}</div>
+                    </details>
+                    {% endif %}
+
+                    {% if scenario.command %}
+                    <details class="command-block">
+                        <summary>Solution</summary>
+                        <div class="command-content">
+                            <code>{{ scenario.command }}</code>
+                            <button type="button" class="copy-btn-small"
+                                    onclick="copyText('{{ scenario.command }}')">Copy</button>
+                        </div>
+                    </details>
+                    {% endif %}
+
+                    {% if scenario.expected_output %}
+                    <details class="output-block">
+                        <summary>Expected Output</summary>
+                        <pre class="output-content">{{ scenario.expected_output }}</pre>
+                    </details>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Inline Quizzes -->
+            {% if quizzes %}
+            <div class="quizzes-section">
+                <h2 id="knowledge-check">Knowledge Check</h2>
+                {% for quiz in quizzes %}
+                <div class="inline-quiz" data-quiz-id="{{ quiz.id }}">
+                    <p class="quiz-question">{{ quiz.question }}</p>
+                    <div class="quiz-options">
+                        {% for opt in quiz.options %}
+                        <label class="quiz-option">
+                            <input type="radio" name="quiz-{{ quiz.id }}"
+                                   value="{{ loop.index0 }}"
+                                   data-correct="{{ 'true' if opt.correct else 'false' }}"
+                                   onchange="checkQuizAnswer('{{ quiz.id }}', this)">
+                            <span>{{ opt.text }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    <div class="quiz-feedback" id="feedback-{{ quiz.id }}"></div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="mt-3">
+            <a href="/tools" class="btn btn-outline">Back to Tools</a>
+        </div>
+    </main>
+
+    <!-- Right Sidebar: TOC + Progress -->
+    <aside class="sidebar-right">
+        <h3>On This Page</h3>
+        <nav class="toc-nav" id="toc-nav"></nav>
+
+        {% if scenarios %}
+        <div class="progress-widget" id="progress-widget">
+            <h3>Progress</h3>
+            <div class="progress-ring-container">
+                <svg class="progress-ring" viewBox="0 0 36 36">
+                    <circle class="progress-ring-bg" cx="18" cy="18" r="15.5"></circle>
+                    <circle class="progress-ring-fill" cx="18" cy="18" r="15.5"
+                            stroke-dasharray="97.4" stroke-dashoffset="97.4" id="scenario-progress-ring"></circle>
+                </svg>
+                <span class="progress-ring-text" id="scenario-progress-text">0/{{ scenarios|length }}</span>
+            </div>
+        </div>
+        {% endif %}
+    </aside>
+</div>
+
+<style>
+/* Command Builder */
+.command-builder {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.command-builder h2 {
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+    border: none;
+    padding: 0;
+}
+
+.builder-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.builder-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.builder-row label {
+    font-weight: 500;
+    font-size: 0.875rem;
+    color: #555;
+}
+
+.builder-row select,
+.builder-row input[type="text"] {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.options-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.option-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    font-weight: normal;
+}
+
+.option-checkbox input {
+    width: auto;
+    margin: 0;
+}
+
+.builder-output {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #1e1e1e;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    margin-top: 0.5rem;
+}
+
+.builder-output code {
+    flex: 1;
+    color: #4ec9b0;
+    font-family: 'SF Mono', Consolas, monospace;
+    font-size: 0.9rem;
+    background: none;
+    padding: 0;
+}
+
+.copy-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 0.4rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    width: auto;
+}
+
+.copy-btn:hover {
+    background: #0056b3;
+}
+
+/* Scenarios */
+.scenarios-section {
+    margin-top: 2rem;
+}
+
+.scenario {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.scenario-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.scenario-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: normal;
+}
+
+.scenario-checkbox input {
+    width: auto;
+    margin-top: 0.25rem;
+}
+
+.scenario-title {
+    font-weight: 600;
+    color: #333;
+}
+
+.scenario-level {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.level-beginner {
+    background: #d4edda;
+    color: #155724;
+}
+
+.level-intermediate {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.scenario-goal {
+    color: #555;
+    font-size: 0.9rem;
+    margin: 0 0 1rem 0;
+}
+
+/* Hints, Commands, Outputs */
+.hint-block,
+.command-block,
+.output-block {
+    margin: 0.75rem 0;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.hint-block summary,
+.command-block summary,
+.output-block summary {
+    padding: 0.5rem 0.75rem;
+    background: #f8f9fa;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #555;
+}
+
+.hint-block summary:hover,
+.command-block summary:hover,
+.output-block summary:hover {
+    background: #e9ecef;
+}
+
+.hint-content {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.command-content {
+    padding: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #1e1e1e;
+}
+
+.command-content code {
+    flex: 1;
+    color: #4ec9b0;
+    font-family: 'SF Mono', Consolas, monospace;
+    background: none;
+    padding: 0;
+}
+
+.copy-btn-small {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    width: auto;
+}
+
+.copy-btn-small:hover {
+    background: #5a6268;
+}
+
+.output-content {
+    margin: 0;
+    padding: 0.75rem;
+    background: #f6f8fa;
+    font-size: 0.8rem;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    color: #333;
+}
+
+/* Inline Quizzes */
+.quizzes-section {
+    margin-top: 2rem;
+}
+
+.inline-quiz {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.quiz-question {
+    font-weight: 500;
+    color: #333;
+    margin: 0 0 1rem 0;
+}
+
+.quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.quiz-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: normal;
+    transition: all 0.15s;
+}
+
+.quiz-option:hover {
+    border-color: #007bff;
+}
+
+.quiz-option input {
+    width: auto;
+    margin: 0;
+}
+
+.quiz-option.correct {
+    background: #d4edda;
+    border-color: #28a745;
+}
+
+.quiz-option.incorrect {
+    background: #f8d7da;
+    border-color: #dc3545;
+}
+
+.quiz-feedback {
+    margin-top: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    display: none;
+}
+
+.quiz-feedback.correct {
+    display: block;
+    background: #d4edda;
+    color: #155724;
+}
+
+.quiz-feedback.incorrect {
+    display: block;
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Progress Widget */
+.progress-widget {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.progress-widget h3 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+.progress-ring-container {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+}
+
+.progress-ring {
+    transform: rotate(-90deg);
+    width: 80px;
+    height: 80px;
+}
+
+.progress-ring-bg {
+    fill: none;
+    stroke: #e9ecef;
+    stroke-width: 4;
+}
+
+.progress-ring-fill {
+    fill: none;
+    stroke: #28a745;
+    stroke-width: 4;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.3s;
+}
+
+.progress-ring-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.nav a.active {
+    font-weight: 600;
+    color: #333;
+}
+</style>
+
+<script>
+const TOOL_ID = '{{ tool_id }}';
+const TOTAL_SCENARIOS = {{ scenarios|length if scenarios else 0 }};
+
+// Command Builder
+function updateCommand() {
+    const toolName = '{{ command_builder.tool_name if command_builder else "nmap" }}';
+    const scanType = document.getElementById('scan-type')?.value || '';
+    const target = document.getElementById('target')?.value || '';
+
+    // Get selected options
+    const options = [];
+    document.querySelectorAll('.options-grid input[type="checkbox"]:checked').forEach(cb => {
+        options.push(cb.value);
+    });
+
+    // Build command
+    let cmd = toolName;
+    if (scanType) cmd += ' ' + scanType;
+    options.forEach(opt => cmd += ' ' + opt);
+    if (target) cmd += ' ' + target;
+
+    const output = document.getElementById('generated-command');
+    if (output) output.textContent = cmd;
+}
+
+function copyCommand() {
+    const cmd = document.getElementById('generated-command')?.textContent || '';
+    copyText(cmd);
+}
+
+function copyText(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        // Brief visual feedback could be added here
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+    });
+}
+
+// Progress Tracking
+function getProgressKey() {
+    return 'tool-progress-' + TOOL_ID;
+}
+
+function loadProgress() {
+    try {
+        const saved = localStorage.getItem(getProgressKey());
+        return saved ? JSON.parse(saved) : {};
+    } catch {
+        return {};
+    }
+}
+
+function saveProgress(progress) {
+    try {
+        localStorage.setItem(getProgressKey(), JSON.stringify(progress));
+    } catch (err) {
+        console.error('Failed to save progress:', err);
+    }
+}
+
+function updateScenarioProgress(scenarioId, completed) {
+    const progress = loadProgress();
+    progress[scenarioId] = completed;
+    saveProgress(progress);
+    updateProgressRing();
+}
+
+function updateProgressRing() {
+    if (TOTAL_SCENARIOS === 0) return;
+
+    const progress = loadProgress();
+    const completed = Object.values(progress).filter(v => v === true).length;
+
+    const ring = document.getElementById('scenario-progress-ring');
+    const text = document.getElementById('scenario-progress-text');
+
+    if (ring && text) {
+        const circumference = 97.4;
+        const percent = completed / TOTAL_SCENARIOS;
+        const offset = circumference - (percent * circumference);
+        ring.style.strokeDashoffset = offset;
+        text.textContent = completed + '/' + TOTAL_SCENARIOS;
+    }
+}
+
+function restoreProgress() {
+    const progress = loadProgress();
+    Object.entries(progress).forEach(([scenarioId, completed]) => {
+        if (completed) {
+            const checkbox = document.querySelector(`input[data-scenario="${scenarioId}"]`);
+            if (checkbox) checkbox.checked = true;
+        }
+    });
+    updateProgressRing();
+}
+
+// Quiz
+function checkQuizAnswer(quizId, input) {
+    const isCorrect = input.dataset.correct === 'true';
+    const feedback = document.getElementById('feedback-' + quizId);
+    const options = document.querySelectorAll(`input[name="quiz-${quizId}"]`);
+
+    // Disable all options
+    options.forEach(opt => {
+        opt.disabled = true;
+        const label = opt.closest('.quiz-option');
+        if (opt.dataset.correct === 'true') {
+            label.classList.add('correct');
+        } else if (opt.checked && !isCorrect) {
+            label.classList.add('incorrect');
+        }
+    });
+
+    // Show feedback
+    if (feedback) {
+        feedback.textContent = isCorrect ? 'Correct!' : 'Incorrect. The correct answer is highlighted.';
+        feedback.className = 'quiz-feedback ' + (isCorrect ? 'correct' : 'incorrect');
+    }
+}
+
+// TOC
+function buildToc() {
+    const headers = document.querySelectorAll('.tool-content h2, .markdown-body h2');
+    const tocNav = document.getElementById('toc-nav');
+    const mobileTocContent = document.getElementById('mobile-toc-content');
+
+    if (headers.length === 0) {
+        if (tocNav) tocNav.innerHTML = '<p style="color: #999; font-size: 0.8rem;">No sections</p>';
+        return;
+    }
+
+    const ul = document.createElement('ul');
+    const mobileUl = document.createElement('ul');
+
+    headers.forEach((h, i) => {
+        if (!h.id) h.id = 'section-' + i;
+        const headerId = h.id;
+
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#' + headerId;
+        a.textContent = h.textContent;
+        a.onclick = function(e) {
+            e.preventDefault();
+            document.getElementById(headerId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+        li.appendChild(a);
+        ul.appendChild(li);
+
+        const mLi = li.cloneNode(true);
+        mLi.querySelector('a').onclick = function(e) {
+            e.preventDefault();
+            document.getElementById(headerId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            document.getElementById('mobile-toc-content')?.classList.remove('open');
+        };
+        mobileUl.appendChild(mLi);
+    });
+
+    if (tocNav) tocNav.appendChild(ul);
+    if (mobileTocContent) mobileTocContent.appendChild(mobileUl);
+}
+
+function toggleMobileToc() {
+    const content = document.getElementById('mobile-toc-content');
+    content?.classList.toggle('open');
+    const icon = document.querySelector('.mobile-toc-toggle .toc-icon');
+    if (icon) icon.innerHTML = icon.innerHTML === '&#9660;' ? '&#9650;' : '&#9660;';
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    updateCommand();
+    restoreProgress();
+    buildToc();
+});
+</script>
+{% endblock %}

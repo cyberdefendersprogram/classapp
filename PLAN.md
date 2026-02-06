@@ -1357,4 +1357,171 @@ docker compose -f docker-compose.dev.yml run --rm app pytest
 
 ---
 
+## Phase 10: Interactive Tools Feature
+
+**Goal**: Interactive reference pages for security tools with command builder, scenarios, quizzes, and progress tracking.
+
+### 10.1 Overview
+
+| Feature | Description | Storage |
+|---------|-------------|---------|
+| Command Builder | UI to build commands with dropdowns/checkboxes | — |
+| Mini-Quizzes | Inline knowledge checks with instant feedback | localStorage |
+| Collapsible Hints | Expandable hint sections for scenarios | — |
+| Output Simulator | Sample command outputs in collapsible blocks | — |
+| Progress Tracking | Checkbox per scenario, completion percentage | localStorage |
+
+### 10.2 Design Decisions
+
+- **Progress Storage**: localStorage (per-browser, no login required)
+- **Command Builder**: Beginner flags only
+- **Quiz Scoring**: Instant feedback, no server-side tracking
+- **Layout**: 3-column (tools list, content, TOC + progress)
+
+### 10.3 Routes
+
+| Route | Description |
+|-------|-------------|
+| `/tools` | Landing page listing all available tools |
+| `/tools/{tool_id}` | Individual tool page (e.g., `/tools/nmap`) |
+
+### 10.4 Files to Create
+
+| File | Purpose |
+|------|---------|
+| `content/tools/nmap.md` | Nmap content with interactive blocks |
+| `app/routers/tools.py` | Routes for `/tools` and `/tools/{id}` |
+| `app/templates/tool.html` | 3-column tool page template |
+| `app/templates/tools.html` | Tools landing page |
+| `app/services/tool_parser.py` | Parse custom markdown blocks |
+| `app/static/js/tools.js` | Command builder, quiz, progress JS |
+
+### 10.5 Files to Modify
+
+| File | Changes |
+|------|---------|
+| `app/templates/base.html` | Add "Tools" to navigation |
+| `app/main.py` | Register tools router |
+
+### 10.6 Content Format
+
+Custom markdown blocks for interactive elements:
+
+```markdown
+<!-- progress-checkbox: scenario-id -->
+
+:::hint{title="Hint Title"}
+Hint content here
+:::
+
+:::command-builder{id="builder-id"}
+scan_types: [ping, syn, tcp, udp]
+options: [version, os, timing, output]
+:::
+
+:::output{title="Expected Output"}
+Command output here
+:::
+
+:::quiz{id="quiz-id"}
+Q: Question text?
+- [ ] Wrong answer
+- [x] Correct answer
+:::
+```
+
+### 10.7 Command Builder: Beginner Flags (Nmap)
+
+**Scan Types:**
+- Ping scan (`-sn`)
+- SYN scan (`-sS`)
+- TCP connect (`-sT`)
+- UDP scan (`-sU`)
+
+**Options:**
+- Version detection (`-sV`)
+- OS detection (`-O`)
+- Timing (`-T0` to `-T4`)
+- Output to file (`-oN filename`)
+
+**Target Formats:**
+- Single IP: `192.168.1.1`
+- Range: `192.168.1.1-50`
+- Subnet: `192.168.1.0/24`
+
+### 10.8 Nmap Scenarios
+
+1. **Discover Devices on Your Network** (Beginner)
+   - Goal: Find all devices on local network
+   - Command: `nmap -sn 192.168.1.0/24`
+
+2. **Find Open Ports on a Target** (Beginner)
+   - Goal: Identify open ports on a single host
+   - Command: `nmap -sS target`
+
+3. **Identify Running Services** (Beginner)
+   - Goal: Determine what services are running
+   - Command: `nmap -sV target`
+
+4. **Detect Operating System** (Intermediate)
+   - Goal: Fingerprint the target OS
+   - Command: `nmap -O target`
+
+5. **Comprehensive Scan** (Intermediate)
+   - Goal: Full reconnaissance scan
+   - Command: `nmap -sS -sV -O -T4 target`
+
+### 10.9 UI Layout
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  [Home] [Schedule] [Quizzes] [Tools]              [Profile] │
+├──────────┬────────────────────────────────────┬─────────────┤
+│          │                                    │             │
+│  Tools   │  # Nmap                            │ On This Page│
+│  ───────│                                    │ ──────────│
+│  > Nmap  │  ## Overview                       │ Overview    │
+│  SQLMap  │  Network scanner for...            │ Command...  │
+│          │                                    │ Scenarios   │
+│          │  ## Command Builder                │ Tips        │
+│          │  ┌───────────────────────────┐     │             │
+│          │  │ Scan: [SYN ▼]             │     │ ┌─────────┐ │
+│          │  │ Target: [____________]    │     │ │Progress │ │
+│          │  │ ☑ Version  ☐ OS Detect   │     │ │  2/5    │ │
+│          │  │                           │     │ │ ████░░  │ │
+│          │  │ nmap -sS -sV 192.168.1.1  │     │ └─────────┘ │
+│          │  │                  [Copy]   │     │             │
+│          │  └───────────────────────────┘     │             │
+│          │                                    │             │
+│          │  ## Scenarios                      │             │
+│          │  ☑ Scenario 1: Discover...        │             │
+│          │  ☐ Scenario 2: Open Ports         │             │
+│          │                                    │             │
+│          │  ▶ Hint (click to expand)         │             │
+│          │                                    │             │
+└──────────┴────────────────────────────────────┴─────────────┘
+```
+
+### 10.10 Implementation Order
+
+1. Create directory structure and router
+2. Create tool parser service
+3. Create templates (landing + tool page)
+4. Add JavaScript for interactivity
+5. Create Nmap content
+6. Update navigation and register router
+7. Test all features
+
+### 10.11 Verification
+
+1. Navigate to `/tools` - see list of available tools
+2. Click Nmap - see 3-column layout with content
+3. Use command builder - generates correct command, copy works
+4. Complete a scenario - checkbox persists on refresh
+5. Answer quiz question - instant feedback shown
+6. Check progress ring - updates as scenarios complete
+7. Verify mobile layout - responsive design works
+
+---
+
 **End of Implementation Plan**

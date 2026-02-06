@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Tools{% endblock %}
+
+{% block content %}
+<nav class="nav">
+    <a href="/home">Home</a>
+    <a href="/schedule">Schedule</a>
+    <a href="/quizzes">Quizzes</a>
+    <a href="/tools" class="active">Tools</a>
+    <a href="/me">Profile</a>
+    {% if is_admin %}<a href="/admin/analytics">Admin</a>{% endif %}
+    <a href="/auth/logout">Sign Out</a>
+</nav>
+
+<h1>Security Tools Reference</h1>
+<p class="text-muted mb-3">Interactive reference guides for common security and penetration testing tools.</p>
+
+{% if tools %}
+<div class="tools-grid">
+    {% for tool in tools %}
+    <a href="/tools/{{ tool.id }}" class="tool-card">
+        <h3>{{ tool.name }}</h3>
+        <p>{{ tool.description }}</p>
+        <span class="tool-link">View Guide</span>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-muted">No tools available yet.</p>
+{% endif %}
+
+<style>
+.tools-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+@media (min-width: 640px) {
+    .tools-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.tool-card {
+    display: block;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.tool-card:hover {
+    border-color: #007bff;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15);
+    text-decoration: none;
+}
+
+.tool-card h3 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.tool-card p {
+    margin: 0 0 1rem 0;
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.tool-link {
+    color: #007bff;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.nav a.active {
+    font-weight: 600;
+    color: #333;
+}
+</style>
+{% endblock %}

@@ -24,6 +24,14 @@ A lightweight course portal for ~30 students with Google Sheets as the backend.
 ### Planned
 - [ ] CI/CD with GitHub Actions
 - [ ] Production deployment to DigitalOcean
+- [ ] Interactive Tools Feature
+  - [ ] Tools landing page (`/tools`)
+  - [ ] Individual tool pages (`/tools/{tool_id}`)
+  - [ ] Command builder UI (beginner flags)
+  - [ ] Scenario-based exercises with collapsible hints
+  - [ ] Embedded mini-quizzes with instant feedback
+  - [ ] Output simulator (sample command outputs)
+  - [ ] Progress tracking (localStorage)
 
 ## Tech Stack
 
@@ -49,7 +57,8 @@ classapp/
 │   ├── db/                # Database (SQLite)
 │   └── templates/         # Jinja2 templates
 ├── content/
-│   └── quizzes/           # Quiz markdown files
+│   ├── quizzes/           # Quiz markdown files
+│   └── tools/             # Interactive tool reference pages
 ├── tests/                 # Pytest tests
 ├── scripts/               # Utility scripts
 ├── nginx/                 # Nginx config
@@ -196,6 +205,8 @@ GitHub Actions workflow will:
 | GET | `/quiz/{id}` | Quiz form |
 | POST | `/quiz/{id}` | Submit quiz |
 | GET | `/me` | Profile |
+| GET | `/tools` | Tools landing page |
+| GET | `/tools/{id}` | Individual tool page |
 
 ### Admin Routes (requires `admin_email` in Config sheet)
 
