@@ -34,7 +34,9 @@ async def tools_landing(request: Request, student: OnboardedStudent, session: Cu
 
 
 @router.get("/tools/{tool_id}", response_class=HTMLResponse)
-async def tool_page(request: Request, tool_id: str, student: OnboardedStudent, session: CurrentSession):
+async def tool_page(
+    request: Request, tool_id: str, student: OnboardedStudent, session: CurrentSession
+):
     """
     Render an individual tool reference page.
     """

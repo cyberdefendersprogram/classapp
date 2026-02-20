@@ -281,9 +281,7 @@ class TestGetAvailableTools:
 
     def test_get_tools_extracts_description(self, tmp_path):
         """Extracts description from first paragraph."""
-        (tmp_path / "tool.md").write_text(
-            "# My Tool\n\nThis is a great tool for testing."
-        )
+        (tmp_path / "tool.md").write_text("# My Tool\n\nThis is a great tool for testing.")
 
         tools = get_available_tools(tmp_path)
 

@@ -12,6 +12,7 @@ import yaml
 @dataclass
 class ToolScenario:
     """A scenario/exercise for a tool."""
+
     id: str
     title: str
     level: str  # beginner, intermediate
@@ -24,6 +25,7 @@ class ToolScenario:
 @dataclass
 class ToolQuiz:
     """An inline quiz question."""
+
     id: str
     question: str
     options: list[dict]  # [{"text": "...", "correct": bool}, ...]
@@ -32,10 +34,15 @@ class ToolQuiz:
 @dataclass
 class CommandBuilder:
     """Configuration for the command builder UI."""
+
     id: str
     tool_name: str
-    scan_types: list[dict] = field(default_factory=list)  # [{"name": "...", "flag": "...", "desc": "..."}, ...]
-    options: list[dict] = field(default_factory=list)  # [{"name": "...", "flag": "...", "desc": "..."}, ...]
+    scan_types: list[dict] = field(
+        default_factory=list
+    )  # [{"name": "...", "flag": "...", "desc": "..."}, ...]
+    options: list[dict] = field(
+        default_factory=list
+    )  # [{"name": "...", "flag": "...", "desc": "..."}, ...]
     target_placeholder: str = "192.168.1.1"
 
 
@@ -68,11 +75,13 @@ def get_available_tools(tools_dir: Path) -> list[dict]:
         if len(description) > 150:
             description = description[:147] + "..."
 
-        tools.append({
-            "id": tool_id,
-            "name": title,
-            "description": description,
-        })
+        tools.append(
+            {
+                "id": tool_id,
+                "name": title,
+                "description": description,
+            }
+        )
 
     return tools
 
@@ -130,10 +139,12 @@ def parse_tool_content(content: str, tool_id: str) -> dict[str, Any]:
         except yaml.YAMLError:
             pass
         # Remove from body
-        body = body[:cb_match.start()] + body[cb_match.end():]
+        body = body[: cb_match.start()] + body[cb_match.end() :]
 
     # Parse :::scenario blocks
-    scenario_pattern = r":::scenario\{id=[\"']([^\"']+)[\"']\s+level=[\"']([^\"']+)[\"']\}\n(.*?):::"
+    scenario_pattern = (
+        r":::scenario\{id=[\"']([^\"']+)[\"']\s+level=[\"']([^\"']+)[\"']\}\n(.*?):::"
+    )
     for match in re.finditer(scenario_pattern, body, re.DOTALL):
         s_id = match.group(1)
         s_level = match.group(2)
@@ -142,15 +153,17 @@ def parse_tool_content(content: str, tool_id: str) -> dict[str, Any]:
         # Parse scenario content (YAML-like)
         try:
             s_config = yaml.safe_load(s_content) or {}
-            scenarios.append(ToolScenario(
-                id=s_id,
-                title=s_config.get("title", "Scenario"),
-                level=s_level,
-                goal=s_config.get("goal", ""),
-                hint=s_config.get("hint", ""),
-                command=s_config.get("command", ""),
-                expected_output=s_config.get("expected_output", ""),
-            ))
+            scenarios.append(
+                ToolScenario(
+                    id=s_id,
+                    title=s_config.get("title", "Scenario"),
+                    level=s_level,
+                    goal=s_config.get("goal", ""),
+                    hint=s_config.get("hint", ""),
+                    command=s_config.get("command", ""),
+                    expected_output=s_config.get("expected_output", ""),
+                )
+            )
         except yaml.YAMLError:
             pass
 
@@ -185,6 +198,7 @@ def parse_tool_content(content: str, tool_id: str) -> dict[str, Any]:
 
     # Parse :::hint blocks and convert to HTML details
     hint_pattern = r":::hint\{title=[\"']([^\"']+)[\"']\}\n(.*?):::"
+
     def replace_hint(match):
         hint_title = match.group(1)
         hint_content = match.group(2).strip()
@@ -194,19 +208,21 @@ def parse_tool_content(content: str, tool_id: str) -> dict[str, Any]:
 
     # Parse :::output blocks and convert to HTML details
     output_pattern = r":::output\{title=[\"']([^\"']+)[\"']\}\n(.*?):::"
+
     def replace_output(match):
         output_title = match.group(1)
         output_content = match.group(2).strip()
         # Escape HTML in output
-        output_content = output_content.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        output_content = (
+            output_content.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        )
         return f'<details class="output-block"><summary>{output_title}</summary><pre class="output-content">{output_content}</pre></details>'
 
     body = re.sub(output_pattern, replace_output, body, flags=re.DOTALL)
 
     # Convert remaining markdown to HTML
     html_content = markdown.markdown(
-        body,
-        extensions=["fenced_code", "tables", "toc", "codehilite"]
+        body, extensions=["fenced_code", "tables", "toc", "codehilite"]
     )
 
     return {
