@@ -74,7 +74,7 @@ class QuizMeta:
     def from_row(cls, row: dict) -> "QuizMeta":
         """Create QuizMeta from a sheet row dictionary."""
         return cls(
-            quiz_id=row.get("quiz_id", ""),
+            quiz_id=str(row.get("quiz_id", "")),
             title=row.get("title", ""),
             content_path=row.get("content_path", ""),
             open_at=_parse_datetime(row.get("open_at")),
@@ -105,13 +105,13 @@ class QuizSubmission:
         """Create QuizSubmission from a sheet row dictionary."""
         return cls(
             submitted_at=_parse_datetime(row.get("submitted_at")) or datetime.utcnow(),
-            quiz_id=row.get("quiz_id", ""),
+            quiz_id=str(row.get("quiz_id", "")),
             attempt=_parse_int(row.get("attempt"), default=1),
-            student_id=row.get("student_id", ""),
-            email=row.get("email", ""),
+            student_id=str(row.get("student_id", "")),
+            email=str(row.get("email", "")),
             answers_json=row.get("answers_json", "{}"),
-            score=_parse_float(row.get("score"), default=0),
-            max_score=_parse_float(row.get("max_score"), default=0),
+            score=_parse_float(row.get("score"), default=0.0),
+            max_score=_parse_float(row.get("max_score"), default=0.0),
             autograde_json=row.get("autograde_json", "{}"),
             source=row.get("source", "web"),
         )
