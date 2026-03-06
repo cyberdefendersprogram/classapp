@@ -9,7 +9,7 @@ from fastapi.templating import Jinja2Templates
 
 from app.models.roster import RosterEntry
 from app.services.sessions import COOKIE_NAME, SessionData, verify_session_token
-from app.services.sheets import get_sheets_client
+from app.services.sheets import SheetsUnavailableError, get_sheets_client
 
 logger = logging.getLogger(__name__)
 
@@ -54,10 +54,19 @@ def get_current_student(
     """
     Get the current student from session.
 
-    Raises 401 if session invalid or student not found.
+    Raises 503 if Sheets API is unavailable (preserves session cookie).
+    Raises 401 if session is invalid or student genuinely not found.
     """
     sheets = get_sheets_client()
-    student = sheets.get_roster_by_id(session.student_id)
+
+    try:
+        student = sheets.get_roster_by_id(session.student_id)
+    except SheetsUnavailableError:
+        logger.warning("Sheets unavailable for session %s — returning 503", session.student_id)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Service temporarily unavailable. Please try again in a moment.",
+        )
 
     if not student:
         logger.warning("Student not found for session: %s", session.student_id)

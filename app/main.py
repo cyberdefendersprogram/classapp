@@ -2,7 +2,7 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
 from app.config import settings
 from app.db.sqlite import init_db
@@ -57,6 +57,32 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         response.delete_cookie(COOKIE_NAME)
         logger.info("Redirecting unauthenticated request to login: %s", request.url.path)
         return response
+
+    if exc.status_code == 503:
+        # Sheets API unavailable — keep session cookie intact, show friendly page
+        logger.warning("503 on %s: %s", request.url.path, exc.detail)
+        return HTMLResponse(
+            status_code=503,
+            content="""<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Be right back</title>
+<meta http-equiv="refresh" content="15;url=">
+<style>
+  body{font-family:system-ui,sans-serif;display:flex;align-items:center;
+       justify-content:center;min-height:100vh;margin:0;background:#f5f5f5;}
+  .box{background:#fff;padding:2.5rem 3rem;border-radius:12px;
+       box-shadow:0 2px 12px rgba(0,0,0,.08);text-align:center;max-width:420px;}
+  h1{margin:0 0 .75rem;font-size:1.5rem;}
+  p{color:#555;margin:.5rem 0;}
+  a{color:#2c7be5;}
+</style>
+</head>
+<body><div class="box">
+  <h1>Be right back</h1>
+  <p>The server is temporarily busy. Your session is safe.</p>
+  <p>This page will <a href="">reload automatically</a> in 15 seconds.</p>
+</div></body></html>""",
+        )
 
     # For other HTTP exceptions, return JSON
     return JSONResponse(

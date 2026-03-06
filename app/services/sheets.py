@@ -15,6 +15,11 @@ from app.services.cache import cached, invalidate
 
 logger = logging.getLogger(__name__)
 
+
+class SheetsUnavailableError(Exception):
+    """Raised when the Google Sheets API is unreachable or rate-limited."""
+
+
 # Google Sheets API scopes
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
@@ -129,6 +134,9 @@ class SheetsClient:
                     return RosterEntry.from_row(record)
 
             return None
+        except gspread.exceptions.APIError as e:
+            logger.error("Sheets API error getting roster by email '%s': %s", email, e)
+            raise SheetsUnavailableError(str(e)) from e
         except Exception as e:
             logger.error("Failed to get roster by email '%s': %s", email, e)
             return None
@@ -145,6 +153,9 @@ class SheetsClient:
                     return RosterEntry.from_row(record)
 
             return None
+        except gspread.exceptions.APIError as e:
+            logger.error("Sheets API error getting roster by id '%s': %s", student_id, e)
+            raise SheetsUnavailableError(str(e)) from e
         except Exception as e:
             logger.error("Failed to get roster by id '%s': %s", student_id, e)
             return None
