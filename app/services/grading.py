@@ -94,6 +94,8 @@ def grade_question(question: Question, answer: str | list[str] | None) -> Questi
         return grade_numeric(question, answer)
     elif question.type == "short_text":
         return grade_short_text(question, answer)
+    elif question.type == "free_response":
+        return grade_free_response(question, answer)
     else:
         logger.warning("Unknown question type: %s", question.type)
         return QuestionResult(
@@ -173,6 +175,16 @@ def grade_numeric(question: Question, answer: str | None) -> QuestionResult:
         max_points=question.points,
         expected=expected if not correct else None,
         got=student_answer if not correct else None,
+    )
+
+
+def grade_free_response(question: Question, answer: str | list[str] | None) -> QuestionResult:
+    """Grade a free-response question — any non-empty answer earns full points."""
+    has_answer = bool(answer) if not isinstance(answer, list) else bool(answer)
+    return QuestionResult(
+        correct=True,
+        points=question.points if has_answer else 0,
+        max_points=question.points,
     )
 
 

@@ -156,6 +156,28 @@ def parse_question(q_id: str, q_type: str, points: int, content: str) -> Questio
             correct=answer,
         )
 
+    elif q_type == "free_response":
+        # Any non-empty answer receives full points; options optional for display
+        in_options = False
+        text_lines = []
+        options = []
+        for line in lines:
+            option_match = MCQ_OPTION_PATTERN.match(line)
+            if option_match:
+                in_options = True
+                options.append(option_match.group(2).strip())
+            elif not in_options:
+                text_lines.append(line)
+
+        return Question(
+            id=q_id,
+            type=q_type,
+            text="\n".join(text_lines).strip(),
+            points=points,
+            options=options,
+            correct=None,
+        )
+
     else:
         logger.warning("Unknown question type: %s", q_type)
         return None
