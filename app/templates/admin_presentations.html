@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block title %}Presentations - Admin{% endblock %}
+
+{% block content %}
+<nav class="nav">
+    <a href="/home">Home</a>
+    <a href="/admin/analytics">Analytics</a>
+    <a href="/admin/grading">Grading</a>
+    <a href="/admin/presentations" class="active">Presentations</a>
+</nav>
+
+<h1>Presentations</h1>
+
+{% set ordered = rows | selectattr("order") | list %}
+{% set unordered = rows | rejectattr("order") | list %}
+
+<!-- ------------------------------------------------------------------ -->
+<!-- Order form                                                           -->
+<!-- ------------------------------------------------------------------ -->
+<section class="card" style="margin-bottom: 2rem;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+        <h2 style="margin: 0;">Set Presentation Order</h2>
+        <a href="/admin/presentations/csv" class="btn btn-outline btn-sm">Download CSV</a>
+    </div>
+
+    {% if not rows %}
+    <p class="text-muted">No claimed students yet.</p>
+    {% else %}
+    <form method="post" action="/admin/presentations/reorder">
+        <div class="table-container">
+            <table class="grading-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th class="sticky-col">Student</th>
+                        <th>Email</th>
+                        <th>Presentation Title</th>
+                        <th>Timing Pref</th>
+                        <th>Order</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                    <tr class="{{ 'row-ordered' if row.order else 'row-pending' }}">
+                        <td class="text-muted" style="font-size: 0.8rem;">
+                            {% if row.order %}{{ row.order }}{% else %}—{% endif %}
+                        </td>
+                        <td class="sticky-col">{{ row.name }}</td>
+                        <td>{{ row.email }}</td>
+                        <td>
+                            {% if row.title %}
+                                {{ row.title }}
+                            {% elif row.submitted %}
+                                <span class="text-muted">(no title given)</span>
+                            {% else %}
+                                <span class="badge-pending">not submitted</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if row.timing %}
+                            <span class="badge-timing">{{ row.timing }}</span>
+                            {% else %}
+                            <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <input
+                                type="number"
+                                name="order_{{ row.student_id }}"
+                                value="{{ row.order or '' }}"
+                                min="1"
+                                max="99"
+                                placeholder="—"
+                                class="order-input"
+                            >
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div style="margin-top: 1rem;">
+            <button type="submit">Save Order</button>
+        </div>
+    </form>
+    {% endif %}
+</section>
+
+<!-- ------------------------------------------------------------------ -->
+<!-- Final order + grading                                               -->
+<!-- ------------------------------------------------------------------ -->
+{% if ordered %}
+<section class="card">
+    <h2>Final Presentation Order</h2>
+    <div class="table-container">
+        <table class="grading-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th class="sticky-col">Student</th>
+                    <th>Presentation Title</th>
+                    <th>Timing</th>
+                    <th style="min-width: 160px;">Grade (1–50)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in ordered %}
+                <tr>
+                    <td><strong>{{ row.order }}</strong></td>
+                    <td class="sticky-col">{{ row.name }}</td>
+                    <td>{{ row.title or '—' }}</td>
+                    <td>
+                        {% if row.timing %}
+                        <span class="badge-timing">{{ row.timing }}</span>
+                        {% else %}—{% endif %}
+                    </td>
+                    <td>
+                        <form
+                            method="post"
+                            action="/admin/presentations/grade/{{ row.student_id }}"
+                            style="display: flex; gap: 0.5rem; align-items: center;"
+                        >
+                            <input
+                                type="number"
+                                name="grade"
+                                value="{{ row.grade or '' }}"
+                                min="1"
+                                max="50"
+                                placeholder="—"
+                                class="grade-input"
+                                required
+                            >
+                            <button type="submit" class="btn-save">Save</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block head %}
+<style>
+    .card {
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 1.5rem;
+    }
+
+    .table-container {
+        overflow-x: auto;
+        margin-top: 0.75rem;
+    }
+
+    .grading-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+    }
+
+    .grading-table th,
+    .grading-table td {
+        padding: 0.5rem 0.75rem;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+        white-space: nowrap;
+    }
+
+    .grading-table th {
+        font-weight: 500;
+        color: #666;
+        background: #f8f9fa;
+        position: sticky;
+        top: 0;
+    }
+
+    .grading-table tbody tr:hover {
+        background: #fafafa;
+    }
+
+    .sticky-col {
+        position: sticky;
+        left: 0;
+        background: #fff;
+        z-index: 1;
+    }
+
+    .grading-table th.sticky-col {
+        background: #f8f9fa;
+        z-index: 2;
+    }
+
+    .grading-table tbody tr:hover .sticky-col {
+        background: #fafafa;
+    }
+
+    .order-input {
+        width: 60px;
+        padding: 0.25rem 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 0.875rem;
+        text-align: center;
+    }
+
+    .grade-input {
+        width: 70px;
+        padding: 0.25rem 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 0.875rem;
+        text-align: center;
+    }
+
+    .btn-save {
+        padding: 0.25rem 0.75rem;
+        font-size: 0.8rem;
+        background: #2c7be5;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        width: auto;
+    }
+
+    .btn-save:hover {
+        background: #1a68d1;
+    }
+
+    .btn-sm {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+        width: auto;
+        display: inline-block;
+    }
+
+    .badge-timing {
+        background: #e8f4fd;
+        color: #1a68d1;
+        padding: 0.15rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+    }
+
+    .badge-pending {
+        background: #fff3cd;
+        color: #856404;
+        padding: 0.15rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+    }
+
+    .row-ordered td {
+        background: #f6fff8;
+    }
+
+    .row-ordered:hover td {
+        background: #edfbf1 !important;
+    }
+
+    .row-ordered .sticky-col {
+        background: #f6fff8;
+    }
+
+    .row-ordered:hover .sticky-col {
+        background: #edfbf1 !important;
+    }
+
+    .text-muted {
+        color: #888;
+    }
+
+    nav .active {
+        font-weight: 600;
+        color: #2c7be5;
+    }
+</style>
+{% endblock %}

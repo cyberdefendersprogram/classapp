@@ -2,10 +2,11 @@
 
 import csv
 import io
+import json
 import logging
 
-from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi import APIRouter, Form, Request
+from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 
 from app.dependencies import AdminSession, templates
 from app.services.analytics import compute_quiz_analytics, get_best_submissions
@@ -184,6 +185,7 @@ async def grading_csv(session: AdminSession):
     # Header row
     header = ["Student Name", "Email", "Student ID"]
     header.extend([quiz.title for quiz in quizzes])
+    header.append("Presentation Grade")
     writer.writerow(header)
 
     # Data rows
@@ -196,6 +198,7 @@ async def grading_csv(session: AdminSession):
         for quiz in quizzes:
             score = grades.get(student.student_id, {}).get(quiz.quiz_id, 0)
             row.append(score)
+        row.append(student.presentation_grade or "")
         writer.writerow(row)
 
     output.seek(0)
@@ -204,4 +207,126 @@ async def grading_csv(session: AdminSession):
         iter([output.getvalue()]),
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=grades.csv"},
+    )
+
+
+# ---------------------------------------------------------------------------
+# Presentations
+# ---------------------------------------------------------------------------
+
+PRESENTATION_QUIZ_ID = "006"
+
+
+def _build_presentation_rows(sheets) -> list[dict]:
+    """
+    Join quiz-006 submissions with roster to produce one row per student.
+
+    Returns list of dicts with keys:
+        student_id, name, email, title, timing, order, grade
+    """
+    roster = sheets.get_all_roster()
+    submissions = sheets.get_all_quiz_submissions(PRESENTATION_QUIZ_ID)
+
+    # Best (most recent) submission per student
+    by_student: dict[str, dict] = {}
+    for sub in sorted(submissions, key=lambda s: s.submitted_at):
+        try:
+            answers = json.loads(sub.answers_json)
+        except (json.JSONDecodeError, TypeError):
+            answers = {}
+        by_student[sub.student_id] = answers
+
+    rows = []
+    for student in roster:
+        if not student.is_claimed:
+            continue
+        answers = by_student.get(student.student_id, {})
+        rows.append(
+            {
+                "student_id": student.student_id,
+                "name": student.display_name,
+                "full_name": student.full_name,
+                "email": student.preferred_email or "",
+                "title": answers.get("q1", ""),
+                "timing": answers.get("q2", ""),
+                "order": student.presentation_order,
+                "grade": student.presentation_grade,
+                "submitted": bool(answers),
+            }
+        )
+
+    # Sort: ordered students first (by order number), unordered at bottom
+    rows.sort(key=lambda r: (r["order"] is None, r["order"] or 0, r["name"]))
+    return rows
+
+
+@router.get("/presentations", response_class=HTMLResponse)
+async def presentations_page(request: Request, session: AdminSession):
+    """Admin presentations page — order and grade student presentations."""
+    sheets = get_sheets_client()
+    rows = _build_presentation_rows(sheets)
+
+    return templates.TemplateResponse(
+        "admin_presentations.html",
+        {
+            "request": request,
+            "session": session,
+            "rows": rows,
+        },
+    )
+
+
+@router.post("/presentations/reorder")
+async def presentations_reorder(request: Request, session: AdminSession):
+    """Save presentation order numbers from form submission."""
+    sheets = get_sheets_client()
+    form = await request.form()
+
+    for key, value in form.items():
+        if key.startswith("order_"):
+            student_id = key[len("order_") :]
+            order_val = str(value).strip()
+            sheets.update_roster(student_id, presentation_order=order_val if order_val else "")
+
+    return RedirectResponse("/admin/presentations", status_code=303)
+
+
+@router.post("/presentations/grade/{student_id}")
+async def presentations_grade(
+    student_id: str,
+    session: AdminSession,
+    grade: int = Form(...),
+):
+    """Save presentation grade (1–50) for a student."""
+    sheets = get_sheets_client()
+    sheets.update_roster(student_id, presentation_grade=str(grade))
+    return RedirectResponse("/admin/presentations", status_code=303)
+
+
+@router.get("/presentations/csv")
+async def presentations_csv(session: AdminSession):
+    """Download presentations as CSV."""
+    sheets = get_sheets_client()
+    rows = _build_presentation_rows(sheets)
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Order", "Student Name", "Email", "Presentation Title", "Timing", "Grade"])
+    for row in rows:
+        writer.writerow(
+            [
+                row["order"] or "",
+                row["full_name"],
+                row["email"],
+                row["title"],
+                row["timing"],
+                row["grade"] or "",
+            ]
+        )
+
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=presentations.csv"},
     )

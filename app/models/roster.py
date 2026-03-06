@@ -27,6 +27,8 @@ class RosterEntry:
     claimed_at: datetime | None = None
     onboarding_completed_at: datetime | None = None
     last_login_at: datetime | None = None
+    presentation_order: int | None = None
+    presentation_grade: int | None = None
 
     @property
     def is_claimed(self) -> bool:
@@ -78,6 +80,8 @@ class RosterEntry:
             claimed_at=_parse_datetime(row.get("claimed_at")),
             onboarding_completed_at=_parse_datetime(row.get("onboarding_completed_at")),
             last_login_at=_parse_datetime(row.get("last_login_at")),
+            presentation_order=_parse_int_field(row.get("presentation_order")),
+            presentation_grade=_parse_int_field(row.get("presentation_grade")),
         )
 
     def get_empty_profile_fields(self) -> list[str]:
@@ -96,6 +100,16 @@ class RosterEntry:
             "support_request",
         ]
         return [f for f in profile_fields if not getattr(self, f)]
+
+
+def _parse_int_field(value) -> int | None:
+    """Parse optional integer field."""
+    if value is None or value == "":
+        return None
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        return None
 
 
 def _parse_datetime(value: str | None) -> datetime | None:
