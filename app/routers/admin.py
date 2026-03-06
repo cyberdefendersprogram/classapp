@@ -214,7 +214,7 @@ async def grading_csv(session: AdminSession):
 # Presentations
 # ---------------------------------------------------------------------------
 
-PRESENTATION_QUIZ_ID = "006"
+PRESENTATION_QUIZ_ID = "q006"
 
 
 def _build_presentation_rows(sheets) -> list[dict]:
