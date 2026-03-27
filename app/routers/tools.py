@@ -12,7 +12,7 @@ from app.services.tool_parser import get_available_tools, parse_tool_content
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-TOOLS_DIR = Path(__file__).parent.parent.parent / "content" / "cis55" / "tools"
+TOOLS_DIR = Path(__file__).parent.parent.parent / "content" / "cis60" / "tools"
 
 
 @router.get("/tools", response_class=HTMLResponse)
