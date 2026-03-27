@@ -2,7 +2,7 @@
 title: CIS 60 – Introduction Quiz
 ---
 
-## Q1 [mcq, 5pts]
+## Q1 [mcq_single, 5pts]
 What is the primary focus of digital forensics?
 
 - [ ] Preventing cyberattacks
@@ -10,7 +10,7 @@ What is the primary focus of digital forensics?
 - [ ] Writing malware for research
 - [ ] Network penetration testing
 
-## Q2 [mcq, 5pts]
+## Q2 [mcq_single, 5pts]
 Which of the following best describes the "chain of custody" in digital forensics?
 
 - [ ] A cryptographic hash of a disk image
