@@ -7,6 +7,7 @@ from typing import Annotated
 from fastapi import Cookie, Depends, HTTPException, status
 from fastapi.templating import Jinja2Templates
 
+from app.db.sqlite import get_cached_student, set_cached_student
 from app.models.roster import RosterEntry
 from app.services.sessions import COOKIE_NAME, SessionData, verify_session_token
 from app.services.sheets import SheetsUnavailableError, get_sheets_client
@@ -54,14 +55,26 @@ def get_current_student(
     """
     Get the current student from session.
 
-    Raises 503 if Sheets API is unavailable (preserves session cookie).
-    Raises 401 if session is invalid or student genuinely not found.
+    Checks SQLite cache first (5-min TTL) to avoid per-request Sheets API calls.
+    On cache miss, fetches from Sheets and refreshes cache.
+    If Sheets is unavailable, serves stale cache (up to 24h) before returning 503.
+    Raises 401 if student genuinely not found.
     """
-    sheets = get_sheets_client()
+    # Fast path: serve from local SQLite cache
+    student = get_cached_student(session.student_id)
+    if student:
+        return student
 
+    # Cache miss or expired — fetch from Sheets
+    sheets = get_sheets_client()
     try:
         student = sheets.get_roster_by_id(session.student_id)
     except SheetsUnavailableError:
+        # Sheets is down — try stale cache (up to 24h) before giving up
+        stale = get_cached_student(session.student_id, max_age_seconds=86400)
+        if stale:
+            logger.warning("Serving stale cache for %s (Sheets unavailable)", session.student_id)
+            return stale
         logger.warning("Sheets unavailable for session %s — returning 503", session.student_id)
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -75,6 +88,7 @@ def get_current_student(
             detail="Student not found",
         )
 
+    set_cached_student(student)
     return student
 
 

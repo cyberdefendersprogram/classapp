@@ -1,8 +1,14 @@
+import json
 import sqlite3
 from contextlib import contextmanager
+from datetime import datetime, timedelta
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from app.config import settings
+
+if TYPE_CHECKING:
+    from app.models.roster import RosterEntry
 
 # SQL schema for magic_tokens table
 SCHEMA_MAGIC_TOKENS = """
@@ -27,6 +33,18 @@ CREATE TABLE IF NOT EXISTS rate_limits (
 );
 """
 
+# SQL schema for student_cache table
+# Caches roster data locally so every page load doesn't hit the Sheets API.
+SCHEMA_STUDENT_CACHE = """
+CREATE TABLE IF NOT EXISTS student_cache (
+    student_id TEXT PRIMARY KEY,
+    profile_json TEXT NOT NULL,
+    cached_at TEXT NOT NULL
+);
+"""
+
+STUDENT_CACHE_TTL_SECONDS = 300  # refresh from Sheets every 5 minutes
+
 
 def init_db() -> None:
     """Initialize the SQLite database with required tables."""
@@ -37,6 +55,7 @@ def init_db() -> None:
     with get_db() as db:
         db.executescript(SCHEMA_MAGIC_TOKENS)
         db.executescript(SCHEMA_RATE_LIMITS)
+        db.executescript(SCHEMA_STUDENT_CACHE)
 
 
 @contextmanager
@@ -71,3 +90,43 @@ def check_db_health() -> bool:
             return len(tables) == 2
     except Exception:
         return False
+
+
+def get_cached_student(
+    student_id: str, max_age_seconds: int = STUDENT_CACHE_TTL_SECONDS
+) -> "RosterEntry | None":
+    """Return cached RosterEntry if within max_age_seconds, else None."""
+    from app.models.roster import RosterEntry  # noqa: PLC0415
+
+    with get_db() as db:
+        row = db.execute(
+            "SELECT profile_json, cached_at FROM student_cache WHERE student_id = ?",
+            (student_id,),
+        ).fetchone()
+    if not row:
+        return None
+    cached_at = datetime.fromisoformat(row["cached_at"])
+    if datetime.utcnow() - cached_at > timedelta(seconds=max_age_seconds):
+        return None
+    data = json.loads(row["profile_json"])
+    return RosterEntry.from_row(data)
+
+
+def set_cached_student(student: "RosterEntry") -> None:
+    """Upsert a RosterEntry into the local SQLite cache."""
+    import dataclasses
+
+    data = dataclasses.asdict(student)
+    # Convert datetime objects to ISO strings for JSON serialization
+    for key, val in data.items():
+        if isinstance(val, datetime):
+            data[key] = val.isoformat()
+    with get_db() as db:
+        db.execute(
+            """INSERT INTO student_cache (student_id, profile_json, cached_at)
+               VALUES (?, ?, ?)
+               ON CONFLICT(student_id) DO UPDATE SET
+                   profile_json = excluded.profile_json,
+                   cached_at = excluded.cached_at""",
+            (student.student_id, json.dumps(data), datetime.utcnow().isoformat()),
+        )
