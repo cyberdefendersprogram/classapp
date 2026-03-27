@@ -77,8 +77,8 @@ async def claim_submit(
             },
         )
 
-    # Check if already claimed
-    if student.preferred_email:
+    # Check if already claimed (requires both preferred_email AND claimed_at)
+    if student.is_claimed:
         logger.warning("Claim attempt for already claimed student: %s", student_id)
         return templates.TemplateResponse(
             "claim.html",
