@@ -116,7 +116,7 @@ TEST_QUIZZES = [
     {
         "quiz_id": "q001",
         "title": "Introduction Quiz",
-        "content_path": "content/quizzes/001-intro.md",
+        "content_path": "content/cis55/quizzes/001-intro.md",
         "open_at": "",
         "close_at": "",
         "attempts_allowed": "2",
@@ -130,7 +130,7 @@ TEST_SCHEDULE = [
     {
         "session": "1/23/2026",
         "desc": "1 - Introduction",
-        "desc_link": "content/notes/001-intro.md",
+        "desc_link": "content/cis55/notes/001-intro.md",
         "notes": "Quiz 1",
         "slides_link": "",
         "recording_link": "",
@@ -138,7 +138,7 @@ TEST_SCHEDULE = [
     {
         "session": "1/30/2026",
         "desc": "2 - Cryptography & Incident Response",
-        "desc_link": "content/notes/002-ethics-ir-and-crypto.md",
+        "desc_link": "content/cis55/notes/002-ethics-ir-and-crypto.md",
         "notes": "Lab 1\nQuiz 2",
         "slides_link": "",
         "recording_link": "",
