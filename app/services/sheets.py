@@ -173,8 +173,8 @@ class SheetsClient:
             # Find the student row
             for idx, record in enumerate(records):
                 if str(record.get("student_id")) == str(student_id):
-                    # Check not already claimed
-                    if record.get("preferred_email"):
+                    # Check not already claimed (requires both email AND claimed_at)
+                    if record.get("preferred_email") and record.get("claimed_at"):
                         logger.warning("Student %s already claimed", student_id)
                         return False
 

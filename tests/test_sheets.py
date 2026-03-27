@@ -219,7 +219,8 @@ class TestSheetsClientRoster:
             {
                 "student_id": "stu_001",
                 "full_name": "Smith, Alice",
-                "preferred_email": "existing@example.com",  # Already claimed
+                "preferred_email": "existing@example.com",
+                "claimed_at": "2026-01-01T00:00:00",  # Fully claimed
             },
         ]
 
