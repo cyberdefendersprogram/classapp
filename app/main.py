@@ -6,7 +6,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
 from app.config import settings
 from app.db.sqlite import init_db
-from app.routers import admin, auth, claim, health, onboarding, pages, quizzes, tools
+from app.routers import admin, auth, book_reading, claim, health, onboarding, pages, quizzes, tools
 from app.services.sessions import COOKIE_NAME
 
 # Configure logging
@@ -45,6 +45,7 @@ app.include_router(onboarding.router)
 app.include_router(pages.router)
 app.include_router(quizzes.router)
 app.include_router(tools.router)
+app.include_router(book_reading.router)
 app.include_router(admin.router)
 
 

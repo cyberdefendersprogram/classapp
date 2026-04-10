@@ -99,6 +99,13 @@ SHEET_STRUCTURES = {
         "key",
         "value",
     ],
+    "Book_Reading": [
+        "chapter",
+        "class",
+        "primary_reader",
+        "secondary_reader",
+        "chapter_presentation_link",
+    ],
 }
 
 # Default config values
@@ -190,6 +197,46 @@ TEST_SCHEDULE = [
         "notes": "",
         "slides_link": "",
         "recording_link": "",
+    },
+]
+
+
+# Placeholder book chapters — update chapter names and presentation links directly in the sheet
+TEST_BOOK_CHAPTERS = [
+    {
+        "chapter": "Chapter 1",
+        "class": "1",
+        "primary_reader": "",
+        "secondary_reader": "",
+        "chapter_presentation_link": "",
+    },
+    {
+        "chapter": "Chapter 2",
+        "class": "2",
+        "primary_reader": "",
+        "secondary_reader": "",
+        "chapter_presentation_link": "",
+    },
+    {
+        "chapter": "Chapter 3",
+        "class": "3",
+        "primary_reader": "",
+        "secondary_reader": "",
+        "chapter_presentation_link": "",
+    },
+    {
+        "chapter": "Chapter 4",
+        "class": "4",
+        "primary_reader": "",
+        "secondary_reader": "",
+        "chapter_presentation_link": "",
+    },
+    {
+        "chapter": "Chapter 5",
+        "class": "5",
+        "primary_reader": "",
+        "secondary_reader": "",
+        "chapter_presentation_link": "",
     },
 ]
 
@@ -345,6 +392,29 @@ def seed_schedule(spreadsheet: gspread.Spreadsheet) -> None:
         print("    Schedule already seeded")
 
 
+def seed_book_reading(spreadsheet: gspread.Spreadsheet) -> None:
+    """Seed the Book_Reading sheet with placeholder chapter rows."""
+    print("  Seeding Book_Reading...")
+    worksheet = spreadsheet.worksheet("Book_Reading")
+
+    existing = worksheet.get_all_records()
+    existing_chapters = {r.get("chapter") for r in existing}
+
+    headers = SHEET_STRUCTURES["Book_Reading"]
+    rows_to_add = []
+
+    for chapter in TEST_BOOK_CHAPTERS:
+        if chapter["chapter"] in existing_chapters:
+            continue
+        rows_to_add.append([chapter.get(h, "") for h in headers])
+
+    if rows_to_add:
+        worksheet.append_rows(rows_to_add, value_input_option="RAW")
+        print(f"    Added {len(rows_to_add)} chapter rows")
+    else:
+        print("    Book_Reading already seeded")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Seed Google Sheets with data")
     parser.add_argument("--create-structure", action="store_true", help="Create sheet structure")
@@ -371,6 +441,7 @@ def main():
         seed_config(spreadsheet)
         seed_quizzes(spreadsheet)
         seed_schedule(spreadsheet)
+        seed_book_reading(spreadsheet)
 
     print("\nDone!")
 

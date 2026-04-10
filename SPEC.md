@@ -339,6 +339,31 @@ Class schedule. One row per session. Instructor updates this directly in Sheets.
 | slides_link | string | URL to slides (optional) |
 | recording_link | string | URL to recording (optional) |
 
+### 8.8 `Book_Reading`
+
+Book reading assignments. One row per book chapter. Instructor pre-populates the chapter list; students self-assign via the portal.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| chapter | string | Chapter name (e.g., `Chapter 1`) |
+| class | integer | Class/session number linking to `/class/{n}` (e.g., `3`) |
+| primary_reader | string | Display name of primary reader (blank if unassigned) |
+| secondary_reader | string | Display name of secondary reader (blank if unassigned) |
+| chapter_presentation_link | string | Google Drive URL to presentation file (optional) |
+
+**Constraints**:
+- At most one primary and one secondary reader per chapter
+- A student may hold at most one primary role and one secondary role (across different chapters)
+- Readers stored as `display_name` (`preferred_name`, or first name from `full_name` if not set); matched case-insensitively
+- `class` column links directly to the corresponding class session page
+
+**Routes**:
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/book-reading` | View all chapters, assignments, and self-signup UI |
+| POST | `/book-reading/signup` | Assign self as primary or secondary reader |
+
 ### 8.7 `Config`
 
 Key-value configuration.
@@ -522,6 +547,8 @@ answer: ls
 | POST | `/quiz/{id}` | yes | Submit quiz |
 | GET | `/me` | yes | Profile page |
 | GET | `/schedule` | yes | Class schedule |
+| GET | `/book-reading` | yes | Book reading assignments |
+| POST | `/book-reading/signup` | yes | Self-assign as reader |
 | GET | `/health` | no | Health check |
 
 ### 12.2 Health Check

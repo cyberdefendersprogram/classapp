@@ -303,6 +303,44 @@ async def presentations_grade(
     return RedirectResponse("/admin/presentations", status_code=303)
 
 
+@router.get("/book-reading", response_class=HTMLResponse)
+async def admin_book_reading(request: Request, session: AdminSession):
+    """Admin page showing students with no book reading assignment."""
+    sheets = get_sheets_client()
+    chapters = sheets.get_book_readings()
+    roster = sheets.get_all_roster()
+
+    # Collect all assigned display names (case-insensitive)
+    assigned: set[str] = set()
+    for ch in chapters:
+        if ch.primary_reader:
+            assigned.add(ch.primary_reader.lower())
+        if ch.secondary_reader:
+            assigned.add(ch.secondary_reader.lower())
+
+    unassigned = [
+        s
+        for s in roster
+        if not any(
+            name.lower() in assigned
+            for name in [s.display_name, s.full_name, s.preferred_name]
+            if name
+        )
+    ]
+    unassigned.sort(key=lambda s: s.full_name)
+
+    return templates.TemplateResponse(
+        "admin_book_reading.html",
+        {
+            "request": request,
+            "session": session,
+            "unassigned": unassigned,
+            "total_claimed": len(roster),
+            "chapters": chapters,
+        },
+    )
+
+
 @router.get("/presentations/csv")
 async def presentations_csv(session: AdminSession):
     """Download presentations as CSV."""

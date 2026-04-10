@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Book Reading - Class Portal{% endblock %}
+
+{% block content %}
+<nav class="nav">
+    <a href="/home">Home</a>
+    <a href="/schedule">Schedule</a>
+    <a href="/quizzes">Quizzes</a>
+    <a href="/tools">Tools</a>
+    <a href="/book-reading" class="active">Book Reading</a>
+    <a href="/me">Profile</a>
+    {% if is_admin %}<a href="/admin/analytics">Admin</a>{% endif %}
+    <a href="/auth/logout">Sign Out</a>
+</nav>
+
+<h1>Book Reading Assignments</h1>
+
+{% if error %}
+<div class="flash error">{{ error }}</div>
+{% endif %}
+
+{% if success %}
+<div class="flash success">{{ success }}</div>
+{% endif %}
+
+{% if my_primary_chapter or my_secondary_chapter %}
+<div style="background: #eef4ff; border: 1px solid #c5d9f8; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+    <h2 style="margin-bottom: 0.5rem; font-size: 1rem; color: #1a56db;">Your Assignments</h2>
+    {% if my_primary_chapter %}
+    <p style="margin: 0.25rem 0;"><strong>Primary Reader:</strong> {{ my_primary_chapter }}</p>
+    {% endif %}
+    {% if my_secondary_chapter %}
+    <p style="margin: 0.25rem 0;"><strong>Secondary Reader:</strong> {{ my_secondary_chapter }}</p>
+    {% endif %}
+</div>
+{% else %}
+<div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+    <p style="margin: 0; color: #92400e;">You have no reading assignments yet. Sign up for a chapter below.</p>
+</div>
+{% endif %}
+
+{% if chapters %}
+<div style="overflow-x: auto;">
+<table style="width: 100%; border-collapse: collapse;">
+    <thead>
+        <tr style="background: #f5f5f5;">
+            <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #ddd; min-width: 160px;">Chapter</th>
+            <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #ddd; white-space: nowrap;">Class</th>
+            <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #ddd;">Primary Reader</th>
+            <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #ddd;">Secondary Reader</th>
+            <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #ddd;">Slides</th>
+            <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #ddd;">Sign Up</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for ch in chapters %}
+    {% set is_my_row = (ch.chapter == my_primary_chapter or ch.chapter == my_secondary_chapter) %}
+    <tr style="border-bottom: 1px solid #eee;{% if is_my_row %} background: #f0f7ff;{% endif %}">
+        <td style="padding: 0.75rem; vertical-align: middle;{% if is_my_row %} font-weight: 600;{% endif %}">
+            {{ ch.chapter }}
+        </td>
+        <td style="padding: 0.75rem; vertical-align: middle; white-space: nowrap;">
+            {% if ch.class_num %}
+            <a href="/class/{{ ch.class_num }}" style="font-size: 0.875rem;">Class {{ ch.class_num }}</a>
+            {% else %}
+            <span class="text-muted">—</span>
+            {% endif %}
+        </td>
+        <td style="padding: 0.75rem; vertical-align: middle;">
+            {% if ch.primary_reader %}
+            <span{% if ch.primary_reader|lower == student.display_name|lower %} style="font-weight: 600; color: #1a56db;"{% endif %}>
+                {{ ch.primary_reader }}
+            </span>
+            {% else %}
+            <span class="text-muted">—</span>
+            {% endif %}
+        </td>
+        <td style="padding: 0.75rem; vertical-align: middle;">
+            {% if ch.secondary_reader %}
+            <span{% if ch.secondary_reader|lower == student.display_name|lower %} style="font-weight: 600; color: #1a56db;"{% endif %}>
+                {{ ch.secondary_reader }}
+            </span>
+            {% else %}
+            <span class="text-muted">—</span>
+            {% endif %}
+        </td>
+        <td style="padding: 0.75rem; vertical-align: middle;">
+            {% if ch.chapter_presentation_link %}
+            <a href="{{ ch.chapter_presentation_link }}" target="_blank" rel="noopener" style="font-size: 0.875rem;">View</a>
+            {% else %}
+            <span class="text-muted">—</span>
+            {% endif %}
+        </td>
+        <td style="padding: 0.75rem; vertical-align: middle;">
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+            {% if not ch.primary_reader and not my_primary_chapter %}
+            <form method="post" action="/book-reading/signup" style="display: inline; margin: 0;">
+                <input type="hidden" name="chapter" value="{{ ch.chapter }}">
+                <input type="hidden" name="role" value="primary">
+                <button type="submit" style="width: auto; padding: 0.3rem 0.65rem; font-size: 0.8rem; background: #007bff;">
+                    Primary
+                </button>
+            </form>
+            {% endif %}
+            {% if not ch.secondary_reader and not my_secondary_chapter %}
+            <form method="post" action="/book-reading/signup" style="display: inline; margin: 0;">
+                <input type="hidden" name="chapter" value="{{ ch.chapter }}">
+                <input type="hidden" name="role" value="secondary">
+                <button type="submit" style="width: auto; padding: 0.3rem 0.65rem; font-size: 0.8rem; background: #6c757d;">
+                    Secondary
+                </button>
+            </form>
+            {% endif %}
+            </div>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% else %}
+<p class="text-muted">No chapters available yet. Check back later.</p>
+{% endif %}
+
+<div class="mt-3">
+    <a href="/home" class="btn btn-outline">Back to Home</a>
+</div>
+
+<style>
+.nav a.active { font-weight: 600; color: #333; }
+</style>
+{% endblock %}

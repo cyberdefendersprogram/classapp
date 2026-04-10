@@ -8,6 +8,7 @@ import gspread
 from google.oauth2.service_account import Credentials
 
 from app.config import settings
+from app.models.book_reading import BookChapter
 from app.models.quiz import QuizMeta, QuizSubmission
 from app.models.roster import RosterEntry
 from app.models.schedule import ScheduleEntry
@@ -31,6 +32,7 @@ CACHE_TTL_ROSTER = 120  # 2 minutes
 CACHE_TTL_QUIZZES = 300  # 5 minutes
 CACHE_TTL_SCHEDULE = 300  # 5 minutes
 CACHE_TTL_SUBMISSIONS = 120  # 2 minutes
+CACHE_TTL_BOOK_READING = 300  # 5 minutes
 
 
 class SheetsClient:
@@ -410,6 +412,56 @@ class SheetsClient:
         except Exception as e:
             logger.error("Failed to append magic link request: %s", e)
             return False
+
+    # -------------------------------------------------------------------------
+    # Book Reading methods
+    # -------------------------------------------------------------------------
+
+    @cached(ttl_seconds=CACHE_TTL_BOOK_READING, prefix="book_reading")
+    def get_book_readings(self) -> list[BookChapter]:
+        """Get all book reading chapter assignments."""
+        try:
+            worksheet = self._get_worksheet("Book_Reading")
+            records = worksheet.get_all_records()
+            return [BookChapter.from_row(r) for r in records if r.get("chapter")]
+        except Exception as e:
+            logger.error("Failed to get book readings: %s", e)
+            return []
+
+    def assign_book_reader(self, chapter: str, display_name: str, role: str) -> tuple[bool, str]:
+        """
+        Assign a student as primary or secondary reader for a chapter.
+
+        Returns (success, error_message).
+        """
+        if role not in ("primary", "secondary"):
+            return False, "Invalid role."
+
+        try:
+            worksheet = self._get_worksheet("Book_Reading")
+            records = worksheet.get_all_records()
+            headers = worksheet.row_values(1)
+
+            col_name = "primary_reader" if role == "primary" else "secondary_reader"
+
+            for idx, record in enumerate(records):
+                if record.get("chapter") == chapter:
+                    if record.get(col_name):
+                        return False, f"This chapter already has a {role} reader."
+
+                    col_num = headers.index(col_name) + 1
+                    row_num = idx + 2
+                    worksheet.update_cell(row_num, col_num, display_name)
+                    invalidate("book_reading")
+                    logger.info(
+                        "Assigned %s as %s reader for chapter '%s'", display_name, role, chapter
+                    )
+                    return True, ""
+
+            return False, "Chapter not found."
+        except Exception as e:
+            logger.error("Failed to assign book reader: %s", e)
+            return False, "An error occurred. Please try again."
 
     # -------------------------------------------------------------------------
     # Backward compatibility aliases
