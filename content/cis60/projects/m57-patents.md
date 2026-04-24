@@ -1,0 +1,1 @@
+The **M57 Patents** scenario is based on a real-world case study from NIST. A patent attorney's laptop was seized after suspected misappropriation of confidential client documents. Your team will conduct a full disk forensic examination to reconstruct user activity, recover deleted files, and trace the movement of sensitive data.

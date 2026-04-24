@@ -464,6 +464,74 @@ class SheetsClient:
             return False, "An error occurred. Please try again."
 
     # -------------------------------------------------------------------------
+    # Final Projects methods
+    # -------------------------------------------------------------------------
+
+    # Canonical project display order
+    _PROJECT_ORDER = ["Bri Software", "M57 Patents", "NZ Customs"]
+
+    def get_final_projects(self) -> list[dict]:
+        """
+        Return projects grouped from the roster's final_project column.
+
+        Each roster value looks like 'Bri-Software-TeamA'.  The last
+        hyphen-separated segment is the team key; everything before it
+        (joined with spaces) is the project name.
+
+        Returns a list of dicts in canonical project order:
+          [
+            {
+              "name": "Bri Software",
+              "slug": "bri-software",
+              "teams": [
+                {"key": "TeamA", "label": "Team A", "members": [RosterEntry, ...]},
+                ...
+              ]
+            },
+            ...
+          ]
+        """
+        roster = self.get_all_roster()
+
+        # Build: project_name -> team_key -> [members]
+        grouped: dict[str, dict[str, list]] = {}
+        for student in roster:
+            if not student.final_project:
+                continue
+            parts = student.final_project.split("-")
+            if len(parts) < 2:
+                continue
+            team_key = parts[-1]  # e.g. "TeamA"
+            project_name = " ".join(parts[:-1])  # e.g. "Bri Software"
+            grouped.setdefault(project_name, {}).setdefault(team_key, []).append(student)
+
+        # Sort members within each team by display_name
+        for project in grouped.values():
+            for members in project.values():
+                members.sort(key=lambda s: s.display_name.lower())
+
+        # Build output in canonical order, appending any unknown projects at end
+        known = [p for p in self._PROJECT_ORDER if p in grouped]
+        unknown = sorted(p for p in grouped if p not in self._PROJECT_ORDER)
+        ordered_projects = known + unknown
+
+        result = []
+        for project_name in ordered_projects:
+            slug = project_name.lower().replace(" ", "-")
+            teams_dict = grouped[project_name]
+            teams = [
+                {
+                    "key": team_key,
+                    "label": team_key[:4] + " " + team_key[4:],  # "TeamA" -> "Team A"
+                    "members": members,
+                }
+                for team_key, members in sorted(teams_dict.items())
+            ]
+            result.append({"name": project_name, "slug": slug, "teams": teams})
+
+        return result
+
+    # -------------------------------------------------------------------------
     # Backward compatibility aliases
     # -------------------------------------------------------------------------
 

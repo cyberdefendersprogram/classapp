@@ -1,0 +1,1 @@
+The **Bri Software** scenario places you inside a corporate investigation at a small software company. An employee is suspected of intellectual property theft — copying proprietary source code before resigning. Your team will image and examine workstations, email archives, and USB activity to determine what was taken, when, and where it went.

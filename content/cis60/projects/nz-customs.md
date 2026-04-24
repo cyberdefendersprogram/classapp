@@ -1,0 +1,1 @@
+The **NZ Customs** scenario involves a border control investigation. A traveler's device was seized at the point of entry and your team has been handed a forensic image. You will examine the device for contraband-related communications, hidden files, and evidence of prior cross-border activity using standard triage and keyword search techniques.

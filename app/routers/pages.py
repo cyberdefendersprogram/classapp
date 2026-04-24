@@ -10,6 +10,9 @@ from fastapi.responses import HTMLResponse
 from app.dependencies import CurrentSession, OnboardedStudent, is_admin, templates
 from app.services.sheets import get_sheets_client
 
+# Project root for resolving content files
+_BASE_PATH = Path(__file__).parent.parent.parent
+
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
@@ -233,5 +236,38 @@ async def class_page(request: Request, id: str, student: OnboardedStudent, sessi
             "is_admin": is_admin(session),
             "numbered_classes": numbered_classes,
             "current_class_number": id,
+        },
+    )
+
+
+@router.get("/final-projects", response_class=HTMLResponse)
+async def final_projects_page(request: Request, student: OnboardedStudent, session: CurrentSession):
+    """Render the final projects page showing all teams and members."""
+    sheets = get_sheets_client()
+    projects = sheets.get_final_projects()
+
+    # Attach rendered markdown description to each project if a content file exists
+    projects_dir = _BASE_PATH / "content" / "cis60" / "projects"
+    for project in projects:
+        desc_file = projects_dir / f"{project['slug']}.md"
+        if desc_file.exists():
+            try:
+                md_text = desc_file.read_text(encoding="utf-8")
+                project["description_html"] = markdown.markdown(
+                    md_text, extensions=["fenced_code", "tables"]
+                )
+            except Exception as e:
+                logger.warning("Could not render project description %s: %s", project["slug"], e)
+                project["description_html"] = None
+        else:
+            project["description_html"] = None
+
+    return templates.TemplateResponse(
+        "final_projects.html",
+        {
+            "request": request,
+            "student": student,
+            "is_admin": is_admin(session),
+            "projects": projects,
         },
     )

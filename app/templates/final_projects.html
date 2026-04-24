@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Final Projects{% endblock %}
+
+{% block head %}
+<style>
+    .project-card {
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+
+    .project-header {
+        background: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .project-header h2 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: #1a1a2e;
+    }
+
+    .project-badge {
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        background: #007bff;
+        color: white;
+        padding: 0.2rem 0.5rem;
+        border-radius: 3px;
+    }
+
+    .project-body {
+        padding: 1.25rem 1.5rem;
+    }
+
+    .project-description {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.25rem;
+        border-bottom: 1px solid #f0f0f0;
+        color: #444;
+        font-size: 0.95rem;
+        line-height: 1.7;
+    }
+
+    .project-description p:last-child {
+        margin-bottom: 0;
+    }
+
+    .no-description {
+        color: #aaa;
+        font-style: italic;
+        font-size: 0.875rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .teams-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 1rem;
+    }
+
+    .team-card {
+        background: #fafafa;
+        border: 1px solid #e9ecef;
+        border-radius: 6px;
+        padding: 1rem;
+    }
+
+    .team-card h3 {
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #555;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #007bff;
+    }
+
+    .member-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .member-list li {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.3rem 0;
+        font-size: 0.9rem;
+        color: #333;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .member-list li:last-child {
+        border-bottom: none;
+    }
+
+    .member-avatar {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #007bff;
+        color: white;
+        font-size: 0.65rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .no-teams {
+        color: #999;
+        font-style: italic;
+        font-size: 0.875rem;
+    }
+
+    .page-intro {
+        color: #666;
+        margin-bottom: 2rem;
+        font-size: 0.95rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="nav">
+    <a href="/home">Home</a>
+    <a href="/schedule">Schedule</a>
+    <a href="/quizzes">Quizzes</a>
+    <a href="/tools">Tools</a>
+    <a href="/book-reading">Book Reading</a>
+    <a href="/final-projects">Final Projects</a>
+    <a href="/me">Profile</a>
+    {% if is_admin %}<a href="/admin/analytics">Admin</a>{% endif %}
+    <a href="/auth/logout">Sign Out</a>
+</nav>
+
+<h1>Final Projects</h1>
+<p class="page-intro">Three case-based investigations exploring different aspects of digital forensics. Each team works on one scenario throughout the course.</p>
+
+{% if projects %}
+    {% for project in projects %}
+    <div class="project-card">
+        <div class="project-header">
+            <span class="project-badge">Project</span>
+            <h2>{{ project.name }}</h2>
+        </div>
+        <div class="project-body">
+
+            {% if project.description_html %}
+            <div class="project-description markdown-body">
+                {{ project.description_html | safe }}
+            </div>
+            {% else %}
+            <p class="no-description">Project description coming soon.</p>
+            {% endif %}
+
+            {% if project.teams %}
+            <div class="teams-grid">
+                {% for team in project.teams %}
+                <div class="team-card">
+                    <h3>{{ team.label }}</h3>
+                    {% if team.members %}
+                    <ul class="member-list">
+                        {% for member in team.members %}
+                        <li>
+                            <div class="member-avatar">{{ member.display_name[0] | upper }}</div>
+                            <span>{{ member.display_name }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="no-teams">No members assigned.</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="no-teams">No teams assigned yet.</p>
+            {% endif %}
+
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+<p class="text-muted">No project assignments yet. Check back once teams are announced!</p>
+{% endif %}
+
+<div class="mt-3">
+    <a href="/home" class="btn btn-outline" style="width: auto; padding: 0.5rem 1.25rem;">Back to Home</a>
+</div>
+{% endblock %}

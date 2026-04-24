@@ -29,6 +29,7 @@ class RosterEntry:
     last_login_at: datetime | None = None
     presentation_order: int | None = None
     presentation_grade: int | None = None
+    final_project: str | None = None
 
     @property
     def is_claimed(self) -> bool:
@@ -82,6 +83,7 @@ class RosterEntry:
             last_login_at=_parse_datetime(row.get("last_login_at")),
             presentation_order=_parse_int_field(row.get("presentation_order")),
             presentation_grade=_parse_int_field(row.get("presentation_grade")),
+            final_project=row.get("final_project") or None,
         )
 
     def get_empty_profile_fields(self) -> list[str]:
