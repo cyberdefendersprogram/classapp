@@ -68,8 +68,10 @@ def get_available_tools(tools_dir: Path) -> list[dict]:
         title_match = re.search(r"^#\s+(.+)$", content, re.MULTILINE)
         title = title_match.group(1) if title_match else tool_id.title()
 
-        # Extract description from first paragraph after title
-        desc_match = re.search(r"^#\s+.+\n\n(.+?)(?:\n\n|$)", content, re.MULTILINE | re.DOTALL)
+        # Extract description from first paragraph after title.
+        # Use [^\n]+ for the heading to prevent DOTALL from making it span lines,
+        # which would cause the regex to skip to the last \n\n in the file.
+        desc_match = re.search(r"^# [^\n]+\n\n(.+?)(?:\n\n|$)", content, re.MULTILINE | re.DOTALL)
         description = desc_match.group(1).strip() if desc_match else ""
         # Truncate description
         if len(description) > 150:
