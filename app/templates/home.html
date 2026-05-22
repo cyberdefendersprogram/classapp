@@ -15,6 +15,25 @@
     <a href="/auth/logout">Sign Out</a>
 </nav>
 
+{% if show_rate_notice and rate_professor_url %}
+<div id="rate-notice" style="background:#fffbeb;border:1px solid #f59e0b;border-radius:6px;padding:0.75rem 1rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+    <span>Enjoying the class? Please take a moment to <a href="{{ rate_professor_url }}" target="_blank" rel="noopener noreferrer"><strong>rate your professor on RateMyProfessors</strong></a> — it really helps!</span>
+    <button onclick="dismissRateNotice()" style="background:none;border:none;cursor:pointer;font-size:1.2rem;line-height:1;color:#92400e;" aria-label="Dismiss">&times;</button>
+</div>
+<script>
+(function() {
+    if (localStorage.getItem('rate_notice_dismissed') === 'true') {
+        var el = document.getElementById('rate-notice');
+        if (el) el.style.display = 'none';
+    }
+})();
+function dismissRateNotice() {
+    localStorage.setItem('rate_notice_dismissed', 'true');
+    document.getElementById('rate-notice').style.display = 'none';
+}
+</script>
+{% endif %}
+
 <h1>Welcome, {{ student.display_name }}!</h1>
 
 {% if term %}

@@ -30,6 +30,11 @@ async def home_page(request: Request, student: OnboardedStudent, session: Curren
     course_title = sheets.get_config("course_title") or "Class Portal"
     term = sheets.get_config("term") or ""
 
+    # Rate professor notice — default true if key is absent
+    rmp_raw = sheets.get_config("RATE_PROFESSOR_NOTICE")
+    show_rate_notice = (rmp_raw is None) or (rmp_raw.strip().lower() not in ("false", "0", "no"))
+    rate_professor_url = sheets.get_config("rate_professor_url") or ""
+
     return templates.TemplateResponse(
         "home.html",
         {
@@ -38,6 +43,8 @@ async def home_page(request: Request, student: OnboardedStudent, session: Curren
             "course_title": course_title,
             "term": term,
             "is_admin": is_admin(session),
+            "show_rate_notice": show_rate_notice,
+            "rate_professor_url": rate_professor_url,
         },
     )
 
