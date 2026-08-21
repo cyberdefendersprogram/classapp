@@ -106,6 +106,11 @@ SHEET_STRUCTURES = {
         "secondary_reader",
         "chapter_presentation_link",
     ],
+    "Reading": [
+        "class",
+        "title",
+        "link",
+    ],
 }
 
 # Default config values, keyed by course. Selected with --course (default: cis55).
@@ -125,6 +130,9 @@ DEFAULT_CONFIG_BY_COURSE = {
         "rate_limit_per_email_15m": "3",
         "onboarding_form_version": "v1",
         "admin_email": "",  # Set manually in sheet
+        # CIS52 uses the simple read-only Reading list, not the Book_Reading
+        # chapter-claim system. See nav_reading_link() in app/dependencies.py.
+        "reading_mode": "list",
     },
 }
 

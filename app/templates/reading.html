@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Reading - Class Portal{% endblock %}
+
+{% block content %}
+<nav class="nav">
+    <a href="/home">Home</a>
+    <a href="/schedule">Schedule</a>
+    <a href="/quizzes">Quizzes</a>
+    <a href="/tools">Tools</a>
+    {% set reading_link = nav_reading_link() %}
+    {% if reading_link %}<a href="{{ reading_link.url }}"{% if reading_link.url == "/reading" %} class="active"{% endif %}>{{ reading_link.label }}</a>{% endif %}
+    <a href="/me">Profile</a>
+    {% if is_admin %}<a href="/admin/analytics">Admin</a>{% endif %}
+    <a href="/auth/logout">Sign Out</a>
+</nav>
+
+<h1>Reading</h1>
+
+{% if items %}
+<div style="overflow-x: auto;">
+<table style="width: 100%; border-collapse: collapse;">
+    <thead>
+        <tr style="background: #f5f5f5;">
+            <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #ddd; white-space: nowrap;">Class</th>
+            <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #ddd;">Title</th>
+            <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #ddd;">Link</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for item in items %}
+    <tr style="border-bottom: 1px solid #eee;">
+        <td style="padding: 0.75rem; vertical-align: middle; white-space: nowrap;">
+            {% if item.class_num %}
+            <a href="/class/{{ item.class_num }}" style="font-size: 0.875rem;">Class {{ item.class_num }}</a>
+            {% else %}
+            <span class="text-muted">—</span>
+            {% endif %}
+        </td>
+        <td style="padding: 0.75rem; vertical-align: middle;">{{ item.title }}</td>
+        <td style="padding: 0.75rem; vertical-align: middle;">
+            {% if item.link %}
+            <a href="{{ item.link }}" target="_blank" rel="noopener" style="font-size: 0.875rem;">View</a>
+            {% else %}
+            <span class="text-muted">—</span>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% else %}
+<p class="text-muted">No reading assigned yet. Check back later.</p>
+{% endif %}
+
+<div class="mt-3">
+    <a href="/home" class="btn btn-outline">Back to Home</a>
+</div>
+
+<style>
+.nav a.active { font-weight: 600; color: #333; }
+</style>
+{% endblock %}

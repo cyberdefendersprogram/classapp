@@ -39,7 +39,8 @@
             <a href="/schedule">Schedule</a>
             <a href="/quizzes">Quizzes</a>
             <a href="/tools">Tools</a>
-            <a href="/book-reading">Book Reading</a>
+            {% set reading_link = nav_reading_link() %}
+            {% if reading_link %}<a href="{{ reading_link.url }}">{{ reading_link.label }}</a>{% endif %}
     <a href="/final-projects">Final Projects</a>
             <a href="/me">Profile</a>
             {% if is_admin %}<a href="/admin/analytics">Admin</a>{% endif %}

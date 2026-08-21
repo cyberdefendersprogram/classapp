@@ -11,6 +11,7 @@ from app.config import settings
 from app.db.sqlite import invalidate_cached_student
 from app.models.book_reading import BookChapter
 from app.models.quiz import QuizMeta, QuizSubmission
+from app.models.reading import ReadingItem
 from app.models.roster import RosterEntry
 from app.models.schedule import ScheduleEntry
 from app.services.cache import cached, invalidate, invalidate_key
@@ -491,6 +492,21 @@ class SheetsClient:
             return [BookChapter.from_row(r) for r in records if r.get("chapter")]
         except Exception as e:
             logger.error("Failed to get book readings: %s", e)
+            return []
+
+    # -------------------------------------------------------------------------
+    # Reading list methods (simple read-only list, distinct from Book_Reading)
+    # -------------------------------------------------------------------------
+
+    @cached(ttl_seconds=CACHE_TTL_BOOK_READING, prefix="reading_list")
+    def get_reading_list(self) -> list[ReadingItem]:
+        """Get all reading list items."""
+        try:
+            worksheet = self._get_worksheet("Reading")
+            records = worksheet.get_all_records()
+            return [ReadingItem.from_row(r) for r in records if r.get("title")]
+        except Exception as e:
+            logger.error("Failed to get reading list: %s", e)
             return []
 
     def assign_book_reader(self, chapter: str, display_name: str, role: str) -> tuple[bool, str]:

@@ -147,3 +147,27 @@ def is_admin(session: SessionData | None) -> bool:
         return False
 
     return session.email.lower() == admin_email.lower()
+
+
+def nav_reading_link() -> dict | None:
+    """
+    Which reading nav link (if any) to show, driven by the active course's
+    Config sheet key "reading_mode":
+      - "list"    -> the new read-only Reading page (/reading)
+      - "signup"  -> the existing chapter-claim Book Reading page (/book-reading)
+      - anything else / absent -> hidden (defaults to "signup" for courses that
+        predate this key, so existing Book Reading behavior doesn't change)
+    """
+    sheets = get_sheets_client()
+    mode = sheets.get_config("reading_mode") or "signup"
+
+    if mode == "list":
+        return {"url": "/reading", "label": "Reading"}
+    if mode == "signup":
+        return {"url": "/book-reading", "label": "Book Reading"}
+    return None
+
+
+# Exposed to templates so nav blocks can render the right reading link without
+# every route having to thread it through their context dict.
+templates.env.globals["nav_reading_link"] = nav_reading_link
