@@ -1,10 +1,31 @@
 {% extends "base.html" %}
 
-{% block title %}Sign In - Class Portal{% endblock %}
+{% block title %}Sign In - {{ course_title | default('Class Portal') }}{% endblock %}
 
 {% block content %}
-<h1>Class Portal</h1>
-<p>Enter your email to receive a sign-in link.</p>
+<h1>{{ course_title | default('Class Portal') }}</h1>
+{% if term %}
+<p class="text-muted mb-2">{{ term }}</p>
+{% endif %}
+
+<div class="mode-toggle mb-2">
+    <button type="button" class="btn-outline mode-btn active" data-mode="returning" onclick="setSigninMode('returning')">
+        I have an account
+    </button>
+    <button type="button" class="btn-outline mode-btn" data-mode="new" onclick="setSigninMode('new')">
+        New student? Claim your account
+    </button>
+</div>
+
+<p id="mode-hint">Enter your email to receive a sign-in link.</p>
+
+{% if error %}
+<div class="flash error">{{ error }}</div>
+{% endif %}
+
+{% if success %}
+<div class="flash success">{{ success }}</div>
+{% endif %}
 
 <form method="post" action="/auth/request-link">
     <label for="email">Email Address</label>
@@ -17,10 +38,54 @@
         autofocus
     >
 
-    <button type="submit">Send Sign-In Link</button>
+    <button type="submit" id="submit-btn" class="mt-2">Send Sign-In Link</button>
 </form>
 
+<div id="new-student-note" class="text-muted mt-3" style="display: none;">
+    Have your <strong>student ID</strong> ready (from your instructor) — after you click the
+    emailed link, you'll be asked for it to claim your account.
+</div>
+
 <p class="text-muted mt-3">
-    No password needed. We'll email you a secure link to sign in.
+    No password needed. We'll email you a secure link to continue.
 </p>
+
+<style>
+    .mode-toggle {
+        display: flex;
+        gap: 0.5rem;
+    }
+    .mode-toggle .mode-btn {
+        width: auto;
+        flex: 1;
+        font-size: 0.9rem;
+        padding: 0.6rem 1rem;
+    }
+    .mode-toggle .mode-btn.active {
+        background: #007bff;
+        color: white;
+    }
+</style>
+
+<script>
+    function setSigninMode(mode) {
+        document.querySelectorAll('.mode-btn').forEach(function (btn) {
+            btn.classList.toggle('active', btn.dataset.mode === mode);
+        });
+
+        var hint = document.getElementById('mode-hint');
+        var note = document.getElementById('new-student-note');
+        var submitBtn = document.getElementById('submit-btn');
+
+        if (mode === 'new') {
+            hint.textContent = "Enter your email to get started — you'll need your student ID from your instructor in the next step.";
+            note.style.display = 'block';
+            submitBtn.textContent = 'Get Started';
+        } else {
+            hint.textContent = 'Enter your email to receive a sign-in link.';
+            note.style.display = 'none';
+            submitBtn.textContent = 'Send Sign-In Link';
+        }
+    }
+</script>
 {% endblock %}

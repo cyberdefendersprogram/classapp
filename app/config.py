@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     google_sheets_id: str = ""
     google_service_account_path: str = "/etc/classapp/service-account.json"
 
+    # Active class (selects content/<active_class>/ for tools, notes, etc.)
+    active_class: str = "cis60"
+
     # Forward Email API
     forwardemail_api_url: str = "https://api.forwardemail.net/v1/emails"
     forwardemail_user: str = ""

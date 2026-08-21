@@ -11,7 +11,7 @@ UVICORN     := .venv/bin/uvicorn
 RUFF        := .venv/bin/ruff
 SSH_CMD     := sshpass -p '$(VM_PASSWORD)' ssh -o StrictHostKeyChecking=no root@$(VM_IP)
 
-.PHONY: help dev docker-dev test lint fmt seed seed-cis60 \
+.PHONY: help dev docker-dev test lint fmt seed seed-cis60 seed-cis52 seed-cis52-dev \
         deploy logs ssh health restart db-reset
 
 # ── Default ───────────────────────────────────────────────────────────────────
@@ -31,8 +31,10 @@ help:
 	@echo "  make restart      Restart containers on server"
 	@echo "  make db-reset     Wipe SQLite on server (resets sessions/cache)"
 	@echo ""
-	@echo "  make seed         Seed active sheet structure"
-	@echo "  make seed-cis60   Seed CIS 60 sheet structure"
+	@echo "  make seed           Seed active sheet structure"
+	@echo "  make seed-cis60     Seed CIS 60 sheet structure"
+	@echo "  make seed-cis52     Seed CIS 52 sheet structure + course data"
+	@echo "  make seed-cis52-dev Seed CIS 52 structure + data + dev test roster row (10110234)"
 	@echo ""
 
 # ── Local dev ─────────────────────────────────────────────────────────────────
@@ -66,6 +68,18 @@ seed-cis60:
 	GOOGLE_SHEETS_ID=1Q9CF-4b5YkvIjbyOP0Q9dzb-4KetfLUfd_PqFmvDyfA \
 	GOOGLE_SERVICE_ACCOUNT_PATH=.secrets/service-account.json \
 	$(PYTHON) scripts/seed_sheets.py --create-structure
+
+seed-cis52:
+	GOOGLE_SHEETS_ID=1CfD099p5A6h7YMxqsjsr4vEuqZjRIyhQKTIAaKGeJDI \
+	GOOGLE_SERVICE_ACCOUNT_PATH=.secrets/service-account.json \
+	$(PYTHON) scripts/seed_sheets.py --course cis52 --all
+
+# Dev-only: also drops in an unclaimed test roster row (student_id 10110234)
+# so /claim + /onboarding + the intro quiz can be exercised locally.
+seed-cis52-dev:
+	GOOGLE_SHEETS_ID=1CfD099p5A6h7YMxqsjsr4vEuqZjRIyhQKTIAaKGeJDI \
+	GOOGLE_SERVICE_ACCOUNT_PATH=.secrets/service-account.json \
+	$(PYTHON) scripts/seed_sheets.py --course cis52 --all --seed-test-roster
 
 # ── Server ────────────────────────────────────────────────────────────────────
 # deploy = git push → GitHub Actions builds + pushes image → SSHs to server

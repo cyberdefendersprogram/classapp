@@ -3,7 +3,7 @@
 import logging
 from datetime import datetime
 
-from fastapi import APIRouter, Form, Request, Response
+from fastapi import APIRouter, Form, HTTPException, Request, Response, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from app.config import settings
@@ -15,7 +15,7 @@ from app.services.sessions import (
     get_cookie_settings,
     verify_session_token,
 )
-from app.services.sheets import get_sheets_client
+from app.services.sheets import SheetsUnavailableError, get_sheets_client
 from app.services.tokens import check_rate_limit, create_magic_token, validate_magic_token
 
 logger = logging.getLogger(__name__)
@@ -32,9 +32,20 @@ async def signin_page(request: Request):
         if session:
             return RedirectResponse(url="/home", status_code=302)
 
+    # get_config fails soft to None on any Sheets error, so no try/except needed here.
+    sheets = get_sheets_client()
+    course_title = sheets.get_config("course_title") or "Class Portal"
+    term = sheets.get_config("term") or ""
+
     return templates.TemplateResponse(
         "signin.html",
-        {"request": request, "error": None, "success": None},
+        {
+            "request": request,
+            "error": None,
+            "success": None,
+            "course_title": course_title,
+            "term": term,
+        },
     )
 
 
@@ -73,6 +84,9 @@ async def request_magic_link(request: Request, email: str = Form(...)):
     # Create magic token
     token = create_magic_token(email)
     magic_link = f"{settings.base_url}/auth/verify?token={token}"
+
+    if settings.is_development:
+        logger.info("[DEV] Magic link for %s: %s", email, magic_link)
 
     # Send email
     result = await send_magic_link_email(email, magic_link)
@@ -125,7 +139,14 @@ async def verify_magic_link(request: Request, token: str, response: Response):
     sheets = get_sheets_client()
 
     # Look up student by email
-    student = sheets.get_student_by_email(email)
+    try:
+        student = sheets.get_student_by_email(email)
+    except SheetsUnavailableError:
+        logger.warning("Sheets unavailable verifying magic link for %s", email)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Service temporarily unavailable. Please try again in a moment.",
+        ) from None
 
     if student and student.is_claimed:
         # Existing claimed student - create session

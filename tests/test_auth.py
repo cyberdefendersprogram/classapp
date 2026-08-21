@@ -18,8 +18,11 @@ def setup_db(setup_test_env):
 class TestSigninPage:
     """Tests for sign-in page."""
 
-    def test_signin_page_renders(self, client):
+    @patch("app.routers.auth.get_sheets_client")
+    def test_signin_page_renders(self, mock_sheets, client):
         """Sign-in page renders successfully."""
+        mock_sheets.return_value.get_config.return_value = None
+
         response = client.get("/")
         assert response.status_code == 200
         assert "Class Portal" in response.text

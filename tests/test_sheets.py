@@ -211,7 +211,7 @@ class TestSheetsClientRoster:
         result = sheets_client.claim_student("stu_001", "alice@example.com")
 
         assert result is True
-        assert mock_worksheet.update_cell.call_count == 2  # email + claimed_at
+        assert mock_worksheet.update.call_count == 2  # email + claimed_at
 
     def test_claim_student_already_claimed(self, sheets_client, mock_worksheet):
         """Test claim on already claimed student."""

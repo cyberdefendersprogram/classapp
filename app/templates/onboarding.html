@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Complete Your Profile - Class Portal{% endblock %}
+{% block title %}Complete Your Profile - {{ course_title | default('Class Portal') }}{% endblock %}
 
 {% block content %}
+<p class="text-muted mb-1">{{ course_title | default('Class Portal') }}{% if term %} - {{ term }}{% endif %}</p>
 <h1>Welcome, {{ student.display_name }}!</h1>
 <p>Let's set up your profile. All fields are optional - fill in what you'd like to share.</p>
 

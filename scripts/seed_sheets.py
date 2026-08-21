@@ -108,97 +108,200 @@ SHEET_STRUCTURES = {
     ],
 }
 
-# Default config values
-DEFAULT_CONFIG = {
-    "course_title": "CIS 55",
-    "term": "Spring 2025",
-    "magic_link_ttl_minutes": "15",
-    "rate_limit_per_email_15m": "3",
-    "onboarding_form_version": "v1",
-    "admin_email": "",  # Set manually in sheet
+# Default config values, keyed by course. Selected with --course (default: cis55).
+DEFAULT_CONFIG_BY_COURSE = {
+    "cis55": {
+        "course_title": "CIS 55",
+        "term": "Spring 2025",
+        "magic_link_ttl_minutes": "15",
+        "rate_limit_per_email_15m": "3",
+        "onboarding_form_version": "v1",
+        "admin_email": "",  # Set manually in sheet
+    },
+    "cis52": {
+        "course_title": "CIS 52",
+        "term": "Fall 2026",
+        "magic_link_ttl_minutes": "15",
+        "rate_limit_per_email_15m": "3",
+        "onboarding_form_version": "v1",
+        "admin_email": "",  # Set manually in sheet
+    },
 }
 
-# Test quiz data
-TEST_QUIZZES = [
-    {
-        "quiz_id": "q001",
-        "title": "Introduction Quiz",
-        "content_path": "content/cis55/quizzes/001-intro.md",
-        "open_at": "",
-        "close_at": "",
-        "attempts_allowed": "2",
-        "status": "published",
-        "total_points": "10",
-    },
-]
+# Test quiz data, keyed by course.
+TEST_QUIZZES_BY_COURSE = {
+    "cis55": [
+        {
+            "quiz_id": "q001",
+            "title": "Introduction Quiz",
+            "content_path": "content/cis55/quizzes/001-intro.md",
+            "open_at": "",
+            "close_at": "",
+            "attempts_allowed": "2",
+            "status": "published",
+            "total_points": "10",
+        },
+    ],
+    "cis52": [
+        {
+            "quiz_id": "q001",
+            "title": "Introduction to Cloud Security",
+            "content_path": "content/cis52/quizzes/001-intro.md",
+            "open_at": "",
+            "close_at": "",
+            "attempts_allowed": "2",
+            "status": "published",
+            "total_points": "10",
+        },
+    ],
+}
 
-# Test schedule data
-TEST_SCHEDULE = [
-    {
-        "session": "1/23/2026",
-        "desc": "1 - Introduction",
-        "desc_link": "content/cis55/notes/001-intro.md",
-        "notes": "Quiz 1",
-        "slides_link": "",
-        "recording_link": "",
-    },
-    {
-        "session": "1/30/2026",
-        "desc": "2 - Cryptography & Incident Response",
-        "desc_link": "content/cis55/notes/002-ethics-ir-and-crypto.md",
-        "notes": "Lab 1\nQuiz 2",
-        "slides_link": "",
-        "recording_link": "",
-    },
-    {
-        "session": "2/6/2026",
-        "desc": "3 - Pentesting Tools (Nmap, Nessus, Metasploit, SQLMap)",
-        "desc_link": "",
-        "notes": "Lab 2\nQuiz 2",
-        "slides_link": "",
-        "recording_link": "",
-    },
-    {
-        "session": "2/13/2026",
-        "desc": "Holiday (President's Day)",
-        "desc_link": "",
-        "notes": "",
-        "slides_link": "",
-        "recording_link": "",
-    },
-    {
-        "session": "2/20/2026",
-        "desc": "4 - Threat Modeling, OSINT, OWASP",
-        "desc_link": "",
-        "notes": "Lab 3\nQuiz 3",
-        "slides_link": "",
-        "recording_link": "",
-    },
-    {
-        "session": "2/27/2026",
-        "desc": "5 - Cloud Security, LLM Security",
-        "desc_link": "",
-        "notes": "Lab 4\nQuiz 4",
-        "slides_link": "",
-        "recording_link": "",
-    },
-    {
-        "session": "3/6/2026",
-        "desc": "6 - Security Careers and Presentations",
-        "desc_link": "",
-        "notes": "Lab 5, Quiz 5",
-        "slides_link": "",
-        "recording_link": "",
-    },
-    {
-        "session": "3/13/2026",
-        "desc": "BONUS - Bug Bounty Session",
-        "desc_link": "",
-        "notes": "",
-        "slides_link": "",
-        "recording_link": "",
-    },
-]
+# Test schedule data, keyed by course.
+TEST_SCHEDULE_BY_COURSE = {
+    "cis55": [
+        {
+            "session": "1/23/2026",
+            "desc": "1 - Introduction",
+            "desc_link": "content/cis55/notes/001-intro.md",
+            "notes": "Quiz 1",
+            "slides_link": "",
+            "recording_link": "",
+        },
+        {
+            "session": "1/30/2026",
+            "desc": "2 - Cryptography & Incident Response",
+            "desc_link": "content/cis55/notes/002-ethics-ir-and-crypto.md",
+            "notes": "Lab 1\nQuiz 2",
+            "slides_link": "",
+            "recording_link": "",
+        },
+        {
+            "session": "2/6/2026",
+            "desc": "3 - Pentesting Tools (Nmap, Nessus, Metasploit, SQLMap)",
+            "desc_link": "",
+            "notes": "Lab 2\nQuiz 2",
+            "slides_link": "",
+            "recording_link": "",
+        },
+        {
+            "session": "2/13/2026",
+            "desc": "Holiday (President's Day)",
+            "desc_link": "",
+            "notes": "",
+            "slides_link": "",
+            "recording_link": "",
+        },
+        {
+            "session": "2/20/2026",
+            "desc": "4 - Threat Modeling, OSINT, OWASP",
+            "desc_link": "",
+            "notes": "Lab 3\nQuiz 3",
+            "slides_link": "",
+            "recording_link": "",
+        },
+        {
+            "session": "2/27/2026",
+            "desc": "5 - Cloud Security, LLM Security",
+            "desc_link": "",
+            "notes": "Lab 4\nQuiz 4",
+            "slides_link": "",
+            "recording_link": "",
+        },
+        {
+            "session": "3/6/2026",
+            "desc": "6 - Security Careers and Presentations",
+            "desc_link": "",
+            "notes": "Lab 5, Quiz 5",
+            "slides_link": "",
+            "recording_link": "",
+        },
+        {
+            "session": "3/13/2026",
+            "desc": "BONUS - Bug Bounty Session",
+            "desc_link": "",
+            "notes": "",
+            "slides_link": "",
+            "recording_link": "",
+        },
+    ],
+    "cis52": [
+        {
+            "session": "8/21/2026",
+            "desc": "1 - Introduction into core concepts",
+            "desc_link": "content/cis52/notes/001-intro.md",
+            "notes": "Nothing is due\nQuiz 1",
+            "slides_link": "",
+            "recording_link": "",
+        },
+        {
+            "session": "8/28/2026",
+            "desc": "2 - Identity and Access Management",
+            "desc_link": "",
+            "notes": "Lab 1 due at 9am\nQuiz 1 from 1pm-2:30pm",
+            "slides_link": "",
+            "recording_link": "",
+        },
+        {
+            "session": "9/4/2026",
+            "desc": "3 - Security Tools",
+            "desc_link": "",
+            "notes": "Lab 2 due at 9am\nQuiz 2 from 1pm-2:30pm",
+            "slides_link": "",
+            "recording_link": "",
+        },
+        {
+            "session": "9/11/2026",
+            "desc": "4 - Monitoring",
+            "desc_link": "",
+            "notes": "Lab 3 due at 9am\nQuiz 3 from 1pm-2:30pm",
+            "slides_link": "",
+            "recording_link": "",
+        },
+        {
+            "session": "9/18/2026",
+            "desc": "5 - Host Security and Key Management",
+            "desc_link": "",
+            "notes": "Lab 4 due at 9am\nQuiz 4 from 1pm-2:30pm",
+            "slides_link": "",
+            "recording_link": "",
+        },
+        {
+            "session": "9/25/2026",
+            "desc": "6 - Detection and Response",
+            "desc_link": "",
+            "notes": "Lab 5 due at 9am\nQuiz 5 from 1pm-2:30pm",
+            "slides_link": "",
+            "recording_link": "",
+        },
+    ],
+}
+
+# Dev-only test roster rows, keyed by course. Only written with --seed-test-roster.
+TEST_ROSTER_BY_COURSE = {
+    "cis52": [
+        {
+            "student_id": "10110234",
+            "full_name": "Student, Test",
+            "preferred_email": "",
+            "preferred_name": "",
+            "preferred_name_phonetic": "",
+            "preferred_pronoun": "",
+            "linkedin": "",
+            "program_plan": "",
+            "student_level": "",
+            "cs_experience": "",
+            "computer_system": "",
+            "hobbies": "",
+            "used_netlabs": "",
+            "used_tryhackme": "",
+            "class_goals": "",
+            "support_request": "",
+            "claimed_at": "",
+            "onboarding_completed_at": "",
+            "last_login_at": "",
+        },
+    ],
+}
 
 
 # Placeholder book chapters — update chapter names and presentation links directly in the sheet
@@ -317,8 +420,8 @@ def fix_config_headers(spreadsheet: gspread.Spreadsheet) -> None:
     print("    Added header row to Config sheet")
 
 
-def seed_config(spreadsheet: gspread.Spreadsheet) -> None:
-    """Seed the Config sheet with default values."""
+def seed_config(spreadsheet: gspread.Spreadsheet, course: str) -> None:
+    """Seed the Config sheet with default values for the given course."""
     print("  Seeding Config...")
 
     # First fix headers if needed
@@ -330,8 +433,9 @@ def seed_config(spreadsheet: gspread.Spreadsheet) -> None:
     existing = worksheet.get_all_records()
     existing_keys = {r.get("key") for r in existing}
 
+    default_config = DEFAULT_CONFIG_BY_COURSE[course]
     rows_to_add = []
-    for key, value in DEFAULT_CONFIG.items():
+    for key, value in default_config.items():
         if key not in existing_keys:
             rows_to_add.append([key, value])
 
@@ -342,8 +446,8 @@ def seed_config(spreadsheet: gspread.Spreadsheet) -> None:
         print("    Config already seeded")
 
 
-def seed_quizzes(spreadsheet: gspread.Spreadsheet) -> None:
-    """Seed the Quizzes sheet with test data."""
+def seed_quizzes(spreadsheet: gspread.Spreadsheet, course: str) -> None:
+    """Seed the Quizzes sheet with test data for the given course."""
     print("  Seeding Quizzes...")
     worksheet = spreadsheet.worksheet("Quizzes")
 
@@ -354,7 +458,7 @@ def seed_quizzes(spreadsheet: gspread.Spreadsheet) -> None:
     headers = SHEET_STRUCTURES["Quizzes"]
     rows_to_add = []
 
-    for quiz in TEST_QUIZZES:
+    for quiz in TEST_QUIZZES_BY_COURSE.get(course, []):
         if quiz["quiz_id"] in existing_ids:
             continue
 
@@ -367,8 +471,8 @@ def seed_quizzes(spreadsheet: gspread.Spreadsheet) -> None:
         print("    Quizzes already seeded")
 
 
-def seed_schedule(spreadsheet: gspread.Spreadsheet) -> None:
-    """Seed the Schedule sheet with test data."""
+def seed_schedule(spreadsheet: gspread.Spreadsheet, course: str) -> None:
+    """Seed the Schedule sheet with test data for the given course."""
     print("  Seeding Schedule...")
     worksheet = spreadsheet.worksheet("Schedule")
 
@@ -379,7 +483,7 @@ def seed_schedule(spreadsheet: gspread.Spreadsheet) -> None:
     headers = SHEET_STRUCTURES["Schedule"]
     rows_to_add = []
 
-    for entry in TEST_SCHEDULE:
+    for entry in TEST_SCHEDULE_BY_COURSE.get(course, []):
         if entry["session"] in existing_sessions:
             continue
 
@@ -390,6 +494,29 @@ def seed_schedule(spreadsheet: gspread.Spreadsheet) -> None:
         print(f"    Added {len(rows_to_add)} schedule entries")
     else:
         print("    Schedule already seeded")
+
+
+def seed_test_roster(spreadsheet: gspread.Spreadsheet, course: str) -> None:
+    """Seed dev-only test roster rows for the given course (unclaimed students for local testing)."""
+    print("  Seeding test Roster rows...")
+    worksheet = spreadsheet.worksheet("Roster")
+
+    existing = worksheet.get_all_records()
+    existing_ids = {str(r.get("student_id")) for r in existing}
+
+    headers = SHEET_STRUCTURES["Roster"]
+    rows_to_add = []
+
+    for student in TEST_ROSTER_BY_COURSE.get(course, []):
+        if student["student_id"] in existing_ids:
+            continue
+        rows_to_add.append([student.get(h, "") for h in headers])
+
+    if rows_to_add:
+        worksheet.append_rows(rows_to_add, value_input_option="RAW")
+        print(f"    Added {len(rows_to_add)} test roster rows")
+    else:
+        print("    Test roster already seeded")
 
 
 def seed_book_reading(spreadsheet: gspread.Spreadsheet) -> None:
@@ -417,20 +544,31 @@ def seed_book_reading(spreadsheet: gspread.Spreadsheet) -> None:
 
 def main():
     parser = argparse.ArgumentParser(description="Seed Google Sheets with data")
+    parser.add_argument(
+        "--course",
+        default="cis55",
+        choices=sorted(DEFAULT_CONFIG_BY_COURSE.keys()),
+        help="Which course's default Config/Schedule/Quizzes to seed (default: cis55)",
+    )
     parser.add_argument("--create-structure", action="store_true", help="Create sheet structure")
     parser.add_argument("--seed-test-data", action="store_true", help="Seed test data")
+    parser.add_argument(
+        "--seed-test-roster",
+        action="store_true",
+        help="Seed dev-only unclaimed test roster rows (e.g. student_id 10110234 for local /claim testing)",
+    )
     parser.add_argument("--all", action="store_true", help="Create structure and seed data")
 
     args = parser.parse_args()
 
-    if not any([args.create_structure, args.seed_test_data, args.all]):
+    if not any([args.create_structure, args.seed_test_data, args.seed_test_roster, args.all]):
         parser.print_help()
         return
 
     print("Connecting to Google Sheets...")
     client = get_client()
     spreadsheet = get_spreadsheet(client)
-    print(f"Opened: {spreadsheet.title}")
+    print(f"Opened: {spreadsheet.title} (course: {args.course})")
 
     if args.create_structure or args.all:
         print("\nCreating structure...")
@@ -438,10 +576,14 @@ def main():
 
     if args.seed_test_data or args.all:
         print("\nSeeding test data...")
-        seed_config(spreadsheet)
-        seed_quizzes(spreadsheet)
-        seed_schedule(spreadsheet)
+        seed_config(spreadsheet, args.course)
+        seed_quizzes(spreadsheet, args.course)
+        seed_schedule(spreadsheet, args.course)
         seed_book_reading(spreadsheet)
+
+    if args.seed_test_roster:
+        print("\nSeeding test roster (dev only)...")
+        seed_test_roster(spreadsheet, args.course)
 
     print("\nDone!")
 

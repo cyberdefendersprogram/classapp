@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Claim Your Account - Class Portal{% endblock %}
+{% block title %}Claim Your Account - {{ course_title | default('Class Portal') }}{% endblock %}
 
 {% block content %}
+<p class="text-muted mb-1">{{ course_title | default('Class Portal') }}{% if term %} - {{ term }}{% endif %}</p>
 <h1>Claim Your Account</h1>
 <p>Enter your student ID to link your email address to your account.</p>
 

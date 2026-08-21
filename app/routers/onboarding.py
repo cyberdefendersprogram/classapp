@@ -3,11 +3,11 @@
 import logging
 from datetime import datetime
 
-from fastapi import APIRouter, Form, Request
+from fastapi import APIRouter, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from app.dependencies import RequiredSession, templates
-from app.services.sheets import get_sheets_client
+from app.services.sheets import SheetsUnavailableError, get_sheets_client
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -112,6 +112,15 @@ def get_fields_to_show(student) -> list[dict]:
     return [f for f in ONBOARDING_FIELDS if f["key"] in empty_fields]
 
 
+def _course_context() -> dict:
+    """Course title/term for display, failing soft if Sheets is unavailable."""
+    sheets = get_sheets_client()
+    return {
+        "course_title": sheets.get_config("course_title") or "Class Portal",
+        "term": sheets.get_config("term") or "",
+    }
+
+
 @router.get("/onboarding", response_class=HTMLResponse)
 async def onboarding_form(request: Request, session: RequiredSession):
     """
@@ -121,7 +130,14 @@ async def onboarding_form(request: Request, session: RequiredSession):
     Only shows fields that are empty in the Roster.
     """
     sheets = get_sheets_client()
-    student = sheets.get_roster_by_id(session.student_id)
+    try:
+        student = sheets.get_roster_by_id(session.student_id)
+    except SheetsUnavailableError:
+        logger.warning("Sheets unavailable loading onboarding for %s", session.student_id)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Service temporarily unavailable. Please try again in a moment.",
+        ) from None
 
     if not student:
         logger.warning("Student not found for session: %s", session.student_id)
@@ -141,6 +157,7 @@ async def onboarding_form(request: Request, session: RequiredSession):
             "student": student,
             "fields": fields_to_show,
             "error": None,
+            **_course_context(),
         },
     )
 
@@ -167,7 +184,14 @@ async def onboarding_submit(
     All fields are optional. Updates roster and logs responses to Sheets.
     """
     sheets = get_sheets_client()
-    student = sheets.get_roster_by_id(session.student_id)
+    try:
+        student = sheets.get_roster_by_id(session.student_id)
+    except SheetsUnavailableError:
+        logger.warning("Sheets unavailable submitting onboarding for %s", session.student_id)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Service temporarily unavailable. Please try again in a moment.",
+        ) from None
 
     if not student:
         logger.warning("Student not found for session: %s", session.student_id)
@@ -210,6 +234,7 @@ async def onboarding_submit(
                 "student": student,
                 "fields": fields_to_show,
                 "error": "An error occurred. Please try again.",
+                **_course_context(),
             },
         )
 

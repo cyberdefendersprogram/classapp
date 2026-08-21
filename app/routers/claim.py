@@ -7,11 +7,24 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 
 from app.dependencies import templates
 from app.services.sessions import create_session_token, get_cookie_settings
-from app.services.sheets import get_sheets_client
+from app.services.sheets import SheetsUnavailableError, get_sheets_client
 from app.services.tokens import validate_magic_token
+
+SERVICE_UNAVAILABLE_ERROR = (
+    "We couldn't reach the class roster right now. Please try again in a moment."
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+
+def _course_context() -> dict:
+    """Course title/term for display, failing soft if Sheets is unavailable."""
+    sheets = get_sheets_client()
+    return {
+        "course_title": sheets.get_config("course_title") or "Class Portal",
+        "term": sheets.get_config("term") or "",
+    }
 
 
 @router.get("/claim", response_class=HTMLResponse)
@@ -42,6 +55,7 @@ async def claim_form(request: Request, token: str):
             "request": request,
             "email": email,
             "error": None,
+            **_course_context(),
         },
     )
 
@@ -64,7 +78,19 @@ async def claim_submit(
     sheets = get_sheets_client()
 
     # Look up student by ID
-    student = sheets.get_roster_by_id(student_id)
+    try:
+        student = sheets.get_roster_by_id(student_id)
+    except SheetsUnavailableError:
+        logger.warning("Sheets unavailable during claim lookup for %s", student_id)
+        return templates.TemplateResponse(
+            "claim.html",
+            {
+                "request": request,
+                "email": email,
+                "error": SERVICE_UNAVAILABLE_ERROR,
+                **_course_context(),
+            },
+        )
 
     if not student:
         logger.warning("Claim attempt for non-existent student: %s", student_id)
@@ -74,6 +100,7 @@ async def claim_submit(
                 "request": request,
                 "email": email,
                 "error": "Invalid student ID. Please check your information and try again.",
+                **_course_context(),
             },
         )
 
@@ -86,6 +113,7 @@ async def claim_submit(
                 "request": request,
                 "email": email,
                 "error": "This student account has already been claimed. If this is your account, try signing in with your email.",
+                **_course_context(),
             },
         )
 
@@ -100,6 +128,7 @@ async def claim_submit(
                 "request": request,
                 "email": email,
                 "error": "An error occurred while claiming your account. Please try again.",
+                **_course_context(),
             },
         )
 

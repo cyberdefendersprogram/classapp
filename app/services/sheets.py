@@ -17,6 +17,21 @@ from app.services.cache import cached, invalidate
 logger = logging.getLogger(__name__)
 
 
+def _update_cell_raw(worksheet: gspread.Worksheet, row: int, col: int, value) -> None:
+    """
+    Update a single cell without Sheets' USER_ENTERED auto-parsing.
+
+    worksheet.update_cell() always uses value_input_option=USER_ENTERED, which lets
+    Sheets reinterpret the value (e.g. reformatting ISO datetime strings — dropping
+    microseconds and, for single-digit UTC hours, the leading zero — which then fails
+    datetime.fromisoformat() on read-back; or treating a leading '=' as a formula).
+    RAW stores the value exactly as given.
+    """
+    # worksheet.update() already qualifies range_name with the sheet title internally.
+    range_name = gspread.utils.rowcol_to_a1(row, col)
+    worksheet.update(range_name=range_name, values=[[value]], raw=True)
+
+
 class SheetsUnavailableError(Exception):
     """Raised when the Google Sheets API is unreachable or rate-limited."""
 
@@ -136,12 +151,9 @@ class SheetsClient:
                     return RosterEntry.from_row(record)
 
             return None
-        except gspread.exceptions.APIError as e:
-            logger.error("Sheets API error getting roster by email '%s': %s", email, e)
-            raise SheetsUnavailableError(str(e)) from e
         except Exception as e:
             logger.error("Failed to get roster by email '%s': %s", email, e)
-            return None
+            raise SheetsUnavailableError(str(e)) from e
 
     @cached(ttl_seconds=CACHE_TTL_ROSTER, prefix="roster")
     def get_roster_by_id(self, student_id: str) -> RosterEntry | None:
@@ -155,12 +167,9 @@ class SheetsClient:
                     return RosterEntry.from_row(record)
 
             return None
-        except gspread.exceptions.APIError as e:
-            logger.error("Sheets API error getting roster by id '%s': %s", student_id, e)
-            raise SheetsUnavailableError(str(e)) from e
         except Exception as e:
             logger.error("Failed to get roster by id '%s': %s", student_id, e)
-            return None
+            raise SheetsUnavailableError(str(e)) from e
 
     def claim_student(self, student_id: str, email: str) -> bool:
         """
@@ -190,8 +199,8 @@ class SheetsClient:
 
                     # Update cells
                     now = datetime.utcnow().isoformat()
-                    worksheet.update_cell(row_num, email_col, email)
-                    worksheet.update_cell(row_num, claimed_at_col, now)
+                    _update_cell_raw(worksheet, row_num, email_col, email)
+                    _update_cell_raw(worksheet, row_num, claimed_at_col, now)
 
                     # Invalidate cache
                     invalidate("roster")
@@ -230,7 +239,7 @@ class SheetsClient:
                     for field_name, value in fields.items():
                         if field_name in headers:
                             col_num = headers.index(field_name) + 1
-                            worksheet.update_cell(row_num, col_num, value if value else "")
+                            _update_cell_raw(worksheet, row_num, col_num, value if value else "")
 
                     # Invalidate cache
                     invalidate("roster")
@@ -451,7 +460,7 @@ class SheetsClient:
 
                     col_num = headers.index(col_name) + 1
                     row_num = idx + 2
-                    worksheet.update_cell(row_num, col_num, display_name)
+                    _update_cell_raw(worksheet, row_num, col_num, display_name)
                     invalidate("book_reading")
                     logger.info(
                         "Assigned %s as %s reader for chapter '%s'", display_name, role, chapter

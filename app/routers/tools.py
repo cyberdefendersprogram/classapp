@@ -6,13 +6,14 @@ from pathlib import Path
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 
+from app.config import settings
 from app.dependencies import CurrentSession, OnboardedStudent, is_admin, templates
 from app.services.tool_parser import get_available_tools, parse_tool_content
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-TOOLS_DIR = Path(__file__).parent.parent.parent / "content" / "cis60" / "tools"
+TOOLS_DIR = Path(__file__).parent.parent.parent / "content" / settings.active_class / "tools"
 
 
 @router.get("/tools", response_class=HTMLResponse)
