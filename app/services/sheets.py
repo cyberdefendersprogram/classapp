@@ -8,6 +8,7 @@ import gspread
 from google.oauth2.service_account import Credentials
 
 from app.config import settings
+from app.db.sqlite import invalidate_cached_student
 from app.models.book_reading import BookChapter
 from app.models.quiz import QuizMeta, QuizSubmission
 from app.models.roster import RosterEntry
@@ -202,8 +203,10 @@ class SheetsClient:
                     _update_cell_raw(worksheet, row_num, email_col, email)
                     _update_cell_raw(worksheet, row_num, claimed_at_col, now)
 
-                    # Invalidate cache
+                    # Invalidate cache (both the in-memory Sheets cache and the
+                    # local SQLite fast-path cache used by get_current_student)
                     invalidate("roster")
+                    invalidate_cached_student(student_id)
 
                     logger.info("Student %s claimed by %s", student_id, email)
                     return True
@@ -241,8 +244,10 @@ class SheetsClient:
                             col_num = headers.index(field_name) + 1
                             _update_cell_raw(worksheet, row_num, col_num, value if value else "")
 
-                    # Invalidate cache
+                    # Invalidate cache (both the in-memory Sheets cache and the
+                    # local SQLite fast-path cache used by get_current_student)
                     invalidate("roster")
+                    invalidate_cached_student(student_id)
 
                     logger.info("Updated roster %s: %s", student_id, list(fields.keys()))
                     return True

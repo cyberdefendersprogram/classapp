@@ -130,3 +130,9 @@ def set_cached_student(student: "RosterEntry") -> None:
                    cached_at = excluded.cached_at""",
             (student.student_id, json.dumps(data), datetime.utcnow().isoformat()),
         )
+
+
+def invalidate_cached_student(student_id: str) -> None:
+    """Drop a student's cached profile so the next lookup refetches from Sheets."""
+    with get_db() as db:
+        db.execute("DELETE FROM student_cache WHERE student_id = ?", (student_id,))
