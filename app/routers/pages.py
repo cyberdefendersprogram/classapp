@@ -7,7 +7,9 @@ import markdown
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse
 
+from app.config import settings
 from app.dependencies import CurrentSession, OnboardedStudent, is_admin, templates
+from app.services.presentations import build_presentation_rows
 from app.services.sheets import get_sheets_client
 
 # Project root for resolving content files
@@ -249,12 +251,37 @@ async def class_page(request: Request, id: str, student: OnboardedStudent, sessi
 
 @router.get("/final-projects", response_class=HTMLResponse)
 async def final_projects_page(request: Request, student: OnboardedStudent, session: CurrentSession):
-    """Render the final projects page showing all teams and members."""
+    """
+    Render the final projects page.
+
+    Shape is driven by the active course's Config key "final_project_mode":
+      - "individual" (e.g. CIS52's one-student-one-breach-review model):
+        a flat schedule of student/topic/order, sourced from the
+        presentation sign-up quiz (see app/services/presentations.py).
+      - "teams" (default, e.g. CIS60's group case-study model): the
+        existing team roster grouped by project, with each team's
+        content/<active_class>/projects/<slug>.md rendered as a description.
+    """
     sheets = get_sheets_client()
+    mode = sheets.get_config("final_project_mode") or "teams"
+
+    if mode == "individual":
+        quiz_id = sheets.get_config("presentation_quiz_id") or "q006"
+        rows = build_presentation_rows(sheets, quiz_id)
+        return templates.TemplateResponse(
+            "final_projects_individual.html",
+            {
+                "request": request,
+                "student": student,
+                "is_admin": is_admin(session),
+                "rows": rows,
+            },
+        )
+
     projects = sheets.get_final_projects()
 
     # Attach rendered markdown description to each project if a content file exists
-    projects_dir = _BASE_PATH / "content" / "cis60" / "projects"
+    projects_dir = _BASE_PATH / "content" / settings.active_class / "projects"
     for project in projects:
         desc_file = projects_dir / f"{project['slug']}.md"
         if desc_file.exists():

@@ -133,6 +133,10 @@ DEFAULT_CONFIG_BY_COURSE = {
         # CIS52 uses the simple read-only Reading list, not the Book_Reading
         # chapter-claim system. See nav_reading_link() in app/dependencies.py.
         "reading_mode": "list",
+        # CIS52 finals are one student reviewing one cloud breach, not team
+        # case studies. See final_project_mode handling in app/routers/pages.py.
+        "final_project_mode": "individual",
+        "presentation_quiz_id": "q007",
     },
 }
 
@@ -155,6 +159,16 @@ TEST_QUIZZES_BY_COURSE = {
             "quiz_id": "q001",
             "title": "Introduction to Cloud Security",
             "content_path": "content/cis52/quizzes/001-intro.md",
+            "open_at": "",
+            "close_at": "",
+            "attempts_allowed": "2",
+            "status": "published",
+            "total_points": "10",
+        },
+        {
+            "quiz_id": "q007",
+            "title": "Final Project — Cloud Breach Review Sign-Up",
+            "content_path": "content/cis52/quizzes/final-project.md",
             "open_at": "",
             "close_at": "",
             "attempts_allowed": "2",

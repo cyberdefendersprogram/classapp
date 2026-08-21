@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Final Projects{% endblock %}
+
+{% block content %}
+<nav class="nav">
+    <a href="/home">Home</a>
+    <a href="/schedule">Schedule</a>
+    <a href="/quizzes">Quizzes</a>
+    <a href="/tools">Tools</a>
+    {% set reading_link = nav_reading_link() %}
+    {% if reading_link %}<a href="{{ reading_link.url }}">{{ reading_link.label }}</a>{% endif %}
+    <a href="/final-projects" class="active">Final Projects</a>
+    <a href="/me">Profile</a>
+    {% if is_admin %}<a href="/admin/analytics">Admin</a>{% endif %}
+    <a href="/auth/logout">Sign Out</a>
+</nav>
+
+<h1>Final Projects</h1>
+<p class="text-muted">Each student reviews one cloud security breach. Sign up with the final project quiz if you haven't picked a topic yet.</p>
+
+{% set ordered = rows | selectattr("order") | list %}
+{% set unordered = rows | rejectattr("order") | list %}
+
+{% if rows %}
+<div style="overflow-x: auto;">
+<table style="width: 100%; border-collapse: collapse;">
+    <thead>
+        <tr style="background: #f5f5f5;">
+            <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #ddd; white-space: nowrap;">#</th>
+            <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #ddd;">Student</th>
+            <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #ddd;">Breach Topic</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in ordered %}
+    <tr style="border-bottom: 1px solid #eee;">
+        <td style="padding: 0.75rem; vertical-align: middle;"><strong>{{ row.order }}</strong></td>
+        <td style="padding: 0.75rem; vertical-align: middle;">{{ row.name }}</td>
+        <td style="padding: 0.75rem; vertical-align: middle;">
+            {% if row.title %}{{ row.title }}{% else %}<span class="text-muted">—</span>{% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    {% for row in unordered %}
+    <tr style="border-bottom: 1px solid #eee;">
+        <td style="padding: 0.75rem; vertical-align: middle;"><span class="text-muted">—</span></td>
+        <td style="padding: 0.75rem; vertical-align: middle;">{{ row.name }}</td>
+        <td style="padding: 0.75rem; vertical-align: middle;">
+            {% if row.title %}{{ row.title }}
+            {% elif row.submitted %}<span class="text-muted">(no topic given)</span>
+            {% else %}<span class="text-muted">not signed up yet</span>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% else %}
+<p class="text-muted">No students yet.</p>
+{% endif %}
+
+<div class="mt-3">
+    <a href="/home" class="btn btn-outline">Back to Home</a>
+</div>
+
+<style>
+.nav a.active { font-weight: 600; color: #333; }
+</style>
+{% endblock %}

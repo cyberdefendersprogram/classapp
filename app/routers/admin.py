@@ -2,7 +2,6 @@
 
 import csv
 import io
-import json
 import logging
 
 from fastapi import APIRouter, Form, Request
@@ -10,6 +9,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 
 from app.dependencies import AdminSession, templates
 from app.services.analytics import compute_quiz_analytics, get_best_submissions
+from app.services.presentations import build_presentation_rows
 from app.services.quiz_parser import get_parsed_quiz
 from app.services.sheets import get_sheets_client
 
@@ -214,57 +214,19 @@ async def grading_csv(session: AdminSession):
 # Presentations
 # ---------------------------------------------------------------------------
 
-PRESENTATION_QUIZ_ID = "q006"
+DEFAULT_PRESENTATION_QUIZ_ID = "q006"
 
 
-def _build_presentation_rows(sheets) -> list[dict]:
-    """
-    Join quiz-006 submissions with roster to produce one row per student.
-
-    Returns list of dicts with keys:
-        student_id, name, email, title, timing, order, grade
-    """
-    roster = sheets.get_all_roster()
-    submissions = sheets.get_all_quiz_submissions(PRESENTATION_QUIZ_ID)
-
-    # Best (most recent) submission per student
-    by_student: dict[str, dict] = {}
-    for sub in sorted(submissions, key=lambda s: s.submitted_at):
-        try:
-            answers = json.loads(sub.answers_json)
-        except (json.JSONDecodeError, TypeError):
-            answers = {}
-        by_student[sub.student_id] = answers
-
-    rows = []
-    for student in roster:
-        if not student.is_claimed:
-            continue
-        answers = by_student.get(student.student_id, {})
-        rows.append(
-            {
-                "student_id": student.student_id,
-                "name": student.display_name,
-                "full_name": student.full_name,
-                "email": student.preferred_email or "",
-                "title": answers.get("q1", ""),
-                "timing": answers.get("q2", ""),
-                "order": student.presentation_order,
-                "grade": student.presentation_grade,
-                "submitted": bool(answers),
-            }
-        )
-
-    # Sort: ordered students first (by order number), unordered at bottom
-    rows.sort(key=lambda r: (r["order"] is None, r["order"] or 0, r["name"]))
-    return rows
+def _presentation_quiz_id(sheets) -> str:
+    """Which quiz's answers feed the presentation sign-up, per the active course's Config."""
+    return sheets.get_config("presentation_quiz_id") or DEFAULT_PRESENTATION_QUIZ_ID
 
 
 @router.get("/presentations", response_class=HTMLResponse)
 async def presentations_page(request: Request, session: AdminSession):
     """Admin presentations page — order and grade student presentations."""
     sheets = get_sheets_client()
-    rows = _build_presentation_rows(sheets)
+    rows = build_presentation_rows(sheets, _presentation_quiz_id(sheets))
 
     return templates.TemplateResponse(
         "admin_presentations.html",
@@ -345,7 +307,7 @@ async def admin_book_reading(request: Request, session: AdminSession):
 async def presentations_csv(session: AdminSession):
     """Download presentations as CSV."""
     sheets = get_sheets_client()
-    rows = _build_presentation_rows(sheets)
+    rows = build_presentation_rows(sheets, _presentation_quiz_id(sheets))
 
     output = io.StringIO()
     writer = csv.writer(output)
