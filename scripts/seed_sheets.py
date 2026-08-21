@@ -371,11 +371,19 @@ def get_spreadsheet(client: gspread.Client) -> gspread.Spreadsheet:
     return client.open_by_key(sheets_id)
 
 
-def create_structure(spreadsheet: gspread.Spreadsheet) -> None:
-    """Create all required worksheets with headers."""
+def create_structure(spreadsheet: gspread.Spreadsheet, course: str) -> None:
+    """Create all required worksheets with headers, skipping the reading tab this course doesn't use."""
     existing_sheets = [ws.title for ws in spreadsheet.worksheets()]
 
+    # Only one of these two is ever needed — see nav_reading_link() in app/dependencies.py.
+    reading_mode = DEFAULT_CONFIG_BY_COURSE.get(course, {}).get("reading_mode", "signup")
+    skip_sheets = {"list": "Book_Reading", "signup": "Reading"}.get(reading_mode, "")
+
     for sheet_name, headers in SHEET_STRUCTURES.items():
+        if sheet_name == skip_sheets:
+            print(f"  Skipping '{sheet_name}' (reading_mode={reading_mode} doesn't use it)...")
+            continue
+
         if sheet_name in existing_sheets:
             print(f"  Sheet '{sheet_name}' already exists, skipping...")
             continue
@@ -580,14 +588,16 @@ def main():
 
     if args.create_structure or args.all:
         print("\nCreating structure...")
-        create_structure(spreadsheet)
+        create_structure(spreadsheet, args.course)
 
     if args.seed_test_data or args.all:
         print("\nSeeding test data...")
         seed_config(spreadsheet, args.course)
         seed_quizzes(spreadsheet, args.course)
         seed_schedule(spreadsheet, args.course)
-        seed_book_reading(spreadsheet)
+        reading_mode = DEFAULT_CONFIG_BY_COURSE.get(args.course, {}).get("reading_mode", "signup")
+        if reading_mode != "list":
+            seed_book_reading(spreadsheet)
 
     if args.seed_test_roster:
         print("\nSeeding test roster (dev only)...")
