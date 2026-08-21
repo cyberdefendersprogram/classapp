@@ -13,7 +13,7 @@ from app.models.book_reading import BookChapter
 from app.models.quiz import QuizMeta, QuizSubmission
 from app.models.roster import RosterEntry
 from app.models.schedule import ScheduleEntry
-from app.services.cache import cached, invalidate
+from app.services.cache import cached, invalidate, invalidate_key
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +31,42 @@ def _update_cell_raw(worksheet: gspread.Worksheet, row: int, col: int, value) ->
     # worksheet.update() already qualifies range_name with the sheet title internally.
     range_name = gspread.utils.rowcol_to_a1(row, col)
     worksheet.update(range_name=range_name, values=[[value]], raw=True)
+
+
+def _batch_update_cells_raw(
+    worksheet: gspread.Worksheet, updates: list[tuple[int, int, object]]
+) -> None:
+    """
+    Update several (possibly non-contiguous) cells in a single API call.
+
+    Used instead of one _update_cell_raw() call per cell so that e.g. claiming
+    a student or saving an onboarding form costs one Sheets write, not one per
+    field — with 30+ students submitting around the same time, that's the
+    difference between a handful of requests and a burst large enough to trip
+    Sheets' per-project rate limit.
+    """
+    if not updates:
+        return
+    data = [
+        {"range": gspread.utils.rowcol_to_a1(row, col), "values": [[value]]}
+        for row, col, value in updates
+    ]
+    worksheet.batch_update(data, raw=True)
+
+
+def _invalidate_roster_entry(student_id: str, email: str | None = None) -> None:
+    """
+    Invalidate the cached roster entry for one student, not the whole roster.
+
+    Cache keys here must match the format @cached() builds: "<prefix>:<func_name>:<arg>".
+    invalidate("roster") would instead drop every cached student — with many students
+    onboarding around the same time, one student's write would force everyone else's
+    next page load back to a live Sheets read too.
+    """
+    invalidate_key(f"roster:get_roster_by_id:{student_id}")
+    if email:
+        invalidate_key(f"roster:get_roster_by_email:{email.lower()}")
+    invalidate_cached_student(student_id)
 
 
 class SheetsUnavailableError(Exception):
@@ -198,15 +234,15 @@ class SheetsClient:
                     email_col = headers.index("preferred_email") + 1
                     claimed_at_col = headers.index("claimed_at") + 1
 
-                    # Update cells
+                    # Update both cells in a single API call
                     now = datetime.utcnow().isoformat()
-                    _update_cell_raw(worksheet, row_num, email_col, email)
-                    _update_cell_raw(worksheet, row_num, claimed_at_col, now)
+                    _batch_update_cells_raw(
+                        worksheet,
+                        [(row_num, email_col, email), (row_num, claimed_at_col, now)],
+                    )
 
-                    # Invalidate cache (both the in-memory Sheets cache and the
-                    # local SQLite fast-path cache used by get_current_student)
-                    invalidate("roster")
-                    invalidate_cached_student(student_id)
+                    # Row-level cache invalidation — see _invalidate_roster_entry.
+                    _invalidate_roster_entry(student_id, email)
 
                     logger.info("Student %s claimed by %s", student_id, email)
                     return True
@@ -238,16 +274,16 @@ class SheetsClient:
                 if str(record.get("student_id")) == str(student_id):
                     row_num = idx + 2
 
-                    # Update each field
-                    for field_name, value in fields.items():
-                        if field_name in headers:
-                            col_num = headers.index(field_name) + 1
-                            _update_cell_raw(worksheet, row_num, col_num, value if value else "")
+                    # Update all changed fields in a single API call
+                    updates = [
+                        (row_num, headers.index(field_name) + 1, value if value else "")
+                        for field_name, value in fields.items()
+                        if field_name in headers
+                    ]
+                    _batch_update_cells_raw(worksheet, updates)
 
-                    # Invalidate cache (both the in-memory Sheets cache and the
-                    # local SQLite fast-path cache used by get_current_student)
-                    invalidate("roster")
-                    invalidate_cached_student(student_id)
+                    # Row-level cache invalidation — see _invalidate_roster_entry.
+                    _invalidate_roster_entry(student_id, record.get("preferred_email"))
 
                     logger.info("Updated roster %s: %s", student_id, list(fields.keys()))
                     return True
@@ -396,17 +432,32 @@ class SheetsClient:
 
     def append_onboarding_response(self, data: dict) -> bool:
         """Append a new onboarding response row."""
+        return self.append_onboarding_responses([data])
+
+    def append_onboarding_responses(self, rows: list[dict]) -> bool:
+        """
+        Append multiple onboarding response rows in a single API call.
+
+        Prefer this over calling append_onboarding_response() in a loop — a full
+        onboarding submission can log a dozen answers, and each append_row() call
+        does its own read (to find the next empty row) plus a write, so a loop
+        costs ~2 API calls per field instead of 1 call total.
+        """
+        if not rows:
+            return True
         try:
             worksheet = self._get_worksheet("Onboarding_Responses")
             headers = worksheet.row_values(1)
 
-            row = [data.get(h, "") for h in headers]
-            worksheet.append_row(row, value_input_option="RAW")
+            values = [[data.get(h, "") for h in headers] for data in rows]
+            worksheet.append_rows(values, value_input_option="RAW")
 
-            logger.info("Appended onboarding response: %s", data.get("student_id"))
+            logger.info(
+                "Appended %d onboarding response(s): %s", len(rows), rows[0].get("student_id")
+            )
             return True
         except Exception as e:
-            logger.error("Failed to append onboarding response: %s", e)
+            logger.error("Failed to append onboarding responses: %s", e)
             return False
 
     # -------------------------------------------------------------------------

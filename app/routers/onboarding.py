@@ -238,24 +238,27 @@ async def onboarding_submit(
             },
         )
 
-    # Log each field to Onboarding_Responses
+    # Log each field to Onboarding_Responses in a single batched append
+    response_rows = []
     for field in ONBOARDING_FIELDS:
         key = field["key"]
         value = form_data.get(key, "")
 
         if value:  # Only log non-empty responses
-            response_data = {
-                "timestamp": now,
-                "student_id": session.student_id,
-                "email": session.email,
-                "form_version": FORM_VERSION,
-                "question_key": key,
-                "question_label": field["label"],
-                "answer": value,
-                "answer_type": field["type"],
-                "source": "web",
-            }
-            sheets.append_onboarding_response(response_data)
+            response_rows.append(
+                {
+                    "timestamp": now,
+                    "student_id": session.student_id,
+                    "email": session.email,
+                    "form_version": FORM_VERSION,
+                    "question_key": key,
+                    "question_label": field["label"],
+                    "answer": value,
+                    "answer_type": field["type"],
+                    "source": "web",
+                }
+            )
+    sheets.append_onboarding_responses(response_rows)
 
     logger.info("Onboarding completed for student %s", session.student_id)
     return RedirectResponse(url="/home", status_code=302)

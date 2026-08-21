@@ -81,6 +81,24 @@ def invalidate(prefix: str) -> int:
     return len(keys_to_delete)
 
 
+def invalidate_key(key: str) -> bool:
+    """
+    Invalidate a single cache entry by its exact key.
+
+    Prefer this over invalidate(prefix) when only one record changed —
+    invalidate(prefix) drops every entry under that prefix (e.g. every
+    cached student), forcing unrelated concurrent requests back to Sheets.
+
+    Returns:
+        True if an entry was removed.
+    """
+    existed = key in _cache
+    _cache.pop(key, None)
+    if existed:
+        logger.debug("Invalidated cache entry: %s", key)
+    return existed
+
+
 def invalidate_all() -> int:
     """
     Clear entire cache.
