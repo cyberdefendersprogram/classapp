@@ -17,12 +17,53 @@
 </nav>
 
 <h1>Final Projects</h1>
-<p class="text-muted">Each student reviews one cloud security breach. Sign up with the final project quiz if you haven't picked a topic yet.</p>
+<p class="text-muted">Each student reviews one cloud security breach.</p>
 
-{% set ordered = rows | selectattr("order") | list %}
-{% set unordered = rows | rejectattr("order") | list %}
+{% if error %}
+<div class="flash error">{{ error }}</div>
+{% endif %}
 
-{% if rows %}
+{% if success %}
+<div class="flash success">{{ success }}</div>
+{% endif %}
+
+{% if my_entry and my_entry.has_submitted %}
+<div style="background: #eef4ff; border: 1px solid #c5d9f8; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+    <h2 style="margin-bottom: 0.5rem; font-size: 1rem; color: #1a56db;">Your Topic</h2>
+    <p style="margin: 0.25rem 0;"><strong>{{ my_entry.topic }}</strong></p>
+    {% if my_entry.timing_pref %}
+    <p style="margin: 0.25rem 0;" class="text-muted">Timing preference: {{ my_entry.timing_pref }}</p>
+    {% endif %}
+    {% if my_entry.order %}
+    <p style="margin: 0.25rem 0;" class="text-muted">Presentation order: #{{ my_entry.order }}</p>
+    {% endif %}
+</div>
+{% elif is_open %}
+<div style="background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem;">
+    <h2 style="margin-bottom: 0.75rem; font-size: 1rem;">Sign Up</h2>
+    <form method="post" action="/final-projects/submit">
+        <label for="topic">Which cloud security breach will you review?</label>
+        <input type="text" id="topic" name="topic" placeholder="e.g. Capital One 2019 Breach" required>
+
+        <label for="timing_pref" class="mt-2">Presentation timing preference</label>
+        <select id="timing_pref" name="timing_pref">
+            <option value="">-- No preference --</option>
+            <option value="First">First</option>
+            <option value="Last">Last</option>
+            <option value="Doesn't matter">Doesn't matter</option>
+        </select>
+
+        <button type="submit" class="mt-2">Submit Topic</button>
+    </form>
+</div>
+{% else %}
+<div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+    <p style="margin: 0; color: #92400e;">Final project sign-up isn't open yet. Check back later.</p>
+</div>
+{% endif %}
+
+{% if entries %}
+<h2 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Class Schedule</h2>
 <div style="overflow-x: auto;">
 <table style="width: 100%; border-collapse: collapse;">
     <thead>
@@ -33,32 +74,19 @@
         </tr>
     </thead>
     <tbody>
-    {% for row in ordered %}
-    <tr style="border-bottom: 1px solid #eee;">
-        <td style="padding: 0.75rem; vertical-align: middle;"><strong>{{ row.order }}</strong></td>
-        <td style="padding: 0.75rem; vertical-align: middle;">{{ row.name }}</td>
+    {% for entry in entries %}
+    {% set is_me = entry.student_id == student.student_id %}
+    <tr style="border-bottom: 1px solid #eee;{% if is_me %} background: #f0f7ff;{% endif %}">
         <td style="padding: 0.75rem; vertical-align: middle;">
-            {% if row.title %}{{ row.title }}{% else %}<span class="text-muted">—</span>{% endif %}
+            {% if entry.order %}<strong>{{ entry.order }}</strong>{% else %}<span class="text-muted">—</span>{% endif %}
         </td>
-    </tr>
-    {% endfor %}
-    {% for row in unordered %}
-    <tr style="border-bottom: 1px solid #eee;">
-        <td style="padding: 0.75rem; vertical-align: middle;"><span class="text-muted">—</span></td>
-        <td style="padding: 0.75rem; vertical-align: middle;">{{ row.name }}</td>
-        <td style="padding: 0.75rem; vertical-align: middle;">
-            {% if row.title %}{{ row.title }}
-            {% elif row.submitted %}<span class="text-muted">(no topic given)</span>
-            {% else %}<span class="text-muted">not signed up yet</span>
-            {% endif %}
-        </td>
+        <td style="padding: 0.75rem; vertical-align: middle;{% if is_me %} font-weight: 600;{% endif %}">{{ entry.full_name }}</td>
+        <td style="padding: 0.75rem; vertical-align: middle;">{{ entry.topic }}</td>
     </tr>
     {% endfor %}
     </tbody>
 </table>
 </div>
-{% else %}
-<p class="text-muted">No students yet.</p>
 {% endif %}
 
 <div class="mt-3">

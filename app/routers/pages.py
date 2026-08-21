@@ -1,15 +1,15 @@
 """General page routes for authenticated users."""
 
 import logging
+from datetime import datetime
 from pathlib import Path
 
 import markdown
 from fastapi import APIRouter, Form, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 
 from app.config import settings
 from app.dependencies import CurrentSession, OnboardedStudent, is_admin, templates
-from app.services.presentations import build_presentation_rows
 from app.services.sheets import get_sheets_client
 
 # Project root for resolving content files
@@ -249,6 +249,24 @@ async def class_page(request: Request, id: str, student: OnboardedStudent, sessi
     )
 
 
+def _final_project_individual_context(request, student, session, sheets, error=None, success=None):
+    is_open = (sheets.get_config("final_project_open") or "false").lower() == "true"
+    my_entry = sheets.get_final_project_entry(student.student_id)
+    entries = sheets.get_final_project_entries()
+    entries.sort(key=lambda e: (e.order is None, e.order or 0, e.full_name.lower()))
+
+    return {
+        "request": request,
+        "student": student,
+        "is_admin": is_admin(session),
+        "is_open": is_open,
+        "my_entry": my_entry,
+        "entries": entries,
+        "error": error,
+        "success": success,
+    }
+
+
 @router.get("/final-projects", response_class=HTMLResponse)
 async def final_projects_page(request: Request, student: OnboardedStudent, session: CurrentSession):
     """
@@ -256,8 +274,8 @@ async def final_projects_page(request: Request, student: OnboardedStudent, sessi
 
     Shape is driven by the active course's Config key "final_project_mode":
       - "individual" (e.g. CIS52's one-student-one-breach-review model):
-        a flat schedule of student/topic/order, sourced from the
-        presentation sign-up quiz (see app/services/presentations.py).
+        sign-up form + flat schedule of student/topic/order, sourced from
+        the Final_Projects sheet (see get_final_project_entries()).
       - "teams" (default, e.g. CIS60's group case-study model): the
         existing team roster grouped by project, with each team's
         content/<active_class>/projects/<slug>.md rendered as a description.
@@ -266,17 +284,8 @@ async def final_projects_page(request: Request, student: OnboardedStudent, sessi
     mode = sheets.get_config("final_project_mode") or "teams"
 
     if mode == "individual":
-        quiz_id = sheets.get_config("presentation_quiz_id") or "q006"
-        rows = build_presentation_rows(sheets, quiz_id)
-        return templates.TemplateResponse(
-            "final_projects_individual.html",
-            {
-                "request": request,
-                "student": student,
-                "is_admin": is_admin(session),
-                "rows": rows,
-            },
-        )
+        ctx = _final_project_individual_context(request, student, session, sheets)
+        return templates.TemplateResponse("final_projects_individual.html", ctx)
 
     projects = sheets.get_final_projects()
 
@@ -305,3 +314,54 @@ async def final_projects_page(request: Request, student: OnboardedStudent, sessi
             "projects": projects,
         },
     )
+
+
+@router.post("/final-projects/submit", response_class=HTMLResponse)
+async def final_project_submit(
+    request: Request,
+    student: OnboardedStudent,
+    session: CurrentSession,
+    topic: str = Form(...),
+    timing_pref: str = Form(""),
+):
+    """Submit (or update) this student's Final_Projects sign-up. Individual mode only."""
+    sheets = get_sheets_client()
+    mode = sheets.get_config("final_project_mode") or "teams"
+
+    if mode != "individual":
+        return RedirectResponse(url="/final-projects", status_code=302)
+
+    is_open = (sheets.get_config("final_project_open") or "false").lower() == "true"
+    if not is_open:
+        ctx = _final_project_individual_context(
+            request, student, session, sheets, error="Sign-up isn't open yet."
+        )
+        return templates.TemplateResponse("final_projects_individual.html", ctx)
+
+    topic = topic.strip()
+    if not topic:
+        ctx = _final_project_individual_context(
+            request, student, session, sheets, error="Please enter a topic."
+        )
+        return templates.TemplateResponse("final_projects_individual.html", ctx)
+
+    success = sheets.upsert_final_project(
+        student.student_id,
+        full_name=student.display_name,
+        topic=topic,
+        timing_pref=timing_pref.strip(),
+        submitted_at=datetime.utcnow().isoformat(),
+    )
+
+    if not success:
+        ctx = _final_project_individual_context(
+            request,
+            student,
+            session,
+            sheets,
+            error="Something went wrong saving your topic. Please try again.",
+        )
+        return templates.TemplateResponse("final_projects_individual.html", ctx)
+
+    logger.info("Student %s submitted final project topic", student.student_id)
+    return RedirectResponse(url="/final-projects", status_code=302)

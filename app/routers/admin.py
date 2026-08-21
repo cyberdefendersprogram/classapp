@@ -265,6 +265,53 @@ async def presentations_grade(
     return RedirectResponse("/admin/presentations", status_code=303)
 
 
+@router.get("/final-projects", response_class=HTMLResponse)
+async def admin_final_projects(request: Request, session: AdminSession):
+    """Admin final projects page — order and grade individual-mode sign-ups (Final_Projects tab)."""
+    sheets = get_sheets_client()
+    mode = sheets.get_config("final_project_mode") or "teams"
+
+    entries = sheets.get_final_project_entries() if mode == "individual" else []
+    entries.sort(key=lambda e: (e.order is None, e.order or 0, e.full_name.lower()))
+
+    return templates.TemplateResponse(
+        "admin_final_projects.html",
+        {
+            "request": request,
+            "session": session,
+            "mode": mode,
+            "entries": entries,
+        },
+    )
+
+
+@router.post("/final-projects/reorder")
+async def final_projects_reorder(request: Request, session: AdminSession):
+    """Save final project order numbers from form submission."""
+    sheets = get_sheets_client()
+    form = await request.form()
+
+    for key, value in form.items():
+        if key.startswith("order_"):
+            student_id = key[len("order_") :]
+            order_val = str(value).strip()
+            sheets.upsert_final_project(student_id, order=order_val if order_val else "")
+
+    return RedirectResponse("/admin/final-projects", status_code=303)
+
+
+@router.post("/final-projects/grade/{student_id}")
+async def final_projects_grade(
+    student_id: str,
+    session: AdminSession,
+    grade: int = Form(...),
+):
+    """Save final project grade for a student."""
+    sheets = get_sheets_client()
+    sheets.upsert_final_project(student_id, grade=str(grade))
+    return RedirectResponse("/admin/final-projects", status_code=303)
+
+
 @router.get("/book-reading", response_class=HTMLResponse)
 async def admin_book_reading(request: Request, session: AdminSession):
     """Admin page showing students with no book reading assignment."""

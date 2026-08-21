@@ -1,67 +1,57 @@
 {% extends "base.html" %}
 
-{% block title %}Presentations - Admin{% endblock %}
+{% block title %}Final Projects - Admin{% endblock %}
 
 {% block content %}
 <nav class="nav">
     <a href="/home">Home</a>
     <a href="/admin/analytics">Analytics</a>
     <a href="/admin/grading">Grading</a>
-    <a href="/admin/presentations" class="active">Presentations</a>
-    <a href="/admin/final-projects">Final Projects</a>
+    <a href="/admin/presentations">Presentations</a>
+    <a href="/admin/final-projects" class="active">Final Projects</a>
     <a href="/admin/book-reading">Book Reading</a>
 </nav>
 
-<h1>Presentations</h1>
+<h1>Final Projects</h1>
 
-{% set ordered = rows | selectattr("order") | list %}
-{% set unordered = rows | rejectattr("order") | list %}
+{% if mode != "individual" %}
+<p class="text-muted">This course's final_project_mode is "{{ mode }}", not "individual" — this page manages the
+Final_Projects tab used by the individual (one student, one topic) model. Nothing to show here for team-based
+final projects.</p>
+{% else %}
 
-<!-- ------------------------------------------------------------------ -->
-<!-- Order form                                                           -->
-<!-- ------------------------------------------------------------------ -->
+{% set ordered = entries | selectattr("order") | list %}
+{% set unordered = entries | rejectattr("order") | list %}
+
 <section class="card" style="margin-bottom: 2rem;">
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
-        <h2 style="margin: 0;">Set Presentation Order</h2>
-        <a href="/admin/presentations/csv" class="btn btn-outline btn-sm">Download CSV</a>
-    </div>
+    <h2 style="margin-bottom: 1rem;">Set Presentation Order</h2>
 
-    {% if not rows %}
-    <p class="text-muted">No claimed students yet.</p>
+    {% if not entries %}
+    <p class="text-muted">No sign-ups yet.</p>
     {% else %}
-    <form method="post" action="/admin/presentations/reorder">
+    <form method="post" action="/admin/final-projects/reorder">
         <div class="table-container">
             <table class="grading-table">
                 <thead>
                     <tr>
                         <th>#</th>
                         <th class="sticky-col">Student</th>
-                        <th>Email</th>
-                        <th>Presentation Title</th>
+                        <th>Topic</th>
                         <th>Timing Pref</th>
                         <th>Order</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for row in rows %}
-                    <tr class="{{ 'row-ordered' if row.order else 'row-pending' }}">
+                    {% for entry in entries %}
+                    <tr class="{{ 'row-ordered' if entry.order else 'row-pending' }}">
                         <td class="text-muted" style="font-size: 0.8rem;">
-                            {% if row.order %}{{ row.order }}{% else %}—{% endif %}
+                            {% if entry.order %}{{ entry.order }}{% else %}—{% endif %}
                         </td>
-                        <td class="sticky-col">{{ row.name }}</td>
-                        <td>{{ row.email }}</td>
+                        <td class="sticky-col">{{ entry.full_name }}</td>
+                        <td>{{ entry.topic or '—' }}</td>
                         <td>
-                            {% if row.title %}
-                                {{ row.title }}
-                            {% elif row.submitted %}
-                                <span class="text-muted">(no title given)</span>
-                            {% else %}
-                                <span class="badge-pending">not submitted</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if row.timing %}
-                            <span class="badge-timing">{{ row.timing }}</span>
+                            {% if entry.timing_pref %}
+                            <span class="badge-timing">{{ entry.timing_pref }}</span>
                             {% else %}
                             <span class="text-muted">—</span>
                             {% endif %}
@@ -69,8 +59,8 @@
                         <td>
                             <input
                                 type="number"
-                                name="order_{{ row.student_id }}"
-                                value="{{ row.order or '' }}"
+                                name="order_{{ entry.student_id }}"
+                                value="{{ entry.order or '' }}"
                                 min="1"
                                 max="99"
                                 placeholder="—"
@@ -89,46 +79,37 @@
     {% endif %}
 </section>
 
-<!-- ------------------------------------------------------------------ -->
-<!-- Final order + grading                                               -->
-<!-- ------------------------------------------------------------------ -->
 {% if ordered %}
 <section class="card">
-    <h2>Final Presentation Order</h2>
+    <h2>Final Order + Grading</h2>
     <div class="table-container">
         <table class="grading-table">
             <thead>
                 <tr>
                     <th>#</th>
                     <th class="sticky-col">Student</th>
-                    <th>Presentation Title</th>
-                    <th>Timing</th>
-                    <th style="min-width: 160px;">Grade (1–50)</th>
+                    <th>Topic</th>
+                    <th style="min-width: 160px;">Grade</th>
                 </tr>
             </thead>
             <tbody>
-                {% for row in ordered %}
+                {% for entry in ordered %}
                 <tr>
-                    <td><strong>{{ row.order }}</strong></td>
-                    <td class="sticky-col">{{ row.name }}</td>
-                    <td>{{ row.title or '—' }}</td>
-                    <td>
-                        {% if row.timing %}
-                        <span class="badge-timing">{{ row.timing }}</span>
-                        {% else %}—{% endif %}
-                    </td>
+                    <td><strong>{{ entry.order }}</strong></td>
+                    <td class="sticky-col">{{ entry.full_name }}</td>
+                    <td>{{ entry.topic or '—' }}</td>
                     <td>
                         <form
                             method="post"
-                            action="/admin/presentations/grade/{{ row.student_id }}"
+                            action="/admin/final-projects/grade/{{ entry.student_id }}"
                             style="display: flex; gap: 0.5rem; align-items: center;"
                         >
                             <input
                                 type="number"
                                 name="grade"
-                                value="{{ row.grade or '' }}"
+                                value="{{ entry.grade or '' }}"
                                 min="1"
-                                max="50"
+                                max="100"
                                 placeholder="—"
                                 class="grade-input"
                                 required
@@ -144,6 +125,7 @@
 </section>
 {% endif %}
 
+{% endif %}
 {% endblock %}
 
 {% block head %}
@@ -235,24 +217,9 @@
         background: #1a68d1;
     }
 
-    .btn-sm {
-        padding: 0.375rem 0.75rem;
-        font-size: 0.875rem;
-        width: auto;
-        display: inline-block;
-    }
-
     .badge-timing {
         background: #e8f4fd;
         color: #1a68d1;
-        padding: 0.15rem 0.5rem;
-        border-radius: 4px;
-        font-size: 0.8rem;
-    }
-
-    .badge-pending {
-        background: #fff3cd;
-        color: #856404;
         padding: 0.15rem 0.5rem;
         border-radius: 4px;
         font-size: 0.8rem;

@@ -10,6 +10,7 @@ from google.oauth2.service_account import Credentials
 from app.config import settings
 from app.db.sqlite import invalidate_cached_student
 from app.models.book_reading import BookChapter
+from app.models.final_project import FinalProjectEntry
 from app.models.quiz import QuizMeta, QuizSubmission
 from app.models.reading import ReadingItem
 from app.models.roster import RosterEntry
@@ -611,6 +612,71 @@ class SheetsClient:
             result.append({"name": project_name, "slug": slug, "teams": teams})
 
         return result
+
+    # -------------------------------------------------------------------------
+    # Final Projects methods (individual mode — one student, one topic)
+    # -------------------------------------------------------------------------
+
+    @cached(ttl_seconds=CACHE_TTL_ROSTER, prefix="final_projects_individual")
+    def get_final_project_entries(self) -> list[FinalProjectEntry]:
+        """Get all Final_Projects rows (individual-mode sign-ups)."""
+        try:
+            worksheet = self._get_worksheet("Final_Projects")
+            records = worksheet.get_all_records()
+            return [FinalProjectEntry.from_row(r) for r in records if r.get("student_id")]
+        except Exception as e:
+            logger.error("Failed to get final project entries: %s", e)
+            return []
+
+    def get_final_project_entry(self, student_id: str) -> FinalProjectEntry | None:
+        """Get one student's Final_Projects row, if any."""
+        for entry in self.get_final_project_entries():
+            if entry.student_id == str(student_id):
+                return entry
+        return None
+
+    def upsert_final_project(self, student_id: str, **fields) -> bool:
+        """
+        Create or update a student's Final_Projects row.
+
+        Args:
+            student_id: Student ID to upsert
+            **fields: Any of full_name, topic, timing_pref, order, grade,
+                submitted_at — only the given fields are written; existing
+                values for fields not passed are left alone (update) or
+                blank (create).
+
+        Returns True if successful.
+        """
+        try:
+            worksheet = self._get_worksheet("Final_Projects")
+            records = worksheet.get_all_records()
+            headers = worksheet.row_values(1)
+
+            for idx, record in enumerate(records):
+                if str(record.get("student_id")) == str(student_id):
+                    row_num = idx + 2
+                    updates = [
+                        (row_num, headers.index(field_name) + 1, value if value is not None else "")
+                        for field_name, value in fields.items()
+                        if field_name in headers
+                    ]
+                    _batch_update_cells_raw(worksheet, updates)
+                    invalidate("final_projects_individual")
+                    logger.info(
+                        "Updated Final_Projects row for %s: %s", student_id, list(fields.keys())
+                    )
+                    return True
+
+            # No existing row — append a new one
+            row = [str(student_id) if h == "student_id" else fields.get(h, "") for h in headers]
+            worksheet.append_row(row, value_input_option="RAW")
+            invalidate("final_projects_individual")
+            logger.info("Created Final_Projects row for %s", student_id)
+            return True
+        except Exception as e:
+            logger.error("Failed to upsert final project for %s: %s", student_id, e)
+            return False
 
     # -------------------------------------------------------------------------
     # Backward compatibility aliases

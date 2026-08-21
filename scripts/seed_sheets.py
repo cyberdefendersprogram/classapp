@@ -111,6 +111,15 @@ SHEET_STRUCTURES = {
         "title",
         "link",
     ],
+    "Final_Projects": [
+        "student_id",
+        "full_name",
+        "topic",
+        "timing_pref",
+        "order",
+        "grade",
+        "submitted_at",
+    ],
 }
 
 # Default config values, keyed by course. Selected with --course (default: cis55).
@@ -134,9 +143,11 @@ DEFAULT_CONFIG_BY_COURSE = {
         # chapter-claim system. See nav_reading_link() in app/dependencies.py.
         "reading_mode": "list",
         # CIS52 finals are one student reviewing one cloud breach, not team
-        # case studies. See final_project_mode handling in app/routers/pages.py.
+        # case studies — sign-up/order/grade live in the Final_Projects tab.
+        # See final_project_mode handling in app/routers/pages.py.
         "final_project_mode": "individual",
-        "presentation_quiz_id": "q007",
+        # Gate on the student-facing sign-up form; flip to "true" when ready.
+        "final_project_open": "false",
     },
 }
 
@@ -159,16 +170,6 @@ TEST_QUIZZES_BY_COURSE = {
             "quiz_id": "q001",
             "title": "Introduction to Cloud Security",
             "content_path": "content/cis52/quizzes/001-intro.md",
-            "open_at": "",
-            "close_at": "",
-            "attempts_allowed": "2",
-            "status": "published",
-            "total_points": "10",
-        },
-        {
-            "quiz_id": "q007",
-            "title": "Final Project — Cloud Breach Review Sign-Up",
-            "content_path": "content/cis52/quizzes/final-project.md",
             "open_at": "",
             "close_at": "",
             "attempts_allowed": "2",
@@ -391,11 +392,17 @@ def create_structure(spreadsheet: gspread.Spreadsheet, course: str) -> None:
 
     # Only one of these two is ever needed — see nav_reading_link() in app/dependencies.py.
     reading_mode = DEFAULT_CONFIG_BY_COURSE.get(course, {}).get("reading_mode", "signup")
-    skip_sheets = {"list": "Book_Reading", "signup": "Reading"}.get(reading_mode, "")
+    skip_sheets = {{"list": "Book_Reading", "signup": "Reading"}.get(reading_mode, "")}
+
+    # Final_Projects only applies to courses using the individual (one student,
+    # one topic) final project model — see final_project_mode in app/routers/pages.py.
+    final_project_mode = DEFAULT_CONFIG_BY_COURSE.get(course, {}).get("final_project_mode", "teams")
+    if final_project_mode != "individual":
+        skip_sheets.add("Final_Projects")
 
     for sheet_name, headers in SHEET_STRUCTURES.items():
-        if sheet_name == skip_sheets:
-            print(f"  Skipping '{sheet_name}' (reading_mode={reading_mode} doesn't use it)...")
+        if sheet_name in skip_sheets:
+            print(f"  Skipping '{sheet_name}' (not used by this course's config)...")
             continue
 
         if sheet_name in existing_sheets:
