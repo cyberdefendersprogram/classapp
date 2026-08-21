@@ -5,6 +5,8 @@
 VM_IP       := $(shell grep ^VM_IP .env | cut -d= -f2)
 VM_PASSWORD := $(shell grep ^VM_PASSWORD .env | cut -d= -f2)
 SERVER_DIR  := /opt/classapp
+SERVER_ENV  := $(SERVER_DIR)/env/.env
+PROD_URL    := https://classapp.cyberdefendersprogram.com
 PYTHON      := .venv/bin/python
 PYTEST      := .venv/bin/pytest
 UVICORN     := .venv/bin/uvicorn
@@ -12,7 +14,7 @@ RUFF        := .venv/bin/ruff
 SSH_CMD     := sshpass -p '$(VM_PASSWORD)' ssh -o StrictHostKeyChecking=no root@$(VM_IP)
 
 .PHONY: help dev docker-dev test lint fmt seed seed-cis60 seed-cis52 seed-cis52-dev \
-        deploy logs ssh health restart db-reset
+        deploy logs ssh health restart db-reset prod-status prod-switch-class
 
 # ── Default ───────────────────────────────────────────────────────────────────
 help:
@@ -30,6 +32,10 @@ help:
 	@echo "  make health       Check server health endpoint"
 	@echo "  make restart      Restart containers on server"
 	@echo "  make db-reset     Wipe SQLite on server (resets sessions/cache)"
+	@echo ""
+	@echo "  make prod-status                              Show active class + health on the server"
+	@echo "  make prod-switch-class COURSE=x SHEETS_ID=y   Point server at a class's sheet + reset DB"
+	@echo "                                                 (deliberate — NOT run by 'make deploy' / git push)"
 	@echo ""
 	@echo "  make seed           Seed active sheet structure"
 	@echo "  make seed-cis60     Seed CIS 60 sheet structure"
@@ -97,7 +103,7 @@ ssh:
 	sshpass -p '$(VM_PASSWORD)' ssh -o StrictHostKeyChecking=no root@$(VM_IP)
 
 health:
-	@curl -s http://$(VM_IP):8000/health | $(PYTHON) -m json.tool
+	@curl -s $(PROD_URL)/health | $(PYTHON) -m json.tool
 
 restart:
 	$(SSH_CMD) "cd $(SERVER_DIR) && docker compose restart"
@@ -107,3 +113,34 @@ db-reset:
 	@echo "Wiping SQLite on server (sessions + cache)..."
 	$(SSH_CMD) "docker exec \$$(docker ps --format '{{.Names}}' | grep classapp) rm -f /app/data/app.db && docker compose -f $(SERVER_DIR)/docker-compose.yml restart"
 	@echo "Done. DB will reinitialize on next request."
+
+# ── Production class switch ──────────────────────────────────────────────────
+# Deliberate, explicit action — NOT triggered by 'make deploy' / git push, since
+# it changes which sheet is live and resets all session/cache state. Run this
+# only when actually cutting the server over to a class.
+prod-status:
+	@echo "Active class on server:"
+	@$(SSH_CMD) "grep -E '^(GOOGLE_SHEETS_ID|ACTIVE_CLASS|ENV)=' $(SERVER_ENV)"
+	@echo ""
+	@$(MAKE) health
+
+prod-switch-class:
+	@if [ -z "$(COURSE)" ] || [ -z "$(SHEETS_ID)" ]; then \
+		echo "Usage: make prod-switch-class COURSE=cis52 SHEETS_ID=<google-sheet-id>"; \
+		exit 1; \
+	fi
+	@echo "Switching production to '$(COURSE)' (sheet $(SHEETS_ID))..."
+	@echo "  1/2 Updating server env (GOOGLE_SHEETS_ID, ACTIVE_CLASS)..."
+	$(SSH_CMD) "sed -i -E 's|^GOOGLE_SHEETS_ID=.*|GOOGLE_SHEETS_ID=$(SHEETS_ID)|' $(SERVER_ENV) && \
+		if grep -q '^ACTIVE_CLASS=' $(SERVER_ENV); then \
+			sed -i -E 's|^ACTIVE_CLASS=.*|ACTIVE_CLASS=$(COURSE)|' $(SERVER_ENV); \
+		else \
+			echo 'ACTIVE_CLASS=$(COURSE)' >> $(SERVER_ENV); \
+		fi"
+	@echo "  2/2 Recreating container (picks up new env; also resets the"
+	@echo "      container-local SQLite DB, which isn't on a mounted volume)..."
+	$(SSH_CMD) "cd $(SERVER_DIR) && docker compose up -d --force-recreate"
+	@echo ""
+	@echo "Waiting for the app to come back up..."
+	@sleep 6
+	@$(MAKE) prod-status
