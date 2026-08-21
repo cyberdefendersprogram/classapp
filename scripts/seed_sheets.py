@@ -583,6 +583,15 @@ def main():
     parser.add_argument("--create-structure", action="store_true", help="Create sheet structure")
     parser.add_argument("--seed-test-data", action="store_true", help="Seed test data")
     parser.add_argument(
+        "--seed-meta",
+        action="store_true",
+        help=(
+            "Seed structure + Config + Quizzes only (real metadata, safe to run against a "
+            "hand-curated sheet like production) — skips Schedule and Book_Reading, which "
+            "carry example/test rows this won't reliably deduplicate against real ones."
+        ),
+    )
+    parser.add_argument(
         "--seed-test-roster",
         action="store_true",
         help="Seed dev-only unclaimed test roster rows (e.g. student_id 10110234 for local /claim testing)",
@@ -591,7 +600,15 @@ def main():
 
     args = parser.parse_args()
 
-    if not any([args.create_structure, args.seed_test_data, args.seed_test_roster, args.all]):
+    if not any(
+        [
+            args.create_structure,
+            args.seed_test_data,
+            args.seed_meta,
+            args.seed_test_roster,
+            args.all,
+        ]
+    ):
         parser.print_help()
         return
 
@@ -600,7 +617,7 @@ def main():
     spreadsheet = get_spreadsheet(client)
     print(f"Opened: {spreadsheet.title} (course: {args.course})")
 
-    if args.create_structure or args.all:
+    if args.create_structure or args.all or args.seed_meta:
         print("\nCreating structure...")
         create_structure(spreadsheet, args.course)
 
@@ -612,6 +629,11 @@ def main():
         reading_mode = DEFAULT_CONFIG_BY_COURSE.get(args.course, {}).get("reading_mode", "signup")
         if reading_mode != "list":
             seed_book_reading(spreadsheet)
+
+    if args.seed_meta:
+        print("\nSeeding metadata only (Config + Quizzes, no Schedule/Book_Reading)...")
+        seed_config(spreadsheet, args.course)
+        seed_quizzes(spreadsheet, args.course)
 
     if args.seed_test_roster:
         print("\nSeeding test roster (dev only)...")

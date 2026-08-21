@@ -14,6 +14,7 @@ RUFF        := .venv/bin/ruff
 SSH_CMD     := sshpass -p '$(VM_PASSWORD)' ssh -o StrictHostKeyChecking=no root@$(VM_IP)
 
 .PHONY: help dev docker-dev test lint fmt seed seed-cis60 seed-cis52 seed-cis52-dev \
+        seed-meta seed-cis52-prod \
         deploy logs ssh health restart db-reset prod-status prod-switch-class
 
 # ── Default ───────────────────────────────────────────────────────────────────
@@ -41,6 +42,10 @@ help:
 	@echo "  make seed-cis60     Seed CIS 60 sheet structure"
 	@echo "  make seed-cis52     Seed CIS 52 sheet structure + course data"
 	@echo "  make seed-cis52-dev Seed CIS 52 structure + data + dev test roster row (10110234)"
+	@echo ""
+	@echo "  make seed-meta COURSE=x SHEETS_ID=y   Copy Config + Quizzes metadata onto any sheet"
+	@echo "                                         (not Schedule/Roster — safe for hand-curated sheets)"
+	@echo "  make seed-cis52-prod                  Shortcut: seed-meta for the CIS52 production sheet"
 	@echo ""
 
 # ── Local dev ─────────────────────────────────────────────────────────────────
@@ -86,6 +91,22 @@ seed-cis52-dev:
 	GOOGLE_SHEETS_ID=1CfD099p5A6h7YMxqsjsr4vEuqZjRIyhQKTIAaKGeJDI \
 	GOOGLE_SERVICE_ACCOUNT_PATH=.secrets/service-account.json \
 	$(PYTHON) scripts/seed_sheets.py --course cis52 --all --seed-test-roster
+
+# Reusable across courses/sheets: copies Config + Quizzes metadata only (not
+# Schedule, Book_Reading, or Roster) onto any sheet — safe to run against a
+# hand-curated sheet like production, since it only adds missing Config keys
+# and Quizzes rows, never touches existing ones or duplicates Schedule dates.
+seed-meta:
+	@if [ -z "$(COURSE)" ] || [ -z "$(SHEETS_ID)" ]; then \
+		echo "Usage: make seed-meta COURSE=cis52 SHEETS_ID=<google-sheet-id>"; \
+		exit 1; \
+	fi
+	GOOGLE_SHEETS_ID=$(SHEETS_ID) \
+	GOOGLE_SERVICE_ACCOUNT_PATH=.secrets/service-account.json \
+	$(PYTHON) scripts/seed_sheets.py --course $(COURSE) --seed-meta
+
+seed-cis52-prod:
+	@$(MAKE) seed-meta COURSE=cis52 SHEETS_ID=1mBWKLwaoGDp0rxKcOSrdqxZX7CbZv0bCi-EIk74alY4
 
 # ── Server ────────────────────────────────────────────────────────────────────
 # deploy = git push → GitHub Actions builds + pushes image → SSHs to server
