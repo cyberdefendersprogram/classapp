@@ -29,14 +29,21 @@ Under the grading breakdown, how is your final Quiz and Lab score calculated?
 - [ ] Only the highest single quiz and lab score count
 - [ ] Pass/fail based on attendance
 
-## Q4 [short_text, 2pts]
+## Q4 [mcq_single, 2pts]
 
 On what day of the week are lectures, office hours, and quizzes held?
 
-answer: Friday
+- [ ] Monday
+- [ ] Wednesday
+- [x] Friday
+- [ ] Saturday
 
 ## Q5 [numeric, 1pt]
 
 How many labs will there be in this course?
 
 answer: 5
+
+## Q6 [free_response, 2pts]
+
+As an organization moves from IaaS to PaaS to SaaS, what changes about the customer's technical control and security responsibilities?

@@ -178,7 +178,7 @@ TEST_QUIZZES_BY_COURSE = {
             "close_at": "",
             "attempts_allowed": "2",
             "status": "published",
-            "total_points": "10",
+            "total_points": "12",
         },
     ],
 }

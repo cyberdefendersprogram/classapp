@@ -17,6 +17,9 @@ class QuestionStats:
     correct_pct: float
     option_distribution: dict[str, int] = field(default_factory=dict)
     correct_answer: str | list[str] | None = None
+    responses: list[tuple[str, str]] = field(
+        default_factory=list
+    )  # (student email, raw answer text)
 
 
 @dataclass
@@ -83,6 +86,7 @@ def compute_quiz_analytics(
     for question in quiz.questions:
         correct_count = 0
         option_dist: dict[str, int] = {}
+        responses: list[tuple[str, str]] = []
 
         # Initialize option distribution for MCQ questions
         if question.is_mcq:
@@ -117,6 +121,13 @@ def compute_quiz_analytics(
                     elif answer in option_dist:
                         option_dist[answer] += 1
 
+            # Collect raw text for free-response questions — not autograded
+            # for content, so the instructor needs to read the actual answer.
+            if question.type == "free_response":
+                answer = answers.get(question.id)
+                if answer:
+                    responses.append((sub.email, str(answer)))
+
         # Calculate correct percentage
         correct_pct = (correct_count / completed_students * 100) if completed_students > 0 else 0.0
 
@@ -129,6 +140,7 @@ def compute_quiz_analytics(
                 correct_pct=correct_pct,
                 option_distribution=option_dist,
                 correct_answer=question.correct,
+                responses=responses,
             )
         )
 

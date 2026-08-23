@@ -68,6 +68,20 @@
         {% endfor %}
     </div>
     {% endif %}
+
+    {% if qs.responses %}
+    <div class="option-distribution">
+        <div class="dist-label">Responses ({{ qs.responses | length }}):</div>
+        <ul style="list-style: none; padding: 0; margin: 0.5rem 0 0 0;">
+            {% for email, answer in qs.responses %}
+            <li style="padding: 0.5rem 0; border-bottom: 1px solid #eee; font-size: 0.875rem;">
+                <div class="text-muted">{{ email }}</div>
+                <div>{{ answer }}</div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
 </div>
 {% endfor %}
 

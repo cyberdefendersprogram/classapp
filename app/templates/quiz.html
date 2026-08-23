@@ -86,12 +86,12 @@
             {% endfor %}
         </div>
         {% else %}
-        <input
-            type="text"
+        <textarea
             name="{{ question.id }}"
             placeholder="Enter your answer"
+            rows="4"
             required
-        >
+        ></textarea>
         {% endif %}
         {% endif %}
     </div>
