@@ -38,11 +38,14 @@ On what day of the week are lectures, office hours, and quizzes held?
 - [x] Friday
 - [ ] Saturday
 
-## Q5 [numeric, 1pt]
+## Q5 [mcq_single, 1pt]
 
 How many labs will there be in this course?
 
-answer: 5
+- [ ] 3
+- [ ] 4
+- [x] 5
+- [ ] 6
 
 ## Q6 [free_response, 2pts]
 
