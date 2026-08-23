@@ -10,6 +10,14 @@ class ReadingItem:
     class_num: str
     title: str
     link: str
+    author: str = ""
+    required_or_optional: str = ""
+    estimated_time: str = ""
+    reading_question: str = ""
+
+    @property
+    def is_optional(self) -> bool:
+        return self.required_or_optional.strip().lower() == "optional"
 
     @classmethod
     def from_row(cls, row: dict) -> "ReadingItem":
@@ -17,4 +25,8 @@ class ReadingItem:
             class_num=str(row.get("class", "") or ""),
             title=row.get("title", "") or "",
             link=row.get("link", "") or "",
+            author=row.get("author", "") or "",
+            required_or_optional=row.get("required_or_optional", "") or "",
+            estimated_time=row.get("estimated_time", "") or "",
+            reading_question=row.get("reading_question", "") or "",
         )

@@ -18,38 +18,68 @@
 <h1>Reading</h1>
 
 {% if items %}
-<div style="overflow-x: auto;">
-<table style="width: 100%; border-collapse: collapse;">
-    <thead>
-        <tr style="background: #f5f5f5;">
-            <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #ddd; white-space: nowrap;">Class</th>
-            <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #ddd;">Title</th>
-            <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #ddd;">Link</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for item in items %}
-    <tr style="border-bottom: 1px solid #eee;">
-        <td style="padding: 0.75rem; vertical-align: middle; white-space: nowrap;">
-            {% if item.class_num %}
-            <a href="/class/{{ item.class_num }}" style="font-size: 0.875rem;">Class {{ item.class_num }}</a>
-            {% else %}
-            <span class="text-muted">—</span>
+{% for class_num, group in items | groupby('class_num') %}
+<div style="margin-bottom: 2rem;">
+    <h2 style="display: flex; align-items: baseline; gap: 0.5rem;">
+        {% if class_num %}
+        <a href="/class/{{ class_num }}">Class {{ class_num }}</a>
+        {% else %}
+        Unscheduled
+        {% endif %}
+    </h2>
+
+    {% set required = group | rejectattr('is_optional') | list %}
+    {% set optional = group | selectattr('is_optional') | list %}
+
+    {% if required %}
+    <ul style="list-style: none; padding: 0; margin: 0 0 1rem 0;">
+        {% for item in required %}
+        <li style="padding: 0.75rem 0; border-bottom: 1px solid #eee;">
+            <div style="display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+                <div>
+                    {% if item.link %}
+                    <a href="{{ item.link }}" target="_blank" rel="noopener" style="font-weight: 600;">{{ item.title }}</a>
+                    {% else %}
+                    <span style="font-weight: 600;">{{ item.title }}</span>
+                    {% endif %}
+                    {% if item.author %}<div class="text-muted" style="font-size: 0.85rem;">{{ item.author }}</div>{% endif %}
+                </div>
+                {% if item.estimated_time %}<div class="text-muted" style="font-size: 0.85rem; white-space: nowrap;">{{ item.estimated_time }}</div>{% endif %}
+            </div>
+            {% if item.reading_question %}
+            <div style="font-size: 0.875rem; margin-top: 0.4rem; padding-left: 0.75rem; border-left: 3px solid #ddd;">
+                <span class="text-muted">Reading question:</span> {{ item.reading_question }}
+            </div>
             {% endif %}
-        </td>
-        <td style="padding: 0.75rem; vertical-align: middle;">{{ item.title }}</td>
-        <td style="padding: 0.75rem; vertical-align: middle;">
-            {% if item.link %}
-            <a href="{{ item.link }}" target="_blank" rel="noopener" style="font-size: 0.875rem;">View</a>
-            {% else %}
-            <span class="text-muted">—</span>
-            {% endif %}
-        </td>
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if optional %}
+    <details style="margin-top: 0.5rem;">
+        <summary class="text-muted" style="cursor: pointer; font-size: 0.9rem;">Optional / going deeper ({{ optional | length }})</summary>
+        <ul style="list-style: none; padding: 0; margin: 0.5rem 0 0 0;">
+            {% for item in optional %}
+            <li style="padding: 0.5rem 0; border-bottom: 1px solid #f2f2f2; font-size: 0.9rem;">
+                <div style="display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+                    <div>
+                        {% if item.link %}
+                        <a href="{{ item.link }}" target="_blank" rel="noopener">{{ item.title }}</a>
+                        {% else %}
+                        <span>{{ item.title }}</span>
+                        {% endif %}
+                        {% if item.author %}<span class="text-muted"> — {{ item.author }}</span>{% endif %}
+                    </div>
+                    {% if item.estimated_time %}<div class="text-muted" style="white-space: nowrap;">{{ item.estimated_time }}</div>{% endif %}
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </details>
+    {% endif %}
 </div>
+{% endfor %}
 {% else %}
 <p class="text-muted">No reading assigned yet. Check back later.</p>
 {% endif %}

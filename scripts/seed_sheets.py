@@ -109,7 +109,11 @@ SHEET_STRUCTURES = {
     "Reading": [
         "class",
         "title",
+        "author",
         "link",
+        "required_or_optional",
+        "estimated_time",
+        "reading_question",
     ],
     "Final_Projects": [
         "student_id",
@@ -249,52 +253,260 @@ TEST_SCHEDULE_BY_COURSE = {
     ],
     "cis52": [
         {
-            "session": "8/21/2026",
-            "desc": "1 - Introduction into core concepts",
+            "session": "08/21/2026",
+            "desc": "1 - Cloud Security Foundations",
             "desc_link": "content/cis52/notes/001-intro.md",
             "notes": "Nothing is due\nQuiz 1",
             "slides_link": "",
             "recording_link": "",
         },
         {
-            "session": "8/28/2026",
-            "desc": "2 - Identity and Access Management",
+            "session": "08/28/2026",
+            "desc": "2 - Identity Is the Perimeter",
             "desc_link": "",
             "notes": "Lab 1 due at 9am\nQuiz 1 from 1pm-2:30pm",
             "slides_link": "",
             "recording_link": "",
         },
         {
-            "session": "9/4/2026",
-            "desc": "3 - Security Tools",
+            "session": "09/04/2026",
+            "desc": "3 - Secure the Cloud Stack",
             "desc_link": "",
             "notes": "Lab 2 due at 9am\nQuiz 2 from 1pm-2:30pm",
             "slides_link": "",
             "recording_link": "",
         },
         {
-            "session": "9/11/2026",
-            "desc": "4 - Monitoring",
+            "session": "09/11/2026",
+            "desc": "4 - Cloud-Native Security",
             "desc_link": "",
             "notes": "Lab 3 due at 9am\nQuiz 3 from 1pm-2:30pm",
             "slides_link": "",
             "recording_link": "",
         },
         {
-            "session": "9/18/2026",
-            "desc": "5 - Host Security and Key Management",
+            "session": "09/18/2026",
+            "desc": "5 - Detect the Attack",
             "desc_link": "",
             "notes": "Lab 4 due at 9am\nQuiz 4 from 1pm-2:30pm",
             "slides_link": "",
             "recording_link": "",
         },
         {
-            "session": "9/25/2026",
-            "desc": "6 - Detection and Response",
+            "session": "09/25/2026",
+            "desc": "6 - Respond, Recover, Improve",
             "desc_link": "",
             "notes": "Lab 5 due at 9am\nQuiz 5 from 1pm-2:30pm",
             "slides_link": "",
             "recording_link": "",
+        },
+    ],
+}
+
+# Reading list rows, keyed by course. Only used by courses with reading_mode
+# "list" (see nav_reading_link() in app/dependencies.py). Sourced from the
+# Fall 2026 CIS52 reading-list CSV (author, required/optional, estimated time,
+# and the per-reading question — omitted for optional readings, which don't
+# carry one in the source CSV).
+TEST_READING_BY_COURSE = {
+    "cis52": [
+        {
+            "class": "1",
+            "title": "Practical Cloud Security, 2nd Ed. — Ch. 1: Principles and Concepts",
+            "author": "Chris Dotson / O'Reilly Media",
+            "link": "https://www.repository.gctu.edu.gh/files/original/58109f0c11ade205dc3deb567a9d1525.pdf",
+            "required_or_optional": "Required",
+            "estimated_time": "25–35 minutes",
+            "reading_question": "Which traditional security principles remain important in the cloud, and which assumptions must change?",
+        },
+        {
+            "class": "1",
+            "title": "NIST SP 800-145 — The NIST Definition of Cloud Computing",
+            "author": "National Institute of Standards and Technology",
+            "link": "https://csrc.nist.gov/pubs/sp/800/145/final",
+            "required_or_optional": "Required",
+            "estimated_time": "15–20 minutes",
+            "reading_question": "How does the customer's technical control over a system change as the organization moves from IaaS to PaaS to SaaS?",
+        },
+        {
+            "class": "1",
+            "title": "AWS — Shared Responsibility Model",
+            "author": "Amazon Web Services",
+            "link": "https://aws.amazon.com/compliance/shared-responsibility-model/",
+            "required_or_optional": "Required",
+            "estimated_time": "10–15 minutes",
+            "reading_question": "Give one security control owned by the provider and one owned by the customer for an IaaS workload. How would the answer change for SaaS?",
+        },
+        {
+            "class": "1",
+            "title": "Above the Clouds: A Berkeley View of Cloud Computing",
+            "author": "Michael Armbrust et al. / UC Berkeley",
+            "link": "https://www2.eecs.berkeley.edu/Pubs/TechRpts/2009/EECS-2009-28.html",
+            "required_or_optional": "Optional",
+            "estimated_time": "30–45 minutes",
+            "reading_question": "",
+        },
+        {
+            "class": "2",
+            "title": "Practical Cloud Security, 2nd Ed. — Ch. 4: Identity and Access Management",
+            "author": "Chris Dotson / O'Reilly Media",
+            "link": "https://www.repository.gctu.edu.gh/files/original/58109f0c11ade205dc3deb567a9d1525.pdf",
+            "required_or_optional": "Required",
+            "estimated_time": "35–45 minutes",
+            "reading_question": "Why are temporary roles and workload identities generally safer than distributing long-lived cloud credentials?",
+        },
+        {
+            "class": "2",
+            "title": "BeyondCorp: A New Approach to Enterprise Security",
+            "author": "Rory Ward and Betsy Beyer / Google",
+            "link": "https://research.google/pubs/beyondcorp-a-new-approach-to-enterprise-security/",
+            "required_or_optional": "Required",
+            "estimated_time": "20–25 minutes",
+            "reading_question": "If being inside the corporate network no longer establishes trust, what evidence should determine whether access is granted?",
+        },
+        {
+            "class": "2",
+            "title": "NIST SP 800-207 — Zero Trust Architecture",
+            "author": "National Institute of Standards and Technology",
+            "link": "https://csrc.nist.gov/pubs/sp/800/207/final",
+            "required_or_optional": "Required",
+            "estimated_time": "20–30 minutes",
+            "reading_question": "What information should a Zero Trust policy engine evaluate before allowing access to a cloud resource?",
+        },
+        {
+            "class": "2",
+            "title": "MITRE ATT&CK — Valid Accounts: Cloud Accounts (T1078.004)",
+            "author": "MITRE ATT&CK",
+            "link": "https://attack.mitre.org/techniques/T1078/004/",
+            "required_or_optional": "Optional",
+            "estimated_time": "10 minutes",
+            "reading_question": "",
+        },
+        {
+            "class": "3",
+            "title": "Practical Cloud Security, 2nd Ed. — Selected Ch. 2, 5 & 6",
+            "author": "Chris Dotson / O'Reilly Media",
+            "link": "https://www.repository.gctu.edu.gh/files/original/58109f0c11ade205dc3deb567a9d1525.pdf",
+            "required_or_optional": "Required",
+            "estimated_time": "35–45 minutes",
+            "reading_question": "Which cloud security weakness becomes most dangerous when combined with excessive IAM permissions, and why?",
+        },
+        {
+            "class": "3",
+            "title": "OWASP API Security Top 10 — 2023",
+            "author": "OWASP",
+            "link": "https://owasp.org/API-Security/editions/2023/en/0x11-t10/",
+            "required_or_optional": "Required",
+            "estimated_time": "20–30 minutes",
+            "reading_question": "Which API vulnerabilities can allow an attacker to cross an application trust boundary and gain access to cloud resources or data?",
+        },
+        {
+            "class": "3",
+            "title": "A Technical Analysis of the Capital One Cloud Misconfiguration Breach",
+            "author": "Cloud Security Alliance",
+            "link": "https://cloudsecurityalliance.org/blog/2019/08/09/a-technical-analysis-of-the-capital-one-cloud-misconfiguration-breach",
+            "required_or_optional": "Required",
+            "estimated_time": "15–20 minutes",
+            "reading_question": "Identify at least three points where the attack path could have been interrupted. Which control would you prioritize?",
+        },
+        {
+            "class": "3",
+            "title": "A Systematic Analysis of the Capital One Data Breach: Critical Lessons Learned",
+            "author": "Khan et al.",
+            "link": "https://doi.org/10.1145/3546068",
+            "required_or_optional": "Optional",
+            "estimated_time": "45–60 minutes",
+            "reading_question": "",
+        },
+        {
+            "class": "4",
+            "title": "Practical Cloud Security, 2nd Ed. — Ch. 5: Cloud-Native Vulnerability Management",
+            "author": "Chris Dotson / O'Reilly Media",
+            "link": "https://www.repository.gctu.edu.gh/files/original/58109f0c11ade205dc3deb567a9d1525.pdf",
+            "required_or_optional": "Required",
+            "estimated_time": "20–30 minutes",
+            "reading_question": "Which security problems should be detected before deployment, and which can only be detected effectively at runtime?",
+        },
+        {
+            "class": "4",
+            "title": "NIST SP 800-190 — Application Container Security Guide",
+            "author": "National Institute of Standards and Technology",
+            "link": "https://csrc.nist.gov/pubs/sp/800/190/final",
+            "required_or_optional": "Required",
+            "estimated_time": "25–35 minutes",
+            "reading_question": "What new attack surfaces appear when an application moves from a virtual machine to containers managed by an orchestrator?",
+        },
+        {
+            "class": "4",
+            "title": "NIST SP 800-204C — DevSecOps for a Microservices-Based Application with Service Mesh",
+            "author": "National Institute of Standards and Technology",
+            "link": "https://csrc.nist.gov/pubs/sp/800/204/c/final",
+            "required_or_optional": "Required",
+            "estimated_time": "20–30 minutes",
+            "reading_question": "Which controls can be automated before deployment, and what class of incidents does this help prevent?",
+        },
+        {
+            "class": "4",
+            "title": "Securing DevOps",
+            "author": "Julien Vehent / Manning",
+            "link": "https://www.manning.com/books/securing-devops",
+            "required_or_optional": "Optional",
+            "estimated_time": "30–60 minutes",
+            "reading_question": "",
+        },
+        {
+            "class": "5",
+            "title": "Practical Cloud Security, 2nd Ed. — Ch. 7: Detection Sections",
+            "author": "Chris Dotson / O'Reilly Media",
+            "link": "https://www.repository.gctu.edu.gh/files/original/58109f0c11ade205dc3deb567a9d1525.pdf",
+            "required_or_optional": "Required",
+            "estimated_time": "30–40 minutes",
+            "reading_question": "What makes a cloud log useful for security detection rather than merely operational troubleshooting?",
+        },
+        {
+            "class": "5",
+            "title": "MITRE ATT&CK — Enterprise Cloud Matrix",
+            "author": "MITRE ATT&CK",
+            "link": "https://attack.mitre.org/matrices/enterprise/cloud/",
+            "required_or_optional": "Required",
+            "estimated_time": "30–40 minutes",
+            "reading_question": "Choose three ATT&CK techniques and identify the telemetry you would use to detect or investigate each one.",
+        },
+        {
+            "class": "6",
+            "title": "Practical Cloud Security, 2nd Ed. — Ch. 7: Response and Recovery Sections",
+            "author": "Chris Dotson / O'Reilly Media",
+            "link": "https://www.repository.gctu.edu.gh/files/original/58109f0c11ade205dc3deb567a9d1525.pdf",
+            "required_or_optional": "Required",
+            "estimated_time": "25–35 minutes",
+            "reading_question": "Which cloud characteristics make incident response easier than traditional infrastructure, and which make it harder?",
+        },
+        {
+            "class": "6",
+            "title": "NIST SP 800-61 Rev. 3 — Incident Response Recommendations and Considerations",
+            "author": "National Institute of Standards and Technology",
+            "link": "https://csrc.nist.gov/pubs/sp/800/61/r3/final",
+            "required_or_optional": "Required",
+            "estimated_time": "25–35 minutes",
+            "reading_question": "Why should a security incident lead to changes in architecture and controls rather than ending when normal service is restored?",
+        },
+        {
+            "class": "6",
+            "title": "Cloud Security Alliance — Cloud Controls Matrix and Introductory Guidance",
+            "author": "Cloud Security Alliance",
+            "link": "https://cloudsecurityalliance.org/research/cloud-controls-matrix",
+            "required_or_optional": "Required",
+            "estimated_time": "20–25 minutes",
+            "reading_question": "Choose one technical security control used during the course. What evidence would demonstrate that the control is operating effectively?",
+        },
+        {
+            "class": "6",
+            "title": "AWS Security Incident Response Guide",
+            "author": "Amazon Web Services",
+            "link": "https://docs.aws.amazon.com/whitepapers/latest/aws-security-incident-response-guide/aws-security-incident-response-guide.html",
+            "required_or_optional": "Optional",
+            "estimated_time": "30–45 minutes",
+            "reading_question": "",
         },
     ],
 }
@@ -556,6 +768,29 @@ def seed_test_roster(spreadsheet: gspread.Spreadsheet, course: str) -> None:
         print("    Test roster already seeded")
 
 
+def seed_reading(spreadsheet: gspread.Spreadsheet, course: str) -> None:
+    """Seed the Reading sheet with reading-list rows for the given course."""
+    print("  Seeding Reading...")
+    worksheet = spreadsheet.worksheet("Reading")
+
+    existing = worksheet.get_all_records()
+    existing_titles = {r.get("title") for r in existing}
+
+    headers = SHEET_STRUCTURES["Reading"]
+    rows_to_add = []
+
+    for item in TEST_READING_BY_COURSE.get(course, []):
+        if item["title"] in existing_titles:
+            continue
+        rows_to_add.append([item.get(h, "") for h in headers])
+
+    if rows_to_add:
+        worksheet.append_rows(rows_to_add, value_input_option="RAW")
+        print(f"    Added {len(rows_to_add)} reading rows")
+    else:
+        print("    Reading already seeded")
+
+
 def seed_book_reading(spreadsheet: gspread.Spreadsheet) -> None:
     """Seed the Book_Reading sheet with placeholder chapter rows."""
     print("  Seeding Book_Reading...")
@@ -634,7 +869,9 @@ def main():
         seed_quizzes(spreadsheet, args.course)
         seed_schedule(spreadsheet, args.course)
         reading_mode = DEFAULT_CONFIG_BY_COURSE.get(args.course, {}).get("reading_mode", "signup")
-        if reading_mode != "list":
+        if reading_mode == "list":
+            seed_reading(spreadsheet, args.course)
+        else:
             seed_book_reading(spreadsheet)
 
     if args.seed_meta:

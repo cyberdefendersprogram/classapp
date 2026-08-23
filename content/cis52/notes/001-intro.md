@@ -20,16 +20,19 @@ Non-profit: [cyberdefendersprogram.com](https://www.cyberdefendersprogram.com)
 
 ---
 
+**Full syllabus:** [Canvas — CIS 52 Syllabus](https://peralta.instructure.com/courses/92216/assignments/syllabus)
+**Required textbook (free):** [Practical Cloud Security, 2nd Ed. — Chris Dotson](https://www.repository.gctu.edu.gh/files/original/58109f0c11ade205dc3deb567a9d1525.pdf)
+
 ## Class Schedule
 
 | Date | Agenda | Homework |
 |------|--------|----------|
-| Aug 21 | Introduction into core concepts | Nothing is due |
-| Aug 28 | Identity and Access Management | Lab 1 due at 9am, Quiz 1 from 1–2:30pm |
-| Sep 4 | Security Tools | Lab 2 due at 9am, Quiz 2 from 1–2:30pm |
-| Sep 11 | Monitoring | Lab 3 due at 9am, Quiz 3 from 1–2:30pm |
-| Sep 18 | Host Security and Key Management | Lab 4 due at 9am, Quiz 4 from 1–2:30pm |
-| Sep 25 | Detection and Response | Lab 5 due at 9am, Quiz 5 from 1–2:30pm |
+| Aug 21 | Cloud Security Foundations | Nothing is due |
+| Aug 28 | Identity Is the Perimeter | Lab 1 due at 9am, Quiz 1 from 1–2:30pm |
+| Sep 4 | Secure the Cloud Stack | Lab 2 due at 9am, Quiz 2 from 1–2:30pm |
+| Sep 11 | Cloud-Native Security | Lab 3 due at 9am, Quiz 3 from 1–2:30pm |
+| Sep 18 | Detect the Attack | Lab 4 due at 9am, Quiz 4 from 1–2:30pm |
+| Sep 25 | Respond, Recover, Improve | Lab 5 due at 9am, Quiz 5 from 1–2:30pm |
 
 ---
 
