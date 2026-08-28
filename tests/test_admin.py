@@ -129,6 +129,23 @@ class TestAdminAccessControl:
         )
         assert response.status_code == 200
 
+    @patch("app.routers.admin.get_sheets_client")
+    @patch("app.dependencies.get_sheets_client")
+    def test_admin_email_comma_separated_list(self, mock_dep_sheets, mock_router_sheets, client):
+        """admin_email supports a comma-separated list of admins (e.g. instructor + TA)."""
+        mock_dep_sheets.return_value.get_config.return_value = "admin@example.com, ta@example.com"
+
+        mock_router_sheets.return_value.get_quizzes.return_value = []
+        mock_router_sheets.return_value.get_roster_count.return_value = 0
+
+        token = create_session_token("ta@example.com", "stu_ta")
+
+        response = client.get(
+            "/admin/analytics",
+            cookies={"session": token},
+        )
+        assert response.status_code == 200
+
 
 class TestAnalyticsOverview:
     """Tests for analytics overview page."""

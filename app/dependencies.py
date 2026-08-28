@@ -108,18 +108,27 @@ def require_onboarded(
     return student
 
 
+def _is_admin_email(email: str, admin_email_config: str | None) -> bool:
+    """Check email against the Config sheet's admin_email, a comma-separated list."""
+    if not admin_email_config:
+        return False
+
+    admin_emails = {e.strip().lower() for e in admin_email_config.split(",") if e.strip()}
+    return email.lower() in admin_emails
+
+
 def require_admin(
     session: Annotated[SessionData, Depends(require_session)],
 ) -> SessionData:
     """
     Require admin access.
 
-    Raises 403 if user is not the admin.
+    Raises 403 if user is not one of the configured admins.
     """
     sheets = get_sheets_client()
     admin_email = sheets.get_config("admin_email")
 
-    if not admin_email or session.email.lower() != admin_email.lower():
+    if not _is_admin_email(session.email, admin_email):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin access required",
@@ -136,17 +145,14 @@ AdminSession = Annotated[SessionData, Depends(require_admin)]
 
 
 def is_admin(session: SessionData | None) -> bool:
-    """Check if session belongs to admin user."""
+    """Check if session belongs to one of the configured admin users."""
     if not session:
         return False
 
     sheets = get_sheets_client()
     admin_email = sheets.get_config("admin_email")
 
-    if not admin_email:
-        return False
-
-    return session.email.lower() == admin_email.lower()
+    return _is_admin_email(session.email, admin_email)
 
 
 def nav_reading_link() -> dict | None:
