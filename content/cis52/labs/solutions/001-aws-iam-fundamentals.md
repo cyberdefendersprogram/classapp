@@ -19,31 +19,28 @@
 
 ## Part 3 — Hands-On IAM Exercise
 
-1. **Create the IAM user:**
-   IAM → Users → Create user → name `lab1-user` → do *not* grant console access unless testing interactively → next.
-2. **Attach a restrictive policy:**
-   Attach policy directly → `AmazonS3ReadOnlyAccess` (AWS managed policy). This grants read/list on S3 but nothing else.
-3. **Get credentials for the test user:**
-   Security credentials tab → Create access key → choose "Command Line Interface (CLI)" use case → download the key pair (do **not** screenshot this step with the key visible).
-4. **Test the allowed operation:**
-   Using the AWS CLI configured with `lab1-user`'s keys (`aws configure --profile lab1-user`):
-   ```
-   aws s3 ls --profile lab1-user
-   ```
-   Expected: a list of bucket names (or an empty list) — a successful, non-error response. Screenshot the terminal output.
-5. **Test the denied operation:**
-   ```
-   aws ec2 describe-instances --profile lab1-user
-   ```
-   Expected: an `AccessDenied` / `UnauthorizedOperation` error, since the policy only grants S3 read access. Screenshot the error.
-6. **Find the CloudTrail event:**
-   CloudTrail → Event history → filter by "User name" = `lab1-user` → find the `DescribeInstances` (denied) or `ListBuckets` (allowed) event → open it and screenshot the event detail panel, which shows the `errorCode` field (e.g. `Client.UnauthorizedOperation`) for the denied call.
-7. **Long-lived vs. temporary credentials explanation (expected answer shape):**
-   The IAM user's access key/secret pair is long-lived — it doesn't expire until manually rotated or deleted, so if leaked, it's valid indefinitely. Temporary credentials (via STS `AssumeRole`, e.g. from an EC2 instance role or federated login) expire automatically (typically in 1 hour), which limits the damage window if they leak. Students should conclude temporary credentials are safer for anything beyond initial manual testing.
-8. **Cleanup:**
-   IAM → Users → `lab1-user` → Security credentials → delete the access key → then delete the user itself. Screenshot the IAM Users list with `lab1-user` no longer present, or the "User deleted successfully" confirmation.
+Students are beginners with no AWS CLI or terminal setup — this entire exercise is done through the web console. Don't ask for CLI output; it's not required.
 
-**Grading check:** all four screenshots present (allowed, denied, CloudTrail event, cleanup), explanation shows understanding of expiry as the safety differentiator — exact wording will vary.
+1. **Create the IAM user with console access:**
+   IAM → Users → Create user → name `lab1-user` → check **Provide user access to the AWS Management Console** → choose "I want to create an IAM user" → set a custom password and check **Require password reset** (or leave unchecked for a one-shot lab) → next.
+2. **Attach a restrictive policy:**
+   Attach policy directly → `AmazonS3ReadOnlyAccess` (AWS managed policy). This grants read/list on S3 but nothing else — not EC2, not IAM, nothing.
+3. **Get the console sign-in link:**
+   After creating the user, AWS shows a sign-in URL like `https://<account-id>.signin.aws.amazon.com/console` along with the username and password. Copy this down (don't screenshot the password).
+4. **Sign in as the test user:**
+   Sign out of the root/main account, open the sign-in URL in a new browser window (or an incognito/private window, so both sessions can coexist), and log in as `lab1-user`.
+5. **Test the allowed operation:**
+   As `lab1-user`, go to the S3 console and view/list the bucket(s). This should load normally — no error banner. Screenshot the S3 console showing you're signed in as `lab1-user` (visible in the top-right account menu) with the bucket list loading successfully.
+6. **Test the denied operation:**
+   As `lab1-user`, go to the EC2 console. Since the policy only grants S3 permissions, the console shows a red error banner like *"You are not authorized to perform this action"* (referencing `ec2:DescribeInstances`). Screenshot this banner.
+7. **Find the CloudTrail event:**
+   Sign back in as root/admin. CloudTrail → Event history → filter by "User name" = `lab1-user` → find the `DescribeInstances` (denied) or `ListBuckets`/`ListObjects` (allowed) event → open it and screenshot the event detail panel. The denied call's JSON shows `"errorCode": "Client.UnauthorizedOperation"` (or similar) — point this out in the screenshot or a caption.
+8. **Long-lived vs. temporary credentials explanation (expected answer shape):**
+   This IAM user's console password is long-lived — it doesn't expire until manually rotated or the user is deleted, so if it leaked, it would work indefinitely. Temporary credentials (via IAM Identity Center federated sign-in, or an IAM role assumed with STS) expire automatically, typically within an hour, which limits how long a leaked credential is useful. Students should conclude temporary credentials are safer for anything beyond a one-off manual test like this one.
+9. **Cleanup:**
+   Sign back in as root/admin. IAM → Users → `lab1-user` → Delete. Screenshot the IAM Users list with `lab1-user` no longer present, or the "User deleted successfully" confirmation.
+
+**Grading check:** all four screenshots present (allowed action, denied action with the error banner, CloudTrail event, cleanup), explanation shows understanding of expiry as the safety differentiator — exact wording will vary. No CLI/terminal output should be expected or required.
 
 ## Part 4 — Written Reflection
 
