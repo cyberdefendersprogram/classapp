@@ -163,7 +163,7 @@ Use the function, not the brand name, as your mental anchor.
 
 ## Lab 1 Preview — Building an IAM Evidence Quest
 
-Full instructions: [Lab 1 — AWS Account Setup and IAM Fundamentals](../labs/001-aws-iam-fundamentals.md) ([Canvas](https://peralta.instructure.com/courses/92216/assignments/1757696))
+Full instructions: [Lab 1 — AWS Account Setup and IAM Fundamentals on Canvas](https://peralta.instructure.com/courses/92216/assignments/1757696)
 
 You will:
 - Protect the assigned account with strong authentication
