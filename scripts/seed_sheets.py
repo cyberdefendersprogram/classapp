@@ -253,7 +253,7 @@ TEST_SCHEDULE_BY_COURSE = {
     ],
     "cis52": [
         {
-            "session": "08/21/2026",
+            "session": "08/28/2026",
             "desc": "1 - Cloud Security Foundations",
             "desc_link": "content/cis52/notes/001-intro.md",
             "notes": "Nothing is due\nQuiz 1",
@@ -261,7 +261,7 @@ TEST_SCHEDULE_BY_COURSE = {
             "recording_link": "",
         },
         {
-            "session": "08/28/2026",
+            "session": "09/04/2026",
             "desc": "2 - Identity Is the Perimeter",
             "desc_link": "",
             "notes": "Lab 1 due at 9am\nQuiz 1 from 1pm-2:30pm",
@@ -269,7 +269,7 @@ TEST_SCHEDULE_BY_COURSE = {
             "recording_link": "",
         },
         {
-            "session": "09/04/2026",
+            "session": "09/11/2026",
             "desc": "3 - Secure the Cloud Stack",
             "desc_link": "",
             "notes": "Lab 2 due at 9am\nQuiz 2 from 1pm-2:30pm",
@@ -277,7 +277,7 @@ TEST_SCHEDULE_BY_COURSE = {
             "recording_link": "",
         },
         {
-            "session": "09/11/2026",
+            "session": "09/18/2026",
             "desc": "4 - Cloud-Native Security",
             "desc_link": "",
             "notes": "Lab 3 due at 9am\nQuiz 3 from 1pm-2:30pm",
@@ -285,7 +285,7 @@ TEST_SCHEDULE_BY_COURSE = {
             "recording_link": "",
         },
         {
-            "session": "09/18/2026",
+            "session": "09/25/2026",
             "desc": "5 - Detect the Attack",
             "desc_link": "",
             "notes": "Lab 4 due at 9am\nQuiz 4 from 1pm-2:30pm",
@@ -293,7 +293,7 @@ TEST_SCHEDULE_BY_COURSE = {
             "recording_link": "",
         },
         {
-            "session": "09/25/2026",
+            "session": "10/02/2026",
             "desc": "6 - Respond, Recover, Improve",
             "desc_link": "",
             "notes": "Lab 5 due at 9am\nQuiz 5 from 1pm-2:30pm",
