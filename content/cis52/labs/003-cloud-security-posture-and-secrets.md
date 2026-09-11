@@ -4,6 +4,7 @@
 
 **Due:** Friday, September 18, 2026, 9:00 a.m.
 **Canvas:** Lab 3 assignment (link posted on Canvas)
+**Student template:** a Word template with placeholder sections for each part is available at [`templates/003-lab-template.docx`](templates/003-lab-template.docx) — use it if you want a starting structure.
 
 This lab puts this week's lecture directly into practice: locking down network exposure (Part 1), encrypting data with a customer-managed key (Part 2), running a CSPM benchmark scan (Part 3), and probing an API for the exact class of flaw behind the Capital One breach (Part 4). Complete all four parts, plus the optional bonus, and submit everything as **one PDF**.
 
