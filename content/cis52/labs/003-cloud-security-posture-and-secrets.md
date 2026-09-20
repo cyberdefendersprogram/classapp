@@ -47,12 +47,7 @@ Run a benchmark scan against your own account — the same category of check tha
 5. **Cleanup:** if you used Security Hub, disable it once you have your screenshots (it's a billed service). Prowler has no cleanup — it only reads your account.
 
 ## Part 4 — API Security Probe (OWASP API Top 10)
-
-This is the API1/API8-class problem from lecture, hands-on: a passive scan for misconfiguration, and a manual replay test for broken authorization.
-
-1. Using **OWASP ZAP** (see the ZAP tool page in this course's Tools section), run a **baseline scan** against an instructor-approved lab target (do not scan any system you don't own or haven't been explicitly authorized to test). Screenshot the alert summary.
-2. Pick one WARN or FAIL-level finding and screenshot its detail, then explain in 1–2 sentences which OWASP API Security Top 10 category it falls under (API1, API2, API7, or API8) and why.
-3. In 2–3 sentences, tying back to the Capital One case study: which single control from Parts 1–4 of this lab (network segmentation, KMS key policy denial, CSPM scanning, or API scanning) do you think would have been most effective at breaking that attack path, and why?
+In 2–3 sentences, tying back to the Capital One case study: which single control from Parts 1–4 of this lab (network segmentation, KMS key policy denial, CSPM scanning, or API scanning) do you think would have been most effective at breaking that attack path, and why?
 
 ---
 
