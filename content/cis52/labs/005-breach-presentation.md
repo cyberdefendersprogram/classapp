@@ -1,9 +1,9 @@
-# Lab 5 (Final Project): Breach Case Study — Timeline, MITRE ATT&CK Mapping, and Defense
+# Final Project: Cloud Breach Case Study — Timeline, MITRE ATT&CK Mapping, and Defense
 
 **CIS 52 — Cloud Security Fundamentals**
 
-**Due:** Friday, September 25, 2026, 9:00 a.m. (written report) — **presentations in class the same day**
-**Canvas:** Lab 5 / Final Project assignment (link posted on Canvas)
+**Due:** Friday, October 2, 2026, 9:00 a.m. (written report) — **presentations in class the same day, Class 6**
+**Canvas:** Final Project assignment (link posted on Canvas)
 **Student templates:**
 - Write-up: [`templates/005-lab-template.docx`](templates/005-lab-template.docx)
 - Slides: [`templates/005-presentation-template.pptx`](templates/005-presentation-template.pptx)
@@ -35,7 +35,7 @@ Choose **one** of the following, or pitch your own breach to the instructor for 
 
 **Looking for more ideas or want to see how professionals present breach research?** Browse recent talks at [fwd:cloudsec North America](https://fwdcloudsec.org/conference/north-america/) — a community conference dedicated to cloud security research and incident case studies. Many talks there dissect a single breach or attack technique in the same format you're being asked to produce.
 
-**Pick your breach and post it in the Canvas discussion thread by [date TBD]** — one breach per student; first claim holds it, so pick early.
+**Submit your pick through the course portal's Final Project topic form as soon as you decide** — one breach per student; first claim holds it, so pick early.
 
 ## Part 2 — Written Report
 
@@ -62,7 +62,7 @@ Using the [PowerPoint template](templates/005-presentation-template.pptx), prepa
 7. Takeaways / lessons for your own cloud environment
 8. References
 
-You will present live in class on September 25. Keep it tight — 5 minutes goes fast. Practice out loud at least once before class.
+You will present live in class on October 2 (Class 6). Keep it tight — 5 minutes goes fast. Practice out loud at least once before class.
 
 ---
 
@@ -79,6 +79,6 @@ You will present live in class on September 25. Keep it tight — 5 minutes goes
 
 ## Submission
 
-- **Written report** as a Word doc or exported PDF, submitted on Canvas by Friday, September 25, 2026, 9:00 a.m.
+- **Written report** as a Word doc or exported PDF, submitted on Canvas by Friday, October 2, 2026, 9:00 a.m.
 - **Slides** submitted on Canvas before class the same day, and presented live in class.
 - Late work follows the syllabus's 10% deduction policy; your lowest lab score is still dropped, but plan to submit this one on time since presentations happen in class.
