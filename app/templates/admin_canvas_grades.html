@@ -1,25 +1,25 @@
 {% extends "base.html" %}
 
-{% block title %}Canvas Grades - Admin{% endblock %}
+{% block title %}Canvas Gradebook - Admin{% endblock %}
 
 {% block content %}
 <nav class="nav">
     <a href="/home">Home</a>
     <a href="/admin/analytics">Analytics</a>
-    <a href="/admin/grading">Grading</a>
-    <a href="/admin/canvas-grades">Canvas Grades</a>
+    <a href="/admin/grading">In-Class Quiz Grades</a>
+    <a href="/admin/canvas-grades">Canvas Gradebook</a>
     <a href="/admin/presentations">Presentations</a>
     <a href="/admin/final-projects">Final Projects</a>
     <a href="/admin/book-reading">Book Reading</a>
 </nav>
 
-<h1>Canvas Grades</h1>
+<h1>Canvas Gradebook</h1>
 
 <p class="text-muted">
     Grades synced from Canvas into the Roster sheet
     {% if last_synced %}(last sync {{ last_synced.strftime("%b %-d, %Y %H:%M") }} UTC){% endif %}.
     Refresh with <code>scripts/sync_canvas_grades.py --apply</code>. Canvas remains the official gradebook;
-    students see only their own row at <code>/grades</code>.
+    students see only their own row at <code>/grades</code>. This is separate from the <a href="/admin/grading">in-class quiz grades</a>.
 </p>
 
 <div style="margin-bottom: 1rem;">

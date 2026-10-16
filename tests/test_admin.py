@@ -326,7 +326,7 @@ class TestGradingPage:
             cookies={"session": token},
         )
         assert response.status_code == 200
-        assert "Grading" in response.text
+        assert "In-Class Quiz Grades" in response.text
 
     @patch("app.routers.admin.get_sheets_client")
     @patch("app.dependencies.get_sheets_client")
