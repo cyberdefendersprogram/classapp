@@ -114,6 +114,32 @@ The useful habit from this reading: a control isn't "done" because it's configur
 
 ---
 
+### Mini Exercise — Investigate the Logs (15 minutes, in pairs)
+
+Detection is only useful if you can read the evidence. Below is a simplified, **fictional** CloudTrail extract for account `111122223333`. Work in pairs, and write your answers down before we debrief.
+
+| Time (UTC) | Event name | Identity | Source IP | Notes |
+|---|---|---|---|---|
+| 02:14:03 | `GetCallerIdentity` | role `web-app-role` (assumed role session) | `203.0.113.50` | first call from this IP |
+| 02:14:41 | `ListBuckets` | `web-app-role` | `203.0.113.50` | this role normally makes no S3 calls |
+| 02:15:10 | `DescribeTrails`, `GetTrailStatus` | `web-app-role` | `203.0.113.50` | |
+| 02:15:44 | `StopLogging` | `web-app-role` | `203.0.113.50` | `AccessDenied` (blocked by a service control policy) |
+| 02:17:02 | `CreateAccessKey` | user `build-bot` | `203.0.113.50` | new key for an existing IAM user |
+| 02:19:30–02:41:12 | `GetObject` ×4,812 | `build-bot` | `203.0.113.50` | bucket `customer-exports` |
+| 02:41:50 | `PutBucketPolicy` | `build-bot` | `203.0.113.50` | |
+
+Also available: GuardDuty raised `UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration.OutsideAWS` at 02:14.
+
+1. **When did the incident start, and what was the initial access?** Which line tells you the credentials were stolen from an instance?
+2. **Which events are reconnaissance, which are defense evasion, which are persistence, and which are collection?** Map each to an ATT&CK technique ID.
+3. **What does the blocked `StopLogging` tell you** — about the attacker, and about a control we designed in Week 5?
+4. **What is your first containment action (in order),** using the AWS IR Containment Playbook in Tools? Think: revoke sessions, deactivate the new key, preserve evidence, and what you must *not* do first.
+5. **What one preventive control would have changed the outcome most,** and which Week would you point to?
+
+We'll debrief together: the goal is the habit of reading identity + source IP + time + pattern, not memorizing event names.
+
+---
+
 ## Part 2 — Final Project Presentations
 
 Every presentation follows the same arc you used in your report: what happened, the timeline, the attack path, the ATT&CK mapping, and the control that would have broken the chain.

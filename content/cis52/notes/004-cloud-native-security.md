@@ -120,6 +120,10 @@ You will:
 
 **Cost control:** No billed cloud resources are required for this lab — everything runs locally against sample files. If you do spin up anything in AWS, delete it once you have your screenshots.
 
+**Setup — start early:** Parts 1, 3, and 4 only need **Trivy** (`trivy image` pulls from the registry; no Docker needed). Only Part 2 (`docker build` / `docker history`) needs Docker. If Docker Desktop won't start on your machine (it needs WSL 2 and CPU virtualization enabled), use Play with Docker, GitHub Codespaces, or AWS CloudShell if available, and say which one you used. Full steps and fixes: [Lab Setup and Troubleshooting Guide](/tools/lab-setup-guide).
+
+**Real output only:** screenshots must be your own unedited tool output. Hand-typed, AI-simulated, or reformatted results will not receive credit.
+
 **Due:** Friday, September 25, 2026, 9:00 a.m.
 
 ---

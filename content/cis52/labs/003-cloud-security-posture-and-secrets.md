@@ -4,6 +4,8 @@
 
 **Due:** Friday, September 18, 2026, 9:00 a.m.
 **Canvas:** Lab 3 assignment (link posted on Canvas)
+
+**Before you start:** the [Lab Setup and Troubleshooting Guide](/tools/lab-setup-guide) (in Tools) lists what each lab needs, how to install it on Windows/macOS/Linux, and fixes for the most common errors. Allow time for setup — start early in the week, not the night before.
 **Student template:** a Word template with placeholder sections for each part is available at [`templates/003-lab-template.docx`](templates/003-lab-template.docx) — use it if you want a starting structure.
 
 This lab puts this week's lecture directly into practice: locking down network exposure (Part 1), encrypting data with a customer-managed key (Part 2), running a CSPM benchmark scan (Part 3), and probing an API for the exact class of flaw behind the Capital One breach (Part 4). Complete all four parts, plus the optional bonus, and submit everything as **one PDF**.
@@ -56,6 +58,18 @@ In 2–3 sentences, tying back to the Capital One case study: which single contr
 Complete the TryHackMe room [Cloud Security Fundamentals](https://tryhackme.com/room/cloudsecurityfundamentals) and include one screenshot showing your completion. This is optional and worth 20 points on top of the lab's normal scoring — it reinforces this week's material from a hands-on, attacker-facing angle.
 
 ---
+
+## What your screenshots must show
+
+| Item | A good screenshot shows |
+|---|---|
+| Security group before/after | The inbound rule with source **`0.0.0.0/0`** (before) and your own **IPv4 `/32`** (after) — make sure the Source column is visible, not scrolled off |
+| KMS encrypted object | The object's properties page showing server-side encryption with **your customer managed key** (its ARN), not the default AWS-managed key |
+| Denied decrypt | The CLI/console output for the **denied principal** with an `AccessDenied` that mentions the KMS key policy |
+| Admin success | The **admin principal** successfully downloading/decrypting the object (CLI response or the opened object) — not a screenshot of your Downloads folder |
+| CSPM summary and detail | The overall dashboard (pass/fail counts, severity) **and** a detail view of one failed check with its resource and remediation |
+
+**Cost/cleanup checklist:** delete the security group/instance, schedule the KMS key for deletion, empty and delete the S3 bucket, and disable Security Hub if you used it (it is billed). Prowler needs no cleanup.
 
 ## Submission
 

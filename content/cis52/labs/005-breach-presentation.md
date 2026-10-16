@@ -35,6 +35,8 @@ Choose **one** of the following, or pitch your own breach to the instructor for 
 
 **Looking for more ideas or want to see how professionals present breach research?** Browse recent talks at [fwd:cloudsec North America](https://fwdcloudsec.org/conference/north-america/) — a community conference dedicated to cloud security research and incident case studies. Many talks there dissect a single breach or attack technique in the same format you're being asked to produce.
 
+**Finding good sources:** start with the victim's own incident report or post-mortem, then add independent reporting such as Krebs on Security, The Record, BleepingComputer, Mandiant/CrowdStrike/Unit 42 write-ups, CISA/CSA advisories, SEC filings, or court documents, plus the community [breaches.cloud](https://www.breaches.cloud) incident library. If a breach is very recent and the usual news sites haven't covered it, say so in your report and rely on the primary source — and clearly separate confirmed facts from speculation.
+
 **Submit your pick through the course portal's Final Project topic form as soon as you decide** — one breach per student; first claim holds it, so pick early.
 
 ## Part 2 — Written Report

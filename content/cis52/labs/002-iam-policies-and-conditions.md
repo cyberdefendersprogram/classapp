@@ -5,6 +5,8 @@
 **Due:** Friday, September 11, 2026, 9:00 a.m.
 **Canvas:** [Lab 2 assignment](https://peralta.instructure.com/courses/92216/assignments/1757697)
 
+**Before you start:** the [Lab Setup and Troubleshooting Guide](/tools/lab-setup-guide) (in Tools) lists what each lab needs, how to install it on Windows/macOS/Linux, and fixes for the most common errors. Allow time for setup — start early in the week, not the night before.
+
 Complete all three parts below and submit everything as a single PDF. You'll be graded for attempt and understanding, not for getting every detail perfect — but each part asks you to prove your policy actually works, not just that you configured something.
 
 **Before you take any screenshots:** black out or crop your AWS Access Key ID, Secret Access Key, and any passwords if they ever appear on screen. Never submit a screenshot containing real credentials.
@@ -54,6 +56,20 @@ AWS-managed keys (like `aws/s3`) are created automatically by AWS services — y
 2. Screenshot the key's details page (showing the alias, key ID, and "Customer managed" origin).
 3. Screenshot the key's key policy — this controls **who** can use the key, which is just as important as the key existing at all.
 4. Confirm and screenshot that **automatic key rotation** is enabled (or explain in one sentence why you left it off, if you did).
+
+## What your screenshots must show
+
+| Item | A good screenshot shows |
+|---|---|
+| Bucket policy | The policy JSON in the console (Allow for the account root, **Deny** for `Eve`) |
+| Eve denied | Eve attempting **`GetObject`** on an object in the bucket and getting `AccessDenied` ("explicit deny in a resource-based policy"). A bucket list, `ListAllMyBuckets`, or a "Services could not be loaded" page is **not** the tested action |
+| Second principal succeeds | A different principal (e.g. your admin) **successfully** doing `GetObject` — the object downloaded/opened or the CLI response, not the console home page or a file on your computer |
+| Role | The role summary with the three managed policies, and the policy JSON containing **both** the `aws:SourceIp` and `aws:MultiFactorAuthPresent` conditions |
+| KMS key | Key details (alias, key ID, "Customer managed"), the key policy, and the rotation setting |
+
+**Tip:** use AWS CloudShell or the CLI for the two `GetObject` tests — the error/success text is easy to capture. If you edit the template, **replace** the "Paste screenshot here" placeholder captions with your image.
+
+**Cost/cleanup checklist:** delete the bucket (empty it first), Eve and any access keys, the test role, and schedule the KMS key for deletion (7-day wait; a scheduled-for-deletion key stops accruing its monthly charge).
 
 ## Submission
 

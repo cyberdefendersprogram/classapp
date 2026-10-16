@@ -16,15 +16,21 @@ Trivy is essential for:
 # macOS
 brew install trivy
 
-# Linux (Debian/Ubuntu)
+# Linux (Debian/Ubuntu) — see the Trivy docs for adding the apt repository first
 sudo apt-get install trivy
 
-# Or run via Docker — no local install needed
+# Windows (PowerShell): download the windows-64bit zip from the Trivy GitHub Releases
+# page, unzip it, then run .\trivy.exe from that folder (or add the folder to PATH).
+# With Chocolatey: choco install trivy
+
+# Or run via Docker (requires Docker Desktop/Engine to be installed AND running)
 docker run --rm aquasec/trivy image <image>:<tag>
 
 # Verify
 trivy --version
 ```
+
+**You do not need Docker to scan an image.** `trivy image <image>:<tag>` pulls the image straight from the registry. Docker is only needed for Lab 4 Part 2 (`docker build`). Having trouble with Docker, PATH, or the vulnerability database download? See the **Lab Setup and Troubleshooting Guide** in this Tools section.
 
 :::command-builder{id="trivy-builder"}
 tool_name: trivy

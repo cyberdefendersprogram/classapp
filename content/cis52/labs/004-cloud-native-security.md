@@ -6,6 +6,10 @@
 **Canvas:** Lab 4 assignment (link posted on Canvas)
 **Student template:** a Word template with placeholder sections for each part is available at [`templates/004-lab-template.docx`](templates/004-lab-template.docx) — use it if you want a starting structure.
 
+**Before you start:** the [Lab Setup and Troubleshooting Guide](/tools/lab-setup-guide) (in Tools) lists what each lab needs, how to install it on Windows/macOS/Linux, and fixes for the most common errors. Allow time for setup — start early in the week, not the night before.
+
+**No Docker, or Docker won't start?** Parts 1, 3, and 4 only need Trivy (`trivy image` pulls from the registry — no Docker). For Part 2 (`docker build` / `docker history`), use Play with Docker, GitHub Codespaces, or AWS CloudShell if available, and mention in your submission which environment you used. Start Docker setup early: Docker Desktop on Windows needs WSL 2 and CPU virtualization enabled.
+
 This lab puts this week's lecture directly into practice: scanning a container image and remediating a real finding (Part 1), proving that a "removed" secret still lives in an image's history (Part 2), scanning Infrastructure as Code before it's ever applied (Part 3), and reviewing a Kubernetes manifest for the exact class of misconfiguration Pod Security Standards exist to catch (Part 4). Complete all four parts, plus the optional bonus, and submit everything as **one PDF**.
 
 **Before you take any screenshots:** black out or crop any real API keys, tokens, or passwords if they ever appear on screen. Use only fake/placeholder secrets for this lab — never a real credential.
@@ -82,6 +86,17 @@ Lecture covered Pod Security Standards as the guardrail against a container runn
 Complete a TryHackMe room covering container or Kubernetes security fundamentals (e.g., "Docker Security" or "Introduction to Kubernetes") and include one screenshot showing your completion. This is optional and worth 20 points on top of the lab's normal scoring — it reinforces this week's material from a hands-on, attacker-facing angle.
 
 ---
+
+## What your screenshots must show
+
+| Item | A good screenshot shows |
+|---|---|
+| Part 1 | The Trivy **severity summary** (CRITICAL/HIGH/MEDIUM/LOW counts) for each image, plus one named CVE with package and fixed version written in text |
+| Part 2 | Raw `docker history --no-trunc` output with the fake secret visible in an earlier layer |
+| Part 3 | The scan finding with its **rule ID** and the misconfigured attribute, then a re-scan with the finding gone |
+| Part 4 | Your list of violations (you may use `trivy config pod.yaml` output with the rule IDs), then your corrected `pod.yaml` and a **real scan** of it |
+
+**Use real tool output.** Screenshots must be unedited terminal output from your own run. Output typed by hand, simulated by an AI tool, or reformatted into a graphic will not receive credit for that item.
 
 ## Submission
 

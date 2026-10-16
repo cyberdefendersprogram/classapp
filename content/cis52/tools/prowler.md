@@ -14,12 +14,14 @@ Prowler is essential for:
 
 ```bash
 # Install via pip (requires Python 3.9+)
-pip install prowler
+pip install prowler            # Windows: py -m pip install prowler
 
 # Verify setup — requires AWS credentials already configured
-# (aws configure, or an assumed role)
+# (aws configure, an assumed role, or AWS CloudShell, which is already signed in)
 prowler aws --version
 ```
+
+**Easiest path:** run Prowler in **AWS CloudShell** (the `>_` icon in the AWS Console). It already has Python and your credentials, so you can skip local setup. Prowler only reads your account and needs no cleanup. If `pip` or the install fails, see the **Lab Setup and Troubleshooting Guide** in this Tools section — or use Security Hub with the CIS AWS Foundations Benchmark instead (and disable it afterward; it is billed).
 
 :::command-builder{id="prowler-builder"}
 tool_name: prowler

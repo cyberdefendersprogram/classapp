@@ -50,6 +50,26 @@ Class Portal dates are authoritative.
 - Never expose credentials in screenshots, logs, code, or repositories
 - Stop or delete cloud resources when they're no longer needed
 
+
+**What a typical week asks of you (plan for about 9–11 hours including class):**
+
+| Piece | Time |
+|---|---|
+| Class (Friday) | 3 hours |
+| Required reading | 60–90 minutes — **read before the next class** (each week's notes list it) |
+| Lab | 2–3 hours — start early; setup (Docker, Trivy, Prowler) is the usual time sink |
+| Quiz | 60–90 minutes once started |
+
+**Quizzes are essay-style:** each quiz is five multi-part written questions graded on a substantive, on-topic attempt (not on a single "right answer"). Write in your own words, use what you did in the labs, and budget the full 90 minutes.
+
+**Setup help:** the [Lab Setup and Troubleshooting Guide](/tools/lab-setup-guide) in Tools covers installing Docker, Trivy, Prowler, and the AWS CLI, plus the errors students hit most. Read it before Lab 1.
+
+**AI tools — what's expected:**
+- You may use AI to understand an error or a concept, but quiz and report answers must be **your own words**, and you must be able to explain anything you submit
+- Don't submit pasted AI output (stray chat markup or interface text in an answer is a red flag)
+- Lab screenshots must be **real, unedited output from your own run** — not hand-typed, AI-simulated, or reformatted into a graphic
+- If AI helped you get unstuck on a lab, say so in a sentence in your submission
+
 ---
 
 ## Books + Reading

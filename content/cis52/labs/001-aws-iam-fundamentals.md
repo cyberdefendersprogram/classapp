@@ -7,6 +7,8 @@
 
 Complete all four parts below and submit everything as a single PDF.
 
+**Before you start:** the [Lab Setup and Troubleshooting Guide](/tools/lab-setup-guide) (in Tools) lists what each lab needs, how to install it on Windows/macOS/Linux, and fixes for the most common errors. Allow time for setup — start early in the week, not the night before.
+
 **Before you take any screenshots:** black out or crop your AWS Access Key ID, Secret Access Key, and root account password if they ever appear on screen. Never submit a screenshot containing real credentials.
 
 ## Part 1 — Register for an AWS Free Tier Account
@@ -34,6 +36,18 @@ Complete all four parts below and submit everything as a single PDF.
 In your own words: if you were to build a website on AWS, which services would you use, and how? What security issues would you need to watch out for?
 
 You're welcome to research this using Google, ChatGPT, or other AI tools — but treat anything an AI tool tells you about IAM, permissions, or security controls as **unverified** until you've checked it against AWS's own documentation. Don't just paste AI output; write it in your own words and be ready to explain any claim you make.
+
+## What your screenshots must show
+
+| Item | A good screenshot shows |
+|---|---|
+| Part 1 — account + MFA | The console header with your account name/alias, and the IAM dashboard showing root MFA is enabled |
+| Part 3 — allowed operation | The result of an action **as the IAM user** (e.g. the bucket list) with the user's name visible |
+| Part 3 — denied operation | The actual `AccessDenied` / "not authorized" message for an action outside the policy |
+| Part 3 — CloudTrail | An **event record** for one of your actions (event name, user, time) — not the CloudTrail landing page |
+| Part 3 — cleanup | The IAM Users page (or delete confirmation) showing the test user is gone |
+
+**Cost note:** nothing in this lab is billed if you stay on the Free Tier and delete the test user and keys when you finish.
 
 ## Submission
 
