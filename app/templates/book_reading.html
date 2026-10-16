@@ -11,7 +11,7 @@
     <a href="/labs">Labs</a>
     {% set reading_link = nav_reading_link() %}
     {% if reading_link %}<a href="{{ reading_link.url }}"{% if reading_link.url == "/book-reading" %} class="active"{% endif %}>{{ reading_link.label }}</a>{% endif %}
-    {% if grades_released() %}<a href="/grades">Grades</a>{% endif %}
+    {% if grades_released() %}<a href="/grades">Canvas Grades</a>{% endif %}
     <a href="/me">Profile</a>
     {% if is_admin %}<a href="/admin/analytics">Admin</a>{% endif %}
     <a href="/auth/logout">Sign Out</a>
