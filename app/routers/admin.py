@@ -9,6 +9,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 
 from app.dependencies import AdminSession, templates
 from app.services.analytics import compute_quiz_analytics, get_best_submissions
+from app.services.grades import ASSIGNMENTS
 from app.services.presentations import build_presentation_rows
 from app.services.quiz_parser import get_parsed_quiz
 from app.services.sheets import get_sheets_client
@@ -207,6 +208,60 @@ async def grading_csv(session: AdminSession):
         iter([output.getvalue()]),
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=grades.csv"},
+    )
+
+
+def _canvas_grade_rows(sheets) -> list:
+    """Roster entries that have Canvas grades synced, sorted by name."""
+    roster = [r for r in sheets.get_all_roster() if r.grades or r.grade_total is not None]
+    return sorted(roster, key=lambda r: (r.full_name or "").lower())
+
+
+@router.get("/canvas-grades", response_class=HTMLResponse)
+async def canvas_grades_page(request: Request, session: AdminSession):
+    """Admin view of every student's Canvas grades as synced into the Roster sheet."""
+    sheets = get_sheets_client()
+    rows = _canvas_grade_rows(sheets)
+    synced = [r.grades_synced_at for r in rows if r.grades_synced_at]
+    return templates.TemplateResponse(
+        "admin_canvas_grades.html",
+        {
+            "request": request,
+            "session": session,
+            "assignments": ASSIGNMENTS,
+            "roster": rows,
+            "last_synced": max(synced) if synced else None,
+        },
+    )
+
+
+@router.get("/canvas-grades/csv")
+async def canvas_grades_csv(session: AdminSession):
+    """Download the synced Canvas grades as CSV."""
+    sheets = get_sheets_client()
+    rows = _canvas_grade_rows(sheets)
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(
+        ["Student Name", "Email", "Student ID"]
+        + [label for _, label, _ in ASSIGNMENTS]
+        + ["Canvas Total %", "Letter", "Synced At"]
+    )
+    for r in rows:
+        writer.writerow(
+            [r.full_name, r.preferred_email or "", r.student_id]
+            + [r.grades.get(key, "") for key, _, _ in ASSIGNMENTS]
+            + [
+                "" if r.grade_total is None else r.grade_total,
+                r.grade_letter or "",
+                r.grades_synced_at.isoformat() if r.grades_synced_at else "",
+            ]
+        )
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=canvas_grades.csv"},
     )
 
 

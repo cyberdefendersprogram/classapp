@@ -20,6 +20,10 @@ A lightweight course portal for ~30 students with Google Sheets as the backend.
 - [x] Admin analytics dashboard (per-question quiz performance)
 - [x] Admin grading page (spreadsheet view of all student scores)
 - [x] CSV export of grades
+- [x] Canvas grades in the portal: `scripts/sync_canvas_grades.py` writes each student's Canvas scores and
+  course total into the Roster sheet (`grade_*` columns); students see only their own row at `/grades`,
+  released at end of course via the Config key `grades_visible` (`true` to show); admins get
+  `/admin/canvas-grades` (+ CSV). Canvas remains the official gradebook.
 
 ### Planned
 - [ ] CI/CD with GitHub Actions

@@ -11,6 +11,7 @@ from app.routers import (
     auth,
     book_reading,
     claim,
+    grades,
     health,
     labs,
     onboarding,
@@ -58,6 +59,7 @@ app.include_router(pages.router)
 app.include_router(quizzes.router)
 app.include_router(tools.router)
 app.include_router(labs.router)
+app.include_router(grades.router)
 app.include_router(book_reading.router)
 app.include_router(reading.router)
 app.include_router(admin.router)

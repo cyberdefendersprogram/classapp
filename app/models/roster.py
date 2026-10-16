@@ -1,6 +1,6 @@
 """Roster data model."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 
 
@@ -30,6 +30,13 @@ class RosterEntry:
     presentation_order: int | None = None
     presentation_grade: int | None = None
     final_project: str | None = None
+    # Canvas grade sync (written by scripts/sync_canvas_grades.py). Per-assignment
+    # values are "score/max" strings, e.g. {"lab1": "92/100"}; keys are the
+    # sheet column names without the "grade_" prefix.
+    grades: dict[str, str] = field(default_factory=dict)
+    grade_total: float | None = None  # Canvas course total, percent
+    grade_letter: str | None = None
+    grades_synced_at: datetime | None = None
 
     @property
     def is_claimed(self) -> bool:
@@ -84,6 +91,10 @@ class RosterEntry:
             presentation_order=_parse_int_field(row.get("presentation_order")),
             presentation_grade=_parse_int_field(row.get("presentation_grade")),
             final_project=row.get("final_project") or None,
+            grades=_parse_grades(row),
+            grade_total=_parse_float_field(row.get("grade_total")),
+            grade_letter=row.get("grade_letter") or None,
+            grades_synced_at=_parse_datetime(row.get("grades_synced_at")),
         )
 
     def get_empty_profile_fields(self) -> list[str]:
@@ -110,6 +121,29 @@ def _parse_int_field(value) -> int | None:
         return None
     try:
         return int(value)
+    except (ValueError, TypeError):
+        return None
+
+
+def _parse_grades(row: dict) -> dict[str, str]:
+    """Collect per-assignment grades from sheet columns (``grade_lab1``...) or, when
+    rebuilt from the SQLite student cache, from the nested ``grades`` dict."""
+    grades: dict[str, str] = {}
+    cached = row.get("grades")
+    if isinstance(cached, dict):
+        grades.update({str(k): str(v).strip() for k, v in cached.items() if str(v).strip()})
+    for k, v in row.items():
+        if k.startswith("grade_") and k not in ("grade_total", "grade_letter") and str(v).strip():
+            grades[k[len("grade_") :]] = str(v).strip()
+    return grades
+
+
+def _parse_float_field(value) -> float | None:
+    """Parse optional float field."""
+    if value is None or value == "":
+        return None
+    try:
+        return float(value)
     except (ValueError, TypeError):
         return None
 

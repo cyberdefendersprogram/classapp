@@ -9,6 +9,7 @@
     <a href="/quizzes">Quizzes</a>
     <a href="/tools">Tools</a>
     <a href="/labs">Labs</a>
+    {% if grades_released() %}<a href="/grades">Grades</a>{% endif %}
     <a href="/me">Profile</a>
     {% if is_admin %}<a href="/admin/analytics">Admin</a>{% endif %}
     <a href="/auth/logout">Sign Out</a>

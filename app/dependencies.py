@@ -174,6 +174,18 @@ def nav_reading_link() -> dict | None:
     return None
 
 
+def grades_released() -> bool:
+    """
+    Whether students may see their grades. Driven by the Config sheet key
+    "grades_visible" ("true"/"yes"/"1"); absent or anything else = hidden. Grades are
+    released only at the end of the course.
+    """
+    sheets = get_sheets_client()
+    value = (sheets.get_config("grades_visible") or "").strip().lower()
+    return value in {"true", "yes", "1", "on"}
+
+
 # Exposed to templates so nav blocks can render the right reading link without
 # every route having to thread it through their context dict.
 templates.env.globals["nav_reading_link"] = nav_reading_link
+templates.env.globals["grades_released"] = grades_released

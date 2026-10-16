@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}My Grades - Class Portal{% endblock %}
+
+{% block content %}
+<nav class="nav">
+    <a href="/home">Home</a>
+    <a href="/schedule">Schedule</a>
+    <a href="/quizzes">Quizzes</a>
+    <a href="/tools">Tools</a>
+    <a href="/labs">Labs</a>
+    {% set reading_link = nav_reading_link() %}
+    {% if reading_link %}<a href="{{ reading_link.url }}">{{ reading_link.label }}</a>{% endif %}
+    <a href="/final-projects">Final Projects</a>
+    {% if grades_released() %}<a href="/grades">Grades</a>{% endif %}
+    <a href="/me">Profile</a>
+    {% if is_admin %}<a href="/admin/analytics">Admin</a>{% endif %}
+    <a href="/auth/logout">Sign Out</a>
+</nav>
+
+<h1>My Grades</h1>
+
+{% if not released %}
+<p>Grades will be available here at the end of the course. Until then, check Canvas for graded work and instructor comments.</p>
+{% elif not view.has_any %}
+<p>Your grades haven't been synced yet. Check Canvas for your grades in the meantime.</p>
+{% else %}
+
+{% if view.total is not none %}
+<div class="mt-2" style="border:1px solid #ddd;border-radius:8px;padding:1rem;">
+    <h2>Course total</h2>
+    <p style="font-size: 2rem; margin: 0.25rem 0;">
+        <strong>{{ "%.2f"|format(view.total) }}%</strong>
+        {% if view.letter %}<span> &middot; {{ view.letter }}</span>{% endif %}
+    </p>
+    <p class="text-muted">
+        This is the course total from Canvas
+        {% if view.synced_at %}(synced {{ view.synced_at.strftime("%b %-d, %Y") }}){% endif %}.
+        <strong>Canvas is the official gradebook.</strong>
+        Per the syllabus, your lowest lab and lowest quiz are dropped from the total.
+    </p>
+</div>
+{% endif %}
+
+{% for category in ["Labs", "Quizzes"] %}
+<div class="mt-3">
+    <h2>{{ category }}</h2>
+    <table>
+        <thead>
+            <tr><th>Assignment</th><th>Score</th><th>%</th><th></th></tr>
+        </thead>
+        <tbody>
+        {% for row in view.rows if row.category == category %}
+            <tr>
+                <td>{{ row.label }}</td>
+                <td>
+                    {% if row.score is not none %}
+                        {{ "%g"|format(row.score) }}{% if row.max_points %} / {{ "%g"|format(row.max_points) }}{% endif %}
+                    {% else %}&mdash;{% endif %}
+                </td>
+                <td>{% if row.percent is not none %}{{ row.percent }}%{% else %}&mdash;{% endif %}</td>
+                <td>{% if row.dropped %}<em>lowest &mdash; dropped</em>{% endif %}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endfor %}
+
+<p class="text-muted mt-3">
+    Scores can exceed 100% when you earned bonus points. Questions about a grade?
+    Email your instructor and check the comments on the assignment in Canvas.
+</p>
+{% endif %}
+{% endblock %}
