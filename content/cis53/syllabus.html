@@ -1,0 +1,112 @@
+<h2>CIS 53: Intrusion Detection In-Depth</h2>
+<p><strong>Merritt College, Fall 2026</strong> &middot; Online synchronous, Fridays 9:00 a.m.&ndash;12:00 p.m. Pacific &middot; Oct 23 &ndash; Dec 4, 2026</p>
+<p><strong>Instructor:</strong> Vaibhav Bhandari &middot; <strong>Teaching Assistant:</strong> Eyobe Abay<br>
+<strong>Office hours:</strong> Fridays 12:00&ndash;1:00 p.m. and by appointment &middot; <strong>TA hours:</strong> Mon 6:00&ndash;9:00 p.m., Wed 10:00 a.m.&ndash;1:00 p.m.<br>
+Assignment dates in Canvas (Modules and Assignments pages) are the authoritative due dates. If anything here disagrees with them, Canvas wins.</p>
+
+<h3>Course description</h3>
+<p>CIS 53 teaches you to detect, investigate and explain intrusions using network traffic, IDS/IPS alerts, flow records, host and application logs, and threat intelligence. You work hands-on with Wireshark, tcpdump, Snort/Suricata, Zeek and a SIEM, and you finish with a multi-level investigation challenge.</p>
+
+<h3>Our approach: detect threats to, from, and with AI</h3>
+<p>Intrusion detection now includes AI systems. Alongside the classic network-forensics foundation, each week connects the skills to three questions:</p>
+<ul>
+<li><strong>Threats to AI:</strong> How do attacks on LLM applications and AI agents (prompt injection, tool abuse, data exfiltration through an agent) show up in network traffic and logs?</li>
+<li><strong>Threats from AI:</strong> How do AI-enabled attackers (automated reconnaissance, convincing phishing, faster tooling) change what defenders see?</li>
+<li><strong>Detection with AI:</strong> Where can AI assist an analyst, and how do you check its work against evidence?</li>
+</ul>
+<p>The fundamentals come first: you cannot detect abnormal AI traffic until you can read normal traffic. The AI material replaces older content rather than adding to your workload.</p>
+
+<h3>Student learning outcomes</h3>
+<p>By the end of the course you will be able to:</p>
+<ol>
+<li>Explain the role of network monitoring and intrusion detection in defense in depth.</li>
+<li>Capture and analyze traffic with Wireshark, tcpdump and related tools, and interpret Ethernet, IP (v4 and v6), TCP, UDP and common application protocols.</li>
+<li>Identify suspicious traffic, indicators of compromise and attacker behavior, including in encrypted traffic using metadata.</li>
+<li>Explain the strengths and limits of IDS, IPS, HIDS, SIEM and network security monitoring; read and write detection rules; and triage alerts.</li>
+<li>Correlate network, host and application evidence with threat intelligence and map behavior to MITRE ATT&amp;CK and MITRE ATLAS.</li>
+<li>Describe how attacks on and by AI systems appear in telemetry, and evaluate AI-assisted analysis critically.</li>
+<li>Design a monitoring architecture and document findings clearly and professionally.</li>
+</ol>
+
+<h3>Class schedule (Fridays, 9:00 a.m.&ndash;12:00 p.m. PT)</h3>
+<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse; width:100%;">
+<thead><tr><th scope="col">Week</th><th scope="col">Date</th><th scope="col">Topic</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Oct 23</td><td>Network Traffic Analysis, Part 1: monitoring goals, packets, Ethernet/IP/TCP/UDP, Wireshark and tcpdump</td></tr>
+<tr><td>2</td><td>Oct 30</td><td>Network Traffic Analysis, Part 2: capture and display filters, streams, scans, beaconing, reading a local LLM app's traffic</td></tr>
+<tr><td>3</td><td>Nov 6</td><td>Application Protocols: DNS, HTTP, TLS metadata, email, authentication; AI-service egress and shadow AI</td></tr>
+<tr><td>4</td><td>Nov 13</td><td>IDS/IPS, HIDS, SIEM and monitoring architecture: Snort/Suricata, Zeek, Sigma; detecting attacks on LLM apps and agents</td></tr>
+<tr><td>5</td><td>Nov 20</td><td>Threat intelligence, IoCs, threat hunting, flow data and advanced topics; AI-assisted triage. The Final is released this day.</td></tr>
+<tr><td colspan="3"><em>Nov 27: no class (Thanksgiving)</em></td></tr>
+<tr><td>6</td><td>Dec 4</td><td>Student presentations and guest lecture</td></tr>
+</tbody>
+</table>
+
+<h3>Assessment and grading</h3>
+<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;">
+<thead><tr><th scope="col">Component</th><th scope="col">Weight</th></tr></thead>
+<tbody>
+<tr><td>Attendance, reading discussion (class and Discord), participation, and the capstone presentation</td><td>25%</td></tr>
+<tr><td>Case studies</td><td>25%</td></tr>
+<tr><td>Labs</td><td>12.5%</td></tr>
+<tr><td>Quizzes</td><td>12.5%</td></tr>
+<tr><td>Final: Intrusion Detection Challenge</td><td>25%</td></tr>
+</tbody>
+</table>
+<p>Grading scale: A 90&ndash;100, B 80&ndash;89.99, C 70&ndash;79.99, D 60&ndash;69.99, F below 60. Plus/minus grading follows Merritt College and Peralta Community College District policy.</p>
+
+<h3>The Final: Intrusion Detection Challenge</h3>
+<p>The Final is a multi-level, evidence-based investigation, with each level unlocked by what you found in the one before. Scenarios include both classic network intrusions and compromised AI agents: you work from packet captures, logs, alerts and tool-call records to establish what happened, which systems and data were affected, how the attacker succeeded, and what would have detected or stopped it.</p>
+<ul>
+<li><strong>Released:</strong> Friday, Nov 20, 2026 at 12:00 p.m. PT.</li>
+<li><strong>Open until:</strong> Sunday, Dec 6, 2026 at 11:59 p.m. PT.</li>
+<li>Hints are available for each level. Before the Final opens we will work through a sample level in class so the format is no surprise.</li>
+<li>No AI tools on the Final unless the instructions say otherwise.</li>
+</ul>
+
+<h3>Last class: Dec 4</h3>
+<p>The final class meeting is for student presentations of your investigation findings (part of the participation and capstone grade) and a guest lecture.</p>
+
+<h3>Readings and textbook (optional)</h3>
+<p><strong>Readings will be assigned in class as we go along</strong>, week by week: selected chapters from O&rsquo;Reilly books (available free through O&rsquo;Reilly access), standards and framework documents, tool documentation, case material and short papers. Each week I will give you the exact chapters or pages and a reading question to think about. Anything required will be free or in Canvas, and no textbook is required.</p>
+<p>If you want a book or two to read alongside the course, these are optional:</p>
+<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse; width:100%;">
+<thead><tr><th scope="col">Topic</th><th scope="col">Optional book</th></tr></thead>
+<tbody>
+<tr><td><strong>Network security monitoring and architecture (anchor)</strong></td><td>Richard Bejtlich, <em>The Practice of Network Security Monitoring</em>, No Starch Press (2013). Its ideas have held up better than its tool screenshots, so we use current tool documentation for the tools.</td></tr>
+<tr><td><strong>AI and LLM security</strong></td><td>Steve Wilson, <em>The Developer&rsquo;s Playbook for Large Language Model Security</em>, O&rsquo;Reilly (2024). Attacks on and defenses for LLM applications, tied to the OWASP Top 10 for LLM Applications.</td></tr>
+</tbody>
+</table>
+
+<h3>Free references used throughout</h3>
+<ul>
+<li>MITRE ATT&amp;CK and MITRE ATLAS (adversarial threats to AI systems)</li>
+<li>OWASP Top 10 for LLM Applications and the OWASP GenAI Security Project</li>
+<li>NIST AI 100-2, Adversarial Machine Learning taxonomy; Google Secure AI Framework (SAIF)</li>
+<li>Wireshark, Zeek, Suricata, Sigma and Security Onion documentation</li>
+<li>Practice traffic: malware-traffic-analysis.net; hands-on rooms on TryHackMe and the course NetLab environment</li>
+<li>UC Berkeley RDI Agentic AI course materials (agent safety and security lecture)</li>
+</ul>
+
+<h3>Technology</h3>
+<p>A reliable computer and internet connection, a current browser, Wireshark and tcpdump (or approved equivalents), a virtualization platform (VMware Workstation or Fusion, another approved platform, or the provided NetLab environment), and a TryHackMe account. Snort, Zeek, packet captures and supporting tools are provided.</p>
+
+<h3>Use of AI tools</h3>
+<p>You may use AI tools only where an assignment says you may. When permitted, you remain responsible for verifying accuracy, testing any command, rule or configuration it produces, disclosing the tool and prompts used when required, and protecting credentials and course data. Work you do not understand, or that is untested or inaccurate, may receive reduced or no credit. AI tools may not be used on quizzes or the Final unless explicitly authorized.</p>
+
+<h3>Ethical and authorized use</h3>
+<p>Use these tools and techniques only in the course labs or on systems and networks you have explicit written permission to test. Do not capture traffic on networks you are not authorized to monitor, probe or disrupt systems outside the lab, attempt to access another student&rsquo;s account or lab, share course credentials, or run live malware outside an approved lab. Violations can result in loss of lab access, a failing grade on the assignment, referral for discipline, and legal consequences. Protect passwords, tokens, keys and packet captures; never include credentials in screenshots or submissions.</p>
+
+<h3>Late work</h3>
+<p>Late labs, quizzes and case studies may receive a progressive deduction of up to 10%. Request extensions before the deadline when possible; they are not automatic and may require documentation. Report technical problems before the deadline with an error message or screenshot.</p>
+
+<h3>Attendance and conduct</h3>
+<p>Regular attendance is expected in this accelerated six-week course. You are responsible for material, announcements and assignments from any class you miss. Join from a suitable environment, use a recognizable name, mute when not speaking, do not record sessions without permission, and do not share meeting access with anyone not enrolled. Treat classmates, staff and guest speakers with respect.</p>
+
+<h3>Academic integrity</h3>
+<p>Submitted work must be your own unless collaboration is expressly permitted. Cheating, copying, sharing quiz questions or answers, plagiarizing text, code or detection rules, or falsifying results or evidence may lead to a zero, course failure or disciplinary action under Merritt College and Peralta CCD policy.</p>
+
+<h3>Support services</h3>
+<p>Merritt College offers Student Accessibility Services, counseling, health and wellness services, and the Learning Center (tutoring). Students with approved accommodations should share documentation with the instructor early; it is handled confidentially. Current contact information is on the Merritt College website. In an emergency, contact emergency services.</p>
+
+<p><em>The instructor may adjust topics, tools, data sets, guest speakers or schedule when necessary; changes will be announced in Canvas.</em></p>
