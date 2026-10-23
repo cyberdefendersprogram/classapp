@@ -126,7 +126,7 @@ SHEET_STRUCTURES = {
     ],
 }
 
-# Default config values, keyed by course. Selected with --course (default: cis55).
+# Default config values, keyed by course. Selected with --course (default: cis53).
 DEFAULT_CONFIG_BY_COURSE = {
     "cis55": {
         "course_title": "CIS 55",
@@ -190,6 +190,18 @@ TEST_QUIZZES_BY_COURSE = {
             "attempts_allowed": "2",
             "status": "published",
             "total_points": "12",
+        },
+    ],
+    "cis53": [
+        {
+            "quiz_id": "q001",
+            "title": "Introduction to Intrusion Detection",
+            "content_path": "content/cis53/quizzes/001-intro.md",
+            "open_at": "",
+            "close_at": "",
+            "attempts_allowed": "2",
+            "status": "published",
+            "total_points": "11",
         },
     ],
 }
@@ -308,6 +320,64 @@ TEST_SCHEDULE_BY_COURSE = {
             "desc": "6 - Respond, Recover, Improve",
             "desc_link": "",
             "notes": "Lab 5 due at 9am\nQuiz 5 from 1pm-2:30pm",
+            "slides_link": "",
+            "recording_link": "",
+        },
+    ],
+    "cis53": [
+        {
+            "session": "10/23/2026",
+            "desc": "1 - Network Traffic Analysis, Part 1",
+            "desc_link": "content/cis53/notes/001-intro-and-packets.md",
+            "notes": "Lab 1\nQuiz 1",
+            "slides_link": "",
+            "recording_link": "",
+        },
+        {
+            "session": "10/30/2026",
+            "desc": "2 - Network Traffic Analysis, Part 2",
+            "desc_link": "content/cis53/notes/002-reading-traffic.md",
+            "notes": "Lab 2\nQuiz 2",
+            "slides_link": "",
+            "recording_link": "",
+        },
+        {
+            "session": "11/6/2026",
+            "desc": "3 - Application Protocols and Encrypted Traffic",
+            "desc_link": "content/cis53/notes/003-application-protocols.md",
+            "notes": "Case study due",
+            "slides_link": "",
+            "recording_link": "",
+        },
+        {
+            "session": "11/13/2026",
+            "desc": "4 - IDS/IPS, SIEM and Monitoring Architecture",
+            "desc_link": "content/cis53/notes/004-detection-architecture.md",
+            "notes": "Lab 3",
+            "slides_link": "",
+            "recording_link": "",
+        },
+        {
+            "session": "11/20/2026",
+            "desc": "5 - Threat Intelligence, Hunting and AI-Assisted Triage",
+            "desc_link": "content/cis53/notes/005-intel-hunting-ai.md",
+            "notes": "Lab 4\nFinal released 12:00 pm",
+            "slides_link": "",
+            "recording_link": "",
+        },
+        {
+            "session": "11/27/2026",
+            "desc": "Holiday (Thanksgiving)",
+            "desc_link": "",
+            "notes": "",
+            "slides_link": "",
+            "recording_link": "",
+        },
+        {
+            "session": "12/4/2026",
+            "desc": "6 - Student Presentations and Guest Lecture",
+            "desc_link": "content/cis53/notes/006-presentations-and-wrap-up.md",
+            "notes": "Final closes Sun 12/6 11:59 pm",
             "slides_link": "",
             "recording_link": "",
         },
@@ -723,6 +793,29 @@ TEST_ROSTER_BY_COURSE = {
             "last_login_at": "",
         },
     ],
+    "cis53": [
+        {
+            "student_id": "10110234",
+            "full_name": "Student, Test",
+            "preferred_email": "",
+            "preferred_name": "",
+            "preferred_name_phonetic": "",
+            "preferred_pronoun": "",
+            "linkedin": "",
+            "program_plan": "",
+            "student_level": "",
+            "cs_experience": "",
+            "computer_system": "",
+            "hobbies": "",
+            "used_netlabs": "",
+            "used_tryhackme": "",
+            "class_goals": "",
+            "support_request": "",
+            "claimed_at": "",
+            "onboarding_completed_at": "",
+            "last_login_at": "",
+        },
+    ],
 }
 
 
@@ -1005,9 +1098,9 @@ def main():
     parser = argparse.ArgumentParser(description="Seed Google Sheets with data")
     parser.add_argument(
         "--course",
-        default="cis55",
+        default="cis53",
         choices=sorted(DEFAULT_CONFIG_BY_COURSE.keys()),
-        help="Which course's default Config/Schedule/Quizzes to seed (default: cis55)",
+        help="Which course's default Config/Schedule/Quizzes to seed (default: cis53)",
     )
     parser.add_argument("--create-structure", action="store_true", help="Create sheet structure")
     parser.add_argument("--seed-test-data", action="store_true", help="Seed test data")

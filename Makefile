@@ -13,7 +13,7 @@ UVICORN     := .venv/bin/uvicorn
 RUFF        := .venv/bin/ruff
 SSH_CMD     := sshpass -p '$(VM_PASSWORD)' ssh -o StrictHostKeyChecking=no root@$(VM_IP)
 
-.PHONY: help dev docker-dev test lint fmt seed seed-cis60 seed-cis52 seed-cis52-dev \
+.PHONY: help dev docker-dev test lint fmt seed seed-cis60 seed-cis52 seed-cis52-dev seed-cis53-dev \
         seed-meta seed-cis52-prod \
         deploy logs ssh health restart db-reset prod-status prod-switch-class
 
@@ -41,6 +41,7 @@ help:
 	@echo "  make seed           Seed active sheet structure"
 	@echo "  make seed-cis60     Seed CIS 60 sheet structure"
 	@echo "  make seed-cis52     Seed CIS 52 sheet structure + course data"
+	@echo "  make seed-cis53-dev Seed CIS 53 dev sheet (structure + data + test roster row)"
 	@echo "  make seed-cis52-dev Seed CIS 52 structure + data + dev test roster row (10110234)"
 	@echo ""
 	@echo "  make seed-meta COURSE=x SHEETS_ID=y   Copy Config + Quizzes metadata onto any sheet"
@@ -91,6 +92,18 @@ seed-cis52-dev:
 	GOOGLE_SHEETS_ID=1CfD099p5A6h7YMxqsjsr4vEuqZjRIyhQKTIAaKGeJDI \
 	GOOGLE_SERVICE_ACCOUNT_PATH=.secrets/service-account.json \
 	$(PYTHON) scripts/seed_sheets.py --course cis52 --all --seed-test-roster
+
+# CIS 53 is the only active class. Dev sheet (Drive folder 2026-Fall-CIS-53);
+# production migration comes later via prod-switch-class.
+seed-cis53-dev:
+	GOOGLE_SHEETS_ID=1uUvQIoY9Uz2-I7-IiGsEMsagINZmAAdFPZxCez8hjSE \
+	GOOGLE_SERVICE_ACCOUNT_PATH=.secrets/service-account.json \
+	$(PYTHON) scripts/seed_sheets.py --course cis53 --all --seed-test-roster
+
+# Production sheet for CIS 53 (roster added by instructor). Cutover is a separate
+# step: make prod-switch-class COURSE=cis53 SHEETS_ID=1v9Xrd7mnawfgsAm42dzCNJZwLsuTp20tCfRbTpA1cNE
+seed-cis53-prod:
+	@$(MAKE) seed-meta COURSE=cis53 SHEETS_ID=1v9Xrd7mnawfgsAm42dzCNJZwLsuTp20tCfRbTpA1cNE
 
 # Reusable across courses/sheets: copies Config + Quizzes metadata only (not
 # Schedule, Book_Reading, or Roster) onto any sheet — safe to run against a
