@@ -2,7 +2,7 @@
 
 **CIS 53 — Intrusion Detection In-Depth**
 
-**Due:** Friday, October 30, 2026, 9:00 a.m.
+**Open now. Due:** Friday, November 6, 2026, 9:00 a.m. It covers Weeks 1 and 2, and it is open early so you can work on it while you set up TryHackMe and NetLab.
 **Canvas:** [Lab 1 assignment](https://peralta.instructure.com/courses/89432/assignments/1820968)
 
 Covers Weeks 1 and 2. Submit everything as a single PDF.

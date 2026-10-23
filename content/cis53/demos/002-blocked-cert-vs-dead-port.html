@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blocked Cert or Dead Port</title>
+<meta name="description" content="Two real packet captures, one that never connects and one that fails on a bad certificate, read layer by layer with OSI and TCP/IP.">
+<meta name="class" content="1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: finding, layer map, two real captures with a layer column, comparison, takeaways, files. */
+:root {
+  --bg: #F2F5F8; --surface: #FFFFFF; --fg: #0E1726; --muted: #4E5B72; --line: #D3DBE6; --accent: #0B7F75;
+  --bad: #B3261E; --bad-bg: #FBE4E2; --ok: #0B7F4A; --ok-bg: #DDF3E6; --warn: #8A5A00; --warn-bg: #FBEBC8;
+  --g-app: #D9ECFA; --g-app-ink: #0B4A75; --g-tr: #D8F1EC; --g-tr-ink: #0B5C53; --g-net: #FBEBC8; --g-net-ink: #7A4D00; --g-link: #E6E2F6; --g-link-ink: #4A3C94;
+  --display: 'IBM Plex Sans', system-ui, sans-serif; --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1220; --surface: #131D31; --fg: #E8EDF5; --muted: #9AA7BD; --line: #263550; --accent: #3FD0C0;
+    --bad: #F2A29C; --bad-bg: #4A1F1C; --ok: #8FE0B4; --ok-bg: #12402A; --warn: #F5CE82; --warn-bg: #4A3612;
+    --g-app: #14344F; --g-app-ink: #9ED0F5; --g-tr: #123F3A; --g-tr-ink: #8FE3D8; --g-net: #4A3612; --g-net-ink: #F5CE82; --g-link: #2B2650; --g-link-ink: #C3B9F5; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1220; --surface: #131D31; --fg: #E8EDF5; --muted: #9AA7BD; --line: #263550; --accent: #3FD0C0;
+  --bad: #F2A29C; --bad-bg: #4A1F1C; --ok: #8FE0B4; --ok-bg: #12402A; --warn: #F5CE82; --warn-bg: #4A3612;
+  --g-app: #14344F; --g-app-ink: #9ED0F5; --g-tr: #123F3A; --g-tr-ink: #8FE3D8; --g-net: #4A3612; --g-net-ink: #F5CE82; --g-link: #2B2650; --g-link-ink: #C3B9F5; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--display); line-height: 1.5; font-size: 16px;
+  padding-block: 32px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+main { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.1; margin: 0; text-wrap: balance; }
+h2 { font-size: 20px; margin: 0 0 8px; text-wrap: balance; }
+h3 { font-size: 17px; margin: 0; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.lede { color: var(--muted); margin-top: 8px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 20px 24px; min-width: 0; }
+.finding { background: var(--warn-bg); color: var(--warn); border-color: transparent; }
+code, .mono { font-family: var(--mono); font-size: 13px; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 700px; font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { color: var(--muted); font-weight: 600; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+td.flag { color: var(--bad); font-weight: 600; }
+tr.stop td { background: var(--bad-bg); }
+.cap { color: var(--muted); font-size: 13px; margin-top: 10px; }
+.lay { display: inline-block; border-radius: 4px; padding: 1px 7px; font-size: 12px; }
+.lay.l4 { background: var(--g-tr); color: var(--g-tr-ink); }
+.lay.l3 { background: var(--g-net); color: var(--g-net-ink); }
+.lay.l7 { background: var(--g-app); color: var(--g-app-ink); }
+.lay.l6 { background: var(--g-app); color: var(--g-app-ink); }
+.lay.l2 { background: var(--g-link); color: var(--g-link-ink); }
+
+.map { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 6px 16px; }
+.map div { padding: 8px 12px; border-radius: 6px; min-width: 0; }
+.map .hd { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 0 2px; }
+.g-app { background: var(--g-app); color: var(--g-app-ink); }
+.g-tr { background: var(--g-tr); color: var(--g-tr-ink); }
+.g-net { background: var(--g-net); color: var(--g-net-ink); }
+.g-link { background: var(--g-link); color: var(--g-link-ink); }
+.map b { font-family: var(--mono); margin-right: 8px; }
+.map small { display: block; opacity: .85; }
+.hit { outline: 2px solid var(--bad); outline-offset: -2px; }
+.hit2 { outline: 2px solid var(--ok); outline-offset: -2px; }
+
+.tag { display: inline-block; font-family: var(--mono); font-size: 12px; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; }
+.tag.bad { background: var(--bad-bg); color: var(--bad); }
+.tag.ok { background: var(--ok-bg); color: var(--ok); }
+ul.plain, ol.steps { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+pre { margin: 8px 0 0; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 12px; overflow-x: auto; font-family: var(--mono); font-size: 13px; }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 640px) { .two, .map { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <p class="eyebrow">Case study · Traffic to 103.165.181.11</p>
+    <h1>Blocked cert or dead port?</h1>
+    <p class="lede">Chrome distrusted a certificate authority, eMudhra, so a TLS error was the obvious guess. Two real captures show how to tell where a connection fails, layer by layer.</p>
+  </header>
+
+  <section class="card finding">
+    <h2>Finding</h2>
+    <p>From this network, <code>emudhradigital.com</code> (103.165.181.11, owned by eMudhra) never answers the first TCP packet on port 443. No handshake completes, so no certificate is sent and the Chrome block is not the cause. For a real certificate failure we used <code>untrusted-root.badssl.com</code>, a site built for this.</p>
+  </section>
+
+  <section class="card">
+    <h2>Where the two failures sit in the layer models</h2>
+    <div class="map" aria-label="OSI and TCP/IP layers">
+      <div class="hd">OSI model</div><div class="hd">TCP/IP model</div>
+      <div class="g-app" style="grid-column:1"><b>7</b>Application<small>HTTP request, never reached in either capture</small></div>
+      <div class="g-app" style="grid-column:2;grid-row:span 3"><b>Application</b><small>OSI 5–7. TLS sits here in TCP/IP terms.</small></div>
+      <div class="g-app hit2" style="grid-column:1"><b>6</b>Presentation<small>TLS: the certificate is checked here. badssl fails here.</small></div>
+      <div class="g-app" style="grid-column:1"><b>5</b>Session<small>TLS session setup</small></div>
+      <div class="g-tr hit" style="grid-column:1"><b>4</b>Transport<small>TCP handshake. eMudhra fails here: the SYN gets no reply.</small></div>
+      <div class="g-tr" style="grid-column:2"><b>Transport</b><small>OSI 4. TCP port 443.</small></div>
+      <div class="g-net" style="grid-column:1"><b>3</b>Network<small>IP 172.16.0.4 → 103.165.181.11</small></div>
+      <div class="g-net" style="grid-column:2"><b>Internet</b><small>OSI 3. IP addresses and routing.</small></div>
+      <div class="g-link" style="grid-column:1"><b>2</b>Data Link<small>Wi-Fi frames on en0</small></div>
+      <div class="g-link" style="grid-column:2;grid-row:span 2"><b>Network Access</b><small>OSI 1–2. Wi-Fi and the radio.</small></div>
+      <div class="g-link" style="grid-column:1"><b>1</b>Physical<small>Radio</small></div>
+    </div>
+    <p class="cap">Red outline: where the eMudhra connection fails. Green outline: where the badssl connection fails. A browser shows both as "can't connect", but they are different layers and need different fixes.</p>
+  </section>
+
+  <section class="card">
+    <span class="tag bad">Capture 1 · eMudhra · fails at layer 4</span>
+    <h2>7 packets in 7 seconds, and no reply</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>#</th><th>Time (s)</th><th>Source</th><th>Destination</th><th>Layer</th><th>Info</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>0.000</td><td>172.16.0.4</td><td>103.165.181.11</td><td><span class="lay l4">L4 TCP</span></td><td>52664 → 443 [SYN]</td></tr>
+          <tr class="stop"><td>2</td><td>1.001</td><td>172.16.0.4</td><td>103.165.181.11</td><td><span class="lay l4">L4 TCP</span></td><td class="flag">Retransmission [SYN]</td></tr>
+          <tr class="stop"><td>3</td><td>2.001</td><td>172.16.0.4</td><td>103.165.181.11</td><td><span class="lay l4">L4 TCP</span></td><td class="flag">Retransmission [SYN]</td></tr>
+          <tr class="stop"><td>4</td><td>3.002</td><td>172.16.0.4</td><td>103.165.181.11</td><td><span class="lay l4">L4 TCP</span></td><td class="flag">Retransmission [SYN]</td></tr>
+          <tr class="stop"><td>5</td><td>4.003</td><td>172.16.0.4</td><td>103.165.181.11</td><td><span class="lay l4">L4 TCP</span></td><td class="flag">Retransmission [SYN]</td></tr>
+          <tr class="stop"><td>6</td><td>5.003</td><td>172.16.0.4</td><td>103.165.181.11</td><td><span class="lay l4">L4 TCP</span></td><td class="flag">Retransmission [SYN]</td></tr>
+          <tr class="stop"><td>7</td><td>7.004</td><td>172.16.0.4</td><td>103.165.181.11</td><td><span class="lay l4">L4 TCP</span></td><td class="flag">Retransmission [SYN]</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="cap">Every packet goes out and none comes back. A closed port would answer at once with an RST, so silence points to a filter or an unreachable host. Wireshark filter: <code>tcp.analysis.retransmission</code></p>
+  </section>
+
+  <section class="card">
+    <span class="tag ok">Capture 2 · badssl.com · fails at layer 6</span>
+    <h2>The connection works, then the client rejects the certificate</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>#</th><th>Time (s)</th><th>From</th><th>Layer</th><th>Info</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>0.000</td><td>client</td><td><span class="lay l4">L4 TCP</span></td><td>[SYN]</td></tr>
+          <tr><td>2</td><td>0.056</td><td>server</td><td><span class="lay l4">L4 TCP</span></td><td>[SYN, ACK]</td></tr>
+          <tr><td>3</td><td>0.056</td><td>client</td><td><span class="lay l4">L4 TCP</span></td><td>[ACK] &mdash; handshake complete</td></tr>
+          <tr><td>4</td><td>0.057</td><td>client</td><td><span class="lay l6">L5–7 TLS</span></td><td>Client Hello (SNI=untrusted-root.badssl.com)</td></tr>
+          <tr><td>6</td><td>0.110</td><td>server</td><td><span class="lay l6">L5–7 TLS</span></td><td>Server Hello</td></tr>
+          <tr><td>8</td><td>0.110</td><td>server</td><td><span class="lay l6">L5–7 TLS</span></td><td>Certificate, Server Key Exchange, Server Hello Done</td></tr>
+          <tr class="stop"><td>10</td><td>0.186</td><td>client</td><td><span class="lay l6">L5–7 TLS</span></td><td class="flag">Alert (Fatal): Unknown CA</td></tr>
+          <tr><td>12</td><td>0.190</td><td>client</td><td><span class="lay l4">L4 TCP</span></td><td>[RST, ACK] &mdash; connection torn down</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="cap">Packets 5, 7, 9, 11, 13 and 14 are plain ACKs, a duplicate alert and the server's FIN, so they are left out of this table. The full file has them. Wireshark filters: <code>tls.handshake.type == 11</code> (certificate) and <code>tls.alert_message</code></p>
+  </section>
+
+  <section class="two">
+    <div class="card">
+      <h3>What each capture tells a sensor</h3>
+      <ul class="plain" style="margin-top:10px">
+        <li>Capture 1: only IP addresses, a port and a SYN. No names, no certificate, nothing at layers 5–7.</li>
+        <li>Capture 2: the server name in the Client Hello, the certificate chain, and the alert. This is enough to log who tried to reach what and why it failed.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>The eMudhra background</h3>
+      <ul class="plain" style="margin-top:10px">
+        <li>eMudhra is a certificate authority. Chrome blocked six of its intermediate TLS keys on Oct 17 after a key-generation flaw produced weak keys.</li>
+        <li>Chrome plans to remove the parent root from its trust store from Oct 27 Pacific.</li>
+        <li>eMudhra's own sites (emudhra.com, emsign.com and others) use Sectigo certificates, so they load fine. A site served under a blocked emSign intermediate would show the capture 2 pattern.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Questions for the class</h2>
+    <ol class="steps">
+      <li>Which layer fails first in each capture, and which packet proves it?</li>
+      <li>Why does a closed port look different from a filtered one on the wire?</li>
+      <li>Why can a sensor read the certificate in capture 2 but not the HTTP request?</li>
+      <li>If Chrome blocks an issuer, what does the server see from the client?</li>
+    </ol>
+  </section>
+
+  <section class="card">
+    <h2>Capture files</h2>
+    <p>Open these in Wireshark. They are served from the class portal when you are signed in.</p>
+    <pre><a href="/demos/files/emudhra-demo.pcapng" target="_blank">emudhra-demo.pcapng</a>        7 packets, SYN with no reply
+<a href="/demos/files/badssl-untrusted-root.pcapng" target="_blank">badssl-untrusted-root.pcapng</a>  14 packets, TLS fails with Unknown CA</pre>
+  </section>
+</main>
+</body>
+</html>

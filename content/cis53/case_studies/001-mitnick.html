@@ -1,0 +1,147 @@
+<!--case-study {"number": 1, "title": "CIS 53 Intrusion Detection - Mitnick Case Study (Week1)", "due_at": "2026-10-30T16:00:00Z", "canvas_url": "https://peralta.instructure.com/courses/89432/assignments/1820966"}-->
+<p><strong>Due Friday, October 30, 2026, 9:00 a.m.</strong> <br>Follow the template below. <br><strong>Download the Word template:</strong> <a class="instructure_file_link" title="CIS53-Mitnick-Case-Study-Template.docx" href="https://peralta.instructure.com/courses/89432/files/14787908/download?verifier=37a7c24b-4e7b-4e22-b027-48d56ed41eb0&amp;wrap=1" target="_blank" data-api-endpoint="https://peralta.instructure.com/api/v1/courses/89432/files/14787908" data-api-returntype="File">CIS53-Mitnick-Case-Study-Template.docx</a>. Fill it in, delete the gray instructions, and submit it as a PDF.</p>
+<h2>The assignment</h2>
+<p>Research Kevin Mitnick and his attacks, including his confrontation with Tsutomu Shimomura. Write a case study that maps the intrusion to MITRE ATT&amp;CK, says what a network sensor would have seen, and says what you would deploy today to stop or detect a similar attack.</p>
+<h2>Template</h2>
+<p>Use these headings, in this order.</p>
+<h3>1. Summary (about 100 words, 5 points)</h3>
+<p>Who attacked whom, when, and what happened. Write it so a reader who has never heard of the case can follow it. End with one sentence on why the case matters for detection.</p>
+<h3>2. Timeline (15 points)</h3>
+<p>Four to eight steps in order, as a table. Each step is one thing the attacker did.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>What the attacker did</th>
+<th>Where in the network</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>2</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3>3. ATT&amp;CK mapping (25 points)</h3>
+<p>Map each timeline step to an ATT&amp;CK technique. Use the technique ID and name from <a href="https://attack.mitre.org">attack.mitre.org</a>. The 1990s tools predate ATT&amp;CK, so choose the closest technique and say why.</p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Tactic</th>
+<th>Technique (ID and name)</th>
+<th>Why it fits</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Worked example for the format only: <em>Flooded a trusted host with SYN packets so it could not answer</em> → Impact → T1498 Network Denial of Service → the attacker needed the host silent so it could be impersonated.</p>
+<h3>4. What a sensor would have seen (20 points)</h3>
+<p>For at least three steps, say what a sensor on the network would have recorded: packets, flows or logs. Name the layer (OSI or TCP/IP), the fields you would look at, and the Wireshark display filter you would use to find it.</p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Layer</th>
+<th>What the sensor records</th>
+<th>Display filter or log field</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>A reminder from Class 1: a burst of SYN packets with no ACKs is the shape of a flood or a scan. Use <code>tcp.flags.syn == 1 &amp;&amp; tcp.flags.ack == 0</code>.</p>
+<h3>5. What would stop or detect it today (20 points)</h3>
+<p>At least three controls, and for each say whether it <strong>prevents</strong> the attack or <strong>detects</strong> it.</p>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Prevent or detect</th>
+<th>Which step it affects</th>
+<th>Why it works</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3>6. Lessons and one AI question (10 points)</h3>
+<p>Two or three sentences on what this case teaches about trust between hosts. Then answer one question: <em>how would an attacker using AI tools change this attack, and what would a sensor see differently?</em></p>
+<h3>7. Sources (5 points)</h3>
+<p>At least three sources, with links. Use at least one primary or near-primary account, such as a court document, a contemporary article, or a book by someone involved. Wikipedia can help you start, but it does not count.</p>
+<h2>Grading</h2>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Points</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Summary</td>
+<td>5</td>
+</tr>
+<tr>
+<td>2. Timeline</td>
+<td>15</td>
+</tr>
+<tr>
+<td>3. ATT&amp;CK mapping</td>
+<td>25</td>
+</tr>
+<tr>
+<td>4. What a sensor would have seen</td>
+<td>20</td>
+</tr>
+<tr>
+<td>5. What would stop or detect it today</td>
+<td>20</td>
+</tr>
+<tr>
+<td>6. Lessons and AI question</td>
+<td>10</td>
+</tr>
+<tr>
+<td>7. Sources</td>
+<td>5</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>100</strong></td>
+</tr>
+</tbody>
+</table>
+<h2>Submission</h2>
+<ul>
+<li>One PDF, 2–3 pages, uploaded to Canvas by Fri Oct 30, 2026, 9:00 a.m.</li>
+<li>Late work follows the syllabus policy (10% deduction; ask before the deadline).</li>
+<li>Write in your own words. You may use AI tools to find sources or check your understanding, but check every fact and every ATT&amp;CK ID yourself. An AI answer you did not verify is not a source.</li>
+<li>Optional, for 20 extra points: complete the TryHackMe path <strong>Prerequisites for Security</strong> and submit screenshots.</li>
+</ul>

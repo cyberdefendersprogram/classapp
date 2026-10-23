@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OSI and TCP/IP Layers</title>
+<meta name="description" content="Interactive map of the 7 OSI layers onto the 4 TCP/IP layers, with data units, protocols and what an intrusion sensor sees at each layer.">
+<meta name="class" content="1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: OSI stack on the left, TCP/IP blocks spanning the matching rows on the right, detail panel below. */
+:root {
+  --bg: #F2F5F8;
+  --surface: #FFFFFF;
+  --fg: #0E1726;
+  --muted: #4E5B72;
+  --line: #D3DBE6;
+  --accent: #0B7F75;
+  --g-app: #D9ECFA;
+  --g-app-ink: #0B4A75;
+  --g-tr: #D8F1EC;
+  --g-tr-ink: #0B5C53;
+  --g-net: #FBEBC8;
+  --g-net-ink: #7A4D00;
+  --g-link: #E6E2F6;
+  --g-link-ink: #4A3C94;
+  --display: 'IBM Plex Sans', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1220; --surface: #131D31; --fg: #E8EDF5; --muted: #9AA7BD; --line: #263550; --accent: #3FD0C0;
+    --g-app: #14344F; --g-app-ink: #9ED0F5;
+    --g-tr: #123F3A; --g-tr-ink: #8FE3D8;
+    --g-net: #4A3612; --g-net-ink: #F5CE82;
+    --g-link: #2B2650; --g-link-ink: #C3B9F5;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1220; --surface: #131D31; --fg: #E8EDF5; --muted: #9AA7BD; --line: #263550; --accent: #3FD0C0;
+  --g-app: #14344F; --g-app-ink: #9ED0F5;
+  --g-tr: #123F3A; --g-tr-ink: #8FE3D8;
+  --g-net: #4A3612; --g-net-ink: #F5CE82;
+  --g-link: #2B2650; --g-link-ink: #C3B9F5;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--display); font-size: 16px; line-height: 1.5;
+  padding-block: 32px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+main { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.1; font-weight: 700; margin: 0; text-wrap: balance; }
+.lede { color: var(--muted); max-width: 62ch; margin: 8px 0 0; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0 0 8px; }
+
+.stack { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 0 20px; align-items: stretch; }
+.col-h { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 0 4px 8px; }
+.osi, .tcp { display: grid; gap: 6px; min-width: 0; }
+.osi { grid-template-rows: repeat(7, minmax(56px, auto)); grid-column: 1; grid-row: 2; }
+.tcp { grid-template-rows: repeat(7, minmax(56px, auto)); grid-column: 2; grid-row: 2; }
+.h-osi { grid-column: 1; grid-row: 1; }
+.h-tcp { grid-column: 2; grid-row: 1; }
+
+button.layer {
+  font: inherit; text-align: left; cursor: pointer; border: 2px solid transparent; border-radius: 6px;
+  padding: 10px 14px; display: flex; align-items: center; gap: 14px; min-width: 0;
+}
+button.layer:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+button.layer[aria-pressed="true"] { border-color: var(--fg); }
+.num { font-family: var(--mono); font-weight: 600; font-size: 22px; width: 1.4ch; flex: none; }
+.nm { font-weight: 600; }
+.sub { display: block; font-size: 13px; opacity: .85; }
+.g-app { background: var(--g-app); color: var(--g-app-ink); }
+.g-tr { background: var(--g-tr); color: var(--g-tr-ink); }
+.g-net { background: var(--g-net); color: var(--g-net-ink); }
+.g-link { background: var(--g-link); color: var(--g-link-ink); }
+.tcp button.layer { flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; }
+.tcp .nm { font-size: 17px; }
+
+.detail { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 24px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px 32px; }
+.detail h2 { margin: 0; font-size: 24px; line-height: 1.2; grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+.detail h2 small { font-family: var(--mono); font-size: 13px; font-weight: 400; color: var(--muted); }
+dl { margin: 0; display: grid; gap: 14px; min-width: 0; }
+dt { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+dd { margin: 2px 0 0; }
+code, .chips span { font-family: var(--mono); font-size: 13px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.chips span { border: 1px solid var(--line); border-radius: 4px; padding: 2px 8px; background: var(--bg); }
+.sensor { grid-column: 1 / -1; border-top: 1px solid var(--line); padding-top: 16px; }
+
+.encap { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 20px 24px; }
+.encap h2 { font-size: 18px; margin: 0 0 4px; }
+.encap p { margin: 0 0 14px; color: var(--muted); max-width: 70ch; }
+.frame-wrap { overflow-x: auto; }
+.frame { display: flex; min-width: 560px; font-family: var(--mono); font-size: 13px; text-align: center; }
+.frame div { padding: 12px 8px; border: 2px solid var(--bg); }
+.frame .f-eth { flex: 1.1; } .frame .f-ip { flex: 1.2; } .frame .f-tcp { flex: 1.2; } .frame .f-data { flex: 3; } .frame .f-fcs { flex: .8; }
+.frame small { display: block; font-size: 11px; opacity: .85; }
+
+@media (max-width: 640px) {
+  .stack { grid-template-columns: 1fr; }
+  .h-osi, .h-tcp, .osi, .tcp { grid-column: 1; }
+  .h-osi { grid-row: 1; } .osi { grid-row: 2; }
+  .h-tcp { grid-row: 3; padding-top: 16px; } .tcp { grid-row: 4; grid-template-rows: none; }
+  .tcp button.layer { grid-row: auto !important; }
+  .detail { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: no-preference) { button.layer { transition: border-color .12s; } }
+</style>
+</head>
+<body>
+
+<main>
+  <header>
+    <p class="eyebrow">Network layers</p>
+    <h1>OSI and TCP/IP, side by side</h1>
+    <p class="lede">Seven OSI layers map onto four TCP/IP layers. Select any layer to see its data unit, example protocols and what an intrusion sensor can learn there.</p>
+  </header>
+
+  <section class="stack" aria-label="Layer model">
+    <div class="col-h h-osi">OSI model · 7 layers</div>
+    <div class="col-h h-tcp">TCP/IP model · 4 layers</div>
+    <div class="osi" id="osi"></div>
+    <div class="tcp" id="tcp"></div>
+  </section>
+
+  <section class="detail" id="detail" aria-live="polite"></section>
+
+  <section class="encap">
+    <h2>What one web request looks like on the wire</h2>
+    <p>Each layer wraps the data from the layer above with its own header. A sensor on a mirrored port captures the whole frame, so it can read every header it understands.</p>
+    <div class="frame-wrap">
+      <div class="frame">
+        <div class="f-eth g-link">Ethernet<small>L2 · MACs</small></div>
+        <div class="f-ip g-net">IP<small>L3 · addresses</small></div>
+        <div class="f-tcp g-tr">TCP<small>L4 · ports, flags</small></div>
+        <div class="f-data g-app">HTTP / TLS payload<small>L5–7 · application data</small></div>
+        <div class="f-fcs g-link">FCS<small>trailer</small></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+var OSI = [
+  { n: 7, name: 'Application', g: 'app', pdu: 'Data', ex: ['HTTP', 'DNS', 'SMTP', 'SSH'], does: 'Network services that programs use directly: names, web pages, mail, remote login.', sensor: 'Full request content when traffic is not encrypted: URLs, DNS names, user agents, commands. This is where most signature rules look.' },
+  { n: 6, name: 'Presentation', g: 'app', pdu: 'Data', ex: ['TLS', 'MIME', 'JSON', 'gzip'], does: 'Encoding, compression and encryption of the data being exchanged.', sensor: 'With TLS the payload is hidden, but the handshake still shows the server name, certificate and a JA3/JA4 client fingerprint.' },
+  { n: 5, name: 'Session', g: 'app', pdu: 'Data', ex: ['RPC', 'NetBIOS', 'SOCKS', 'TLS session'], does: 'Opens, keeps and closes a conversation between two hosts.', sensor: 'Session setup and teardown, long-lived sessions and repeated reconnects that can point to command-and-control.' },
+  { n: 4, name: 'Transport', g: 'tr', pdu: 'Segment (TCP) / Datagram (UDP)', ex: ['TCP', 'UDP', 'QUIC'], does: 'Process-to-process delivery using ports, with reliability and ordering for TCP.', sensor: 'Ports, flags and handshakes. SYN scans, half-open connections, odd flag combinations and beaconing intervals all show up here.' },
+  { n: 3, name: 'Network', g: 'net', pdu: 'Packet', ex: ['IPv4', 'IPv6', 'ICMP', 'IPsec'], does: 'Logical addressing and routing between networks.', sensor: 'Source and destination addresses, TTL, fragmentation and ICMP. Spoofing, sweeps and fragmentation evasion are visible here.' },
+  { n: 2, name: 'Data Link', g: 'link', pdu: 'Frame', ex: ['Ethernet', 'Wi-Fi', 'ARP', 'VLAN'], does: 'Delivery between devices on the same local network, using MAC addresses.', sensor: 'MAC addresses and ARP. ARP spoofing, rogue devices and VLAN hopping are only visible from inside the local segment.' },
+  { n: 1, name: 'Physical', g: 'link', pdu: 'Bits', ex: ['Copper', 'Fiber', 'Radio', 'Hubs'], does: 'Electrical, optical or radio signals carrying raw bits.', sensor: 'Nothing in the packets. This is where a tap or a SPAN port gets its copy of the traffic.' }
+];
+var TCP = [
+  { name: 'Application', sub: 'OSI 5–7', g: 'app', from: 1, to: 3, pick: 0 },
+  { name: 'Transport', sub: 'OSI 4', g: 'tr', from: 4, to: 4, pick: 3 },
+  { name: 'Internet', sub: 'OSI 3', g: 'net', from: 5, to: 5, pick: 4 },
+  { name: 'Network Access', sub: 'OSI 1–2 (also called Link)', g: 'link', from: 6, to: 7, pick: 5 }
+];
+var sel = 3;
+var osiEl = document.getElementById('osi'), tcpEl = document.getElementById('tcp'), det = document.getElementById('detail');
+
+function mk(cls, g, html, idx) {
+  var b = document.createElement('button');
+  b.type = 'button'; b.className = 'layer g-' + g; b.innerHTML = html; b.dataset.idx = idx;
+  b.addEventListener('click', function () { sel = +this.dataset.pick; render(); });
+  return b;
+}
+function render() {
+  osiEl.innerHTML = ''; tcpEl.innerHTML = '';
+  OSI.forEach(function (L, i) {
+    var b = mk('osi', L.g, '<span class="num">' + L.n + '</span><span class="nm">' + L.name + '<span class="sub">' + L.pdu + '</span></span>', i);
+    b.dataset.pick = i; b.setAttribute('aria-pressed', i === sel);
+    osiEl.appendChild(b);
+  });
+  TCP.forEach(function (T) {
+    var b = mk('tcp', T.g, '<span class="nm">' + T.name + '</span><span class="sub">' + T.sub + '</span>', 0);
+    b.dataset.pick = T.pick; b.style.gridRow = T.from + ' / ' + (T.to + 1);
+    b.setAttribute('aria-pressed', sel >= T.from - 1 && sel <= T.to - 1);
+    tcpEl.appendChild(b);
+  });
+  var L = OSI[sel], grp = TCP.filter(function (T) { return sel >= T.from - 1 && sel <= T.to - 1; })[0];
+  det.innerHTML =
+    '<h2>Layer ' + L.n + ': ' + L.name + ' <small>TCP/IP: ' + grp.name + '</small></h2>' +
+    '<dl><div><dt>What it does</dt><dd>' + L.does + '</dd></div>' +
+    '<div><dt>Data unit</dt><dd>' + L.pdu + '</dd></div></dl>' +
+    '<dl><div><dt>Example protocols</dt><dd><div class="chips">' + L.ex.map(function (e) { return '<span>' + e + '</span>'; }).join('') + '</div></dd></div></dl>' +
+    '<div class="sensor"><dl><div><dt>What a sensor sees</dt><dd>' + L.sensor + '</dd></div></dl></div>';
+}
+render();
+</script>
+</body>
+</html>

@@ -24,9 +24,9 @@ Class Portal dates are authoritative.
 
 | Date | Week | Topic | Assignments |
 |------|------|-------|-------------|
-| Oct 23 | 1 | Why monitor; packets, Wireshark, tcpdump | Lab 1 and Quiz 1 open |
-| Oct 30 | 2 | Reading traffic; scans, beaconing, noise | Lab 1 due; Quiz 2 |
-| Nov 6 | 3 | DNS, HTTP, TLS metadata; AI egress | Lab 2 due; case study due |
+| Oct 23 | 1 | Why monitor; packets, Wireshark, tcpdump | Lab 1 and the Mitnick case study open |
+| Oct 30 | 2 | Reading traffic; scans, beaconing, noise | Mitnick case study due 9:00 a.m.; Quiz 1 opens after class |
+| Nov 6 | 3 | DNS, HTTP, TLS metadata; AI egress | Lab 1 and Lab 2 due; Target case study |
 | Nov 13 | 4 | IDS/IPS, Suricata, Zeek, Sigma; agent logs | Lab 3 due |
 | Nov 20 | 5 | Threat intel, hunting, AI-assisted triage | Lab 4 due; **Final released 12:00 pm** |
 | Nov 27 | — | No class (Thanksgiving) | |
@@ -99,7 +99,14 @@ Data travels in layers; each layer wraps the one above it.
 - **TCP handshake:** SYN, SYN/ACK, ACK. Teardown uses FIN or RST. A burst of SYNs with no ACKs is the shape of a scan.
 - **UDP:** no handshake; DNS is the common case.
 - **IPv6:** longer addresses, no ARP (uses Neighbor Discovery). Many tools and detections still assume IPv4, so attackers can hide there.
-- **Hex refresher (10 minutes):** two hex digits make a byte. You will meet it again on the Week 2 quiz.
+- **Hex refresher (10 minutes):** two hex digits make a byte. You will meet it again on Quiz 1.
+
+## Class 1 Demos
+
+Open these from the **Demos** tab in the portal. They are worked examples from today, with the captures to open in Wireshark.
+
+- [OSI and TCP/IP layers](/demos/001-osi-and-tcpip-layers) — the seven OSI layers mapped to the four TCP/IP layers, and what a sensor sees at each.
+- [Blocked cert or dead port?](/demos/002-blocked-cert-vs-dead-port) — two real captures, one where the TCP connection never opens and one where TLS fails on a bad certificate.
 
 ## Part 4 — Tools
 
@@ -115,12 +122,14 @@ Capture your own machine for five minutes while you browse, then write a one-pag
 
 We map one classic intrusion to ATT&CK and ask what a sensor would have seen.
 
+**Case study 1 is due Fri Oct 30, 9:00 a.m.** Follow the template in the assignment (see [Case Studies](/case-studies/001-mitnick)): summary, timeline, ATT&CK mapping, what a sensor would see, what would stop it today, and sources. Full instructions are on Canvas.
+
 ---
 
 ## Lab 1 Preview
 
-Full instructions: [Lab 1 on Canvas](https://peralta.instructure.com/courses/89432/assignments/1820968) (due Fri Oct 30, 9:00 a.m.). TryHackMe rooms plus one NetLab lab plus short answers.
+Full instructions: [Lab 1 on Canvas](https://peralta.instructure.com/courses/89432/assignments/1820968) (**due Fri Nov 6, 9:00 a.m.**). TryHackMe rooms plus one NetLab lab plus short answers. It covers Weeks 1 and 2 and is open now, so you can start while you set up TryHackMe and NetLab.
 
 ## Quiz 1
 
-Opens after class on Canvas. Covers today and the readings.
+Opens on Canvas after Class 2 (Fri Oct 30). Covers hex, TCP/IP fundamentals and the Week 1 readings.

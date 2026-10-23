@@ -15,7 +15,7 @@ Friday, October 30, 2026 · 9:00 a.m.–12:00 p.m. PT (online)
 - TCP in trouble: resets, retransmissions, scans, beaconing
 - Noisy-capture drill: find the signal
 - AI thread: what an LLM API call looks like on the wire
-- Quiz 2; Lab 2 preview
+- Quiz 1 opens after class; Lab 2 preview
 
 ---
 
@@ -77,6 +77,6 @@ An app calling a hosted LLM usually shows:
 
 Full instructions: [Lab 2 on Canvas](https://peralta.instructure.com/courses/89432/assignments/1820970) (due Fri Nov 6, 9:00 a.m.). Wireshark rooms, the NetLab ARP poisoning lab, and an AI-egress question.
 
-## Quiz 2
+## Quiz 1
 
-Covers hex and TCP/IP fundamentals. Opens after class on Canvas.
+Covers hex and TCP/IP fundamentals. Opens on Canvas after this class (Fri Oct 30).

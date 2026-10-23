@@ -13,7 +13,7 @@ Fridays 9:00 a.m.–12:00 p.m. PT, online. Built from the Canvas modules, the 20
 
 ## What to cut or shrink from the 2015/2025 decks
 
-- Bits, bytes, binary and hex: 40 minutes down to a 10-minute refresher (the Week 2 quiz still covers hex and TCP/IP).
+- Bits, bytes, binary and hex: 40 minutes down to a 10-minute refresher (Quiz 1 still covers hex and TCP/IP).
 - Case-study retellings of HBGary, Target, APT1, OPM: replace with 10-minute ATT&CK-mapped recaps and the startup case study.
 - Product pitches, Authentic8, Bromium, Cuckoo, dated OTX IP lookups, Moodle and Cabrillo Netlab references.
 - Snort 2 config walkthroughs (preprocessors): show rule anatomy; use Suricata syntax (Snort 3 and Suricata rules are close).
@@ -35,7 +35,7 @@ Fridays 9:00 a.m.–12:00 p.m. PT, online. Built from the Canvas modules, the 20
 - TCP in trouble: resets, retransmissions, scans (SYN, ACK), beaconing with I/O graphs and conversations; export objects and hashing.
 - **Noisy-capture drill:** find the signal in normal office-like traffic (use a malware-traffic-analysis.net exercise, pre-checked).
 - **AI thread:** what an LLM API call looks like (DNS, SNI, bytes up and down, long streaming responses). Streaming traffic can look like C2 beaconing, a false-positive lesson.
-- Quiz: Hex and TCP/IP opens. Assign Week 2 readings; preview Lab 2.
+- Quiz 1 (Hex and TCP/IP) opens after class. Assign Week 2 readings; preview Lab 2.
 
 ## Week 3 (Nov 6) — Application protocols and encrypted traffic
 
