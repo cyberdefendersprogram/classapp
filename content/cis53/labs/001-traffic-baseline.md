@@ -11,11 +11,13 @@ Covers Weeks 1 and 2. Submit everything as a single PDF.
 
 ## Part 1 — TryHackMe rooms (45 points)
 
-Complete these rooms from your **TryHackMe assignments** (Business group `2026-Fall-CIS53`). Screenshot each room showing it as completed.
+Complete these rooms from your **TryHackMe assignments** (Business group `2026-Fall-CIS53`). Each room is assigned to the class group and due Fri Nov 6, 9:00 a.m. Screenshot each room showing it as completed.
 
-- Network Traffic Basics
-- Wireshark: The Basics — [room](https://tryhackme.com/room/wiresharkthebasics)
-- Wireshark: Packet Operations
+- [Network Traffic Basics](https://tryhackme.com/room/networktrafficbasics)
+- [Wireshark: The Basics](https://tryhackme.com/room/wiresharkthebasics)
+- [Wireshark: Packet Operations](https://tryhackme.com/room/wiresharkpacketoperations)
+
+If you don't see these in your TryHackMe assignments, email me at vbhandari@peralta.edu with the email address you want your TryHackMe account tied to.
 
 ## Part 2 — NetLab (30 points)
 
