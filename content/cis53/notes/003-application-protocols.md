@@ -76,6 +76,6 @@ A DNS tunnel capture and a TLS capture. For each: what is the evidence, which pa
 
 ---
 
-## Lab 2 and Case Study
+## Lab 1 (Week 2) and Case Studies
 
-Lab 2 is due this morning at 9:00 a.m. The Week 3 case study (APT1 or IR Startup Research) is due today: [assignment on Canvas](https://peralta.instructure.com/courses/89432/assignments/1820967). Option B instructions and the company list are on the portal Tools page.
+Lab 1 (Week 2) is due this morning at 9:00 a.m. The Week 3 case study (APT1 or IR Startup Research) is assigned today and due Fri Nov 13, 9:00 a.m.: [assignment on Canvas](https://peralta.instructure.com/courses/89432/assignments/1820967). Option B instructions and the company list are on the portal Tools page.

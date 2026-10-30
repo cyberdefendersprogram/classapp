@@ -25,8 +25,8 @@ Class Portal dates are authoritative.
 | Date | Week | Topic | Assignments |
 |------|------|-------|-------------|
 | Oct 23 | 1 | Why monitor; packets, Wireshark, tcpdump | Lab 1 and the Mitnick case study open |
-| Oct 30 | 2 | Reading traffic; scans, beaconing, noise | Mitnick case study due 9:00 a.m.; Quiz 1 opens after class |
-| Nov 6 | 3 | DNS, HTTP, TLS metadata; AI egress | Lab 1 and Lab 2 due; Target case study |
+| Oct 30 | 2 | Reading traffic; scans, beaconing, noise | Mitnick case study (Case Study 1) due 9:00 a.m.; Quiz 1 opens after class (due Sun Nov 1, 11:59 p.m.) |
+| Nov 6 | 3 | DNS, HTTP, TLS metadata; AI egress | Lab 1 (Week 2) due, covers Classes 1 and 2; Target case study (Case Study 2) due; Case Study 3 opens |
 | Nov 13 | 4 | IDS/IPS, Suricata, Zeek, Sigma; agent logs | Lab 3 due |
 | Nov 20 | 5 | Threat intel, hunting, AI-assisted triage | Lab 4 due; **Final released 12:00 pm** |
 | Nov 27 | — | No class (Thanksgiving) | |
@@ -132,4 +132,4 @@ Full instructions: [Lab 1 on Canvas](https://peralta.instructure.com/courses/894
 
 ## Quiz 1
 
-Opens on Canvas after Class 2 (Fri Oct 30). Covers hex, TCP/IP fundamentals and the Week 1 readings.
+Opens on Canvas after Class 2 (Fri Oct 30) and is due Sun Nov 1, 11:59 p.m. Covers hex, TCP/IP fundamentals and the Week 1 readings.

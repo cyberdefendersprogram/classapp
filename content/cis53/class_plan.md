@@ -35,7 +35,7 @@ Fridays 9:00 a.m.–12:00 p.m. PT, online. Built from the Canvas modules, the 20
 - TCP in trouble: resets, retransmissions, scans (SYN, ACK), beaconing with I/O graphs and conversations; export objects and hashing.
 - **Noisy-capture drill:** find the signal in normal office-like traffic (use a malware-traffic-analysis.net exercise, pre-checked).
 - **AI thread:** what an LLM API call looks like (DNS, SNI, bytes up and down, long streaming responses). Streaming traffic can look like C2 beaconing, a false-positive lesson.
-- Quiz 1 (Hex and TCP/IP) opens after class. Assign Week 2 readings; preview Lab 2.
+- Quiz 1 (Hex and TCP/IP) opens after class and is due Sun Nov 1, 11:59 p.m. Assign Week 2 readings; remind that Lab 1 (covers Weeks 1 and 2) is due next class.
 
 ## Week 3 (Nov 6) — Application protocols and encrypted traffic
 

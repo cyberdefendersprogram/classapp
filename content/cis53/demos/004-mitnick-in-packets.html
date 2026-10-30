@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mitnick in Packets</title>
+<meta name="description" content="A synthetic reconstruction of the 1994 spoofed-session attack: SYN flood, sequence number probing, blind ACK, rsh payload.">
+<meta name="class" content="2">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: finding, layer map, two real captures with a layer column, comparison, takeaways, files. */
+:root {
+  --bg: #F2F5F8; --surface: #FFFFFF; --fg: #0E1726; --muted: #4E5B72; --line: #D3DBE6; --accent: #0B7F75;
+  --bad: #B3261E; --bad-bg: #FBE4E2; --ok: #0B7F4A; --ok-bg: #DDF3E6; --warn: #8A5A00; --warn-bg: #FBEBC8;
+  --g-app: #D9ECFA; --g-app-ink: #0B4A75; --g-tr: #D8F1EC; --g-tr-ink: #0B5C53; --g-net: #FBEBC8; --g-net-ink: #7A4D00; --g-link: #E6E2F6; --g-link-ink: #4A3C94;
+  --display: 'IBM Plex Sans', system-ui, sans-serif; --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1220; --surface: #131D31; --fg: #E8EDF5; --muted: #9AA7BD; --line: #263550; --accent: #3FD0C0;
+    --bad: #F2A29C; --bad-bg: #4A1F1C; --ok: #8FE0B4; --ok-bg: #12402A; --warn: #F5CE82; --warn-bg: #4A3612;
+    --g-app: #14344F; --g-app-ink: #9ED0F5; --g-tr: #123F3A; --g-tr-ink: #8FE3D8; --g-net: #4A3612; --g-net-ink: #F5CE82; --g-link: #2B2650; --g-link-ink: #C3B9F5; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1220; --surface: #131D31; --fg: #E8EDF5; --muted: #9AA7BD; --line: #263550; --accent: #3FD0C0;
+  --bad: #F2A29C; --bad-bg: #4A1F1C; --ok: #8FE0B4; --ok-bg: #12402A; --warn: #F5CE82; --warn-bg: #4A3612;
+  --g-app: #14344F; --g-app-ink: #9ED0F5; --g-tr: #123F3A; --g-tr-ink: #8FE3D8; --g-net: #4A3612; --g-net-ink: #F5CE82; --g-link: #2B2650; --g-link-ink: #C3B9F5; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--display); line-height: 1.5; font-size: 16px;
+  padding-block: 32px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+main { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.1; margin: 0; text-wrap: balance; }
+h2 { font-size: 20px; margin: 0 0 8px; text-wrap: balance; }
+h3 { font-size: 17px; margin: 0; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.lede { color: var(--muted); margin-top: 8px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 20px 24px; min-width: 0; }
+.finding { background: var(--warn-bg); color: var(--warn); border-color: transparent; }
+code, .mono { font-family: var(--mono); font-size: 13px; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 700px; font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { color: var(--muted); font-weight: 600; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+td.flag { color: var(--bad); font-weight: 600; }
+tr.stop td { background: var(--bad-bg); }
+.cap { color: var(--muted); font-size: 13px; margin-top: 10px; }
+.lay { display: inline-block; border-radius: 4px; padding: 1px 7px; font-size: 12px; }
+.lay.l4 { background: var(--g-tr); color: var(--g-tr-ink); }
+.lay.l3 { background: var(--g-net); color: var(--g-net-ink); }
+.lay.l7 { background: var(--g-app); color: var(--g-app-ink); }
+.lay.l6 { background: var(--g-app); color: var(--g-app-ink); }
+.lay.l2 { background: var(--g-link); color: var(--g-link-ink); }
+
+.map { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 6px 16px; }
+.map div { padding: 8px 12px; border-radius: 6px; min-width: 0; }
+.map .hd { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 0 2px; }
+.g-app { background: var(--g-app); color: var(--g-app-ink); }
+.g-tr { background: var(--g-tr); color: var(--g-tr-ink); }
+.g-net { background: var(--g-net); color: var(--g-net-ink); }
+.g-link { background: var(--g-link); color: var(--g-link-ink); }
+.map b { font-family: var(--mono); margin-right: 8px; }
+.map small { display: block; opacity: .85; }
+.hit { outline: 2px solid var(--bad); outline-offset: -2px; }
+.hit2 { outline: 2px solid var(--ok); outline-offset: -2px; }
+
+.tag { display: inline-block; font-family: var(--mono); font-size: 12px; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; }
+.tag.bad { background: var(--bad-bg); color: var(--bad); }
+.tag.ok { background: var(--ok-bg); color: var(--ok); }
+ul.plain, ol.steps { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+pre { margin: 8px 0 0; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 12px; overflow-x: auto; font-family: var(--mono); font-size: 13px; }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 640px) { .two, .map { grid-template-columns: 1fr; } }
+
+.step{display:flex;flex-direction:column;gap:8px}
+.step h3{display:flex;gap:10px;align-items:baseline}
+.n{font-family:var(--mono);color:var(--accent);font-size:13px}
+pre.f{margin:0;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;overflow-x:auto;font-family:var(--mono);font-size:13px}
+details{border-top:1px solid var(--line);padding-top:8px}
+summary{cursor:pointer;color:var(--accent);font-weight:600}
+.dl a{color:var(--accent)}
+ul.tight{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+</style>
+</head>
+<body>
+<main>
+<header><div class="eyebrow">Class 2 demo · Case Study 1</div><h1>Mitnick in packets</h1><p class="lede">This capture is built to match the published description of the attack (Shimomura's account and the Bellovin sequence-number paper). It is a reconstruction with private addresses, not the original evidence. Use it to practice the sensor view you described in Case Study 1.</p></header>
+<section class="card dl"><h2>Download and open</h2><ul class="tight"><li><a href="/demos/files/mitnick-reconstruction.pcap" target="_blank">mitnick-reconstruction.pcap</a> &mdash; 117 packets: finger and RPC probes, SYN flood, 20 ISN probes, spoofed handshake, rsh command</li></ul><p class="cap">Open the file in Wireshark (File &rarr; Open) or run the tcpdump / tshark lines below. All traffic is synthetic and uses private or documentation addresses.</p></section>
+<section class="card step"><h3><span class="n">01</span>Who is talking? Open Statistics &rarr; Conversations (IPv4 and TCP).</h3><pre class="f">Statistics &gt; Conversations &gt; TCP</pre><details><summary>Answer</summary><p>10.0.0.66 is the attacker, 10.0.0.20 is the trusted server, 10.0.0.30 is the target (the X terminal), and 10.0.0.99 is a forged source address that never answers.</p></details></section>
+<section class="card step"><h3><span class="n">02</span>Find the recon.</h3><pre class="f">tcp.port == 79 || udp.port == 111</pre><details><summary>Answer</summary><p>Finger (79) to the target and the server, and a UDP probe to port 111 (RPC portmapper). This is the early warning. No tool in 1994 raised an alert on it.</p></details></section>
+<section class="card step"><h3><span class="n">03</span>Find the SYN flood.</h3><pre class="f">tcp.flags.syn == 1 &amp;&amp; tcp.flags.ack == 0 &amp;&amp; tcp.dstport == 514
+Statistics &gt; Conversations, sort by packets</pre><details><summary>Answer</summary><p>30 SYNs from 10.0.0.99 to port 514 (rsh) on 10.0.0.20 with no replies. The flood fills the server's connection queue so it cannot answer the target later. Ask: what ratio of SYN to SYN-ACK would you alert on?</p></details></section>
+<section class="card step"><h3><span class="n">04</span>Read the sequence numbers the target hands out.</h3><pre class="f">tcp.flags.syn == 1 &amp;&amp; tcp.flags.ack == 1 &amp;&amp; ip.src == 10.0.0.30
+Edit &gt; Preferences &gt; Protocols &gt; TCP &gt; uncheck &quot;Relative sequence numbers&quot;</pre><details><summary>Answer</summary><p>Twenty SYN-ACKs from the target, each initial sequence number 128,000 higher than the last. That fixed step is what makes the next one predictable. Each probe ends with an immediate RST from the attacker.</p></details></section>
+<section class="card step"><h3><span class="n">05</span>Find the spoofed handshake.</h3><pre class="f">ip.src == 10.0.0.20 &amp;&amp; ip.dst == 10.0.0.30 &amp;&amp; tcp.dstport == 514</pre><details><summary>Answer</summary><p>Frames 112, 114 and 115: a SYN, then an ACK with exactly the predicted number, then data. Frame 113 is the target answering the server, who is silent because of the flood, so nobody resets the forged session.</p></details></section>
+<section class="card step"><h3><span class="n">06</span>Read the payload.</h3><pre class="f">Right-click frame 115 &gt; Follow &gt; TCP Stream
+or: tcp.dstport == 514 &amp;&amp; tcp.len &gt; 0</pre><details><summary>Answer</summary><p>The rsh command echoes "+ +" into /.rhosts, which makes the target trust everyone. Cleartext, so any sensor that stored full content could read it.</p></details></section>
+<section class="card step"><h3><span class="n">07</span>Write the detections you would deploy today.</h3><pre class="f">Rules: SYN rate per destination; SYN-ACK without a following ACK; same source and same port 20 times; any rsh/rlogin on the network.</pre><details><summary>Answer</summary><p>Compare your list to your Case Study 1 section 5. Which of these detect, and which prevent?</p></details></section>
+<section class="card"><h2>Discuss</h2><ul class="tight"><li>Which data type finds this fastest: full content, session, or alert? (Bejtlich Ch. 1&ndash;2)</li><li>The attacker never sees the target's replies. How does a sensor on the target's segment see more than the attacker did?</li><li>With an AI agent doing the probing, which of these signals would change, and which would not?</li></ul></section>
+</main>
+</body>
+</html>

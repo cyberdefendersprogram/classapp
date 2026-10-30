@@ -1,3 +1,162 @@
-<!--case-study {"number": 2, "title": "CIS 53 Intrusion Detection -- Target Case Study (Week 2)", "due_at": "2026-10-30T16:00:00Z", "canvas_url": "https://peralta.instructure.com/courses/89432/assignments/1820971"}-->
-<p>Research and write a case study on the&nbsp; 2013 Target data breach.<br><br></p>
-<p>Template guidelines are <a class="instructure_file_link instructure_scribd_file inline_disabled" title="Guidelines for Writing an Effective Intrustion Detection Case Study.docx" href="https://peralta.instructure.com/courses/89432/files/14769152?verifier=f9485b21-5f6e-4d59-9316-dd1dd80d4b05&amp;wrap=1" target="_blank" data-api-endpoint="https://peralta.instructure.com/api/v1/courses/89432/files/14769152" data-api-returntype="File">here</a><br><br><strong></strong></p>
+<!--case-study {"number": 2, "title": "CIS 53 Intrusion Detection -- Target Case Study (Week 2)", "due_at": "2026-11-06T17:00:00Z", "canvas_url": "https://peralta.instructure.com/courses/89432/assignments/1820971"}-->
+<p><strong>Due Friday, November 6, 2026, 9:00 a.m.</strong> <br>Follow the template below. <br><strong>Download the Word template:</strong> <a class="instructure_file_link" title="CIS53-Target-Case-Study-Template.docx" href="https://peralta.instructure.com/courses/89432/files/15176423/download?wrap=1" target="_blank">CIS53-Target-Case-Study-Template.docx</a>. Fill it in, delete the gray instructions, and submit it as a PDF.</p>
+<h2>The assignment</h2>
+<p>Research the 2013 Target data breach. Write a case study that maps the intrusion to MITRE ATT&amp;CK, says what a network sensor would have seen (including the alerts that fired), and says what you would deploy today to stop or detect a similar attack. This is the &ldquo;alerts were there, nobody acted&rdquo; case: it connects directly to the signal-versus-noise work from Class 2 and to Bejtlich Ch. 1 (why monitoring is not enough without response).</p>
+<h2>Start here (then verify)</h2>
+<ul>
+<li>U.S. Senate Commerce Committee staff report, <em>A &ldquo;Kill Chain&rdquo; Analysis of the 2013 Target Data Breach</em> (March 2014). Primary-style source for the timeline.</li>
+<li>Brian Krebs, <em>Target Hackers Broke in Via HVAC Company</em> (krebsonsecurity.com, February 2014).</li>
+<li>Bloomberg Businessweek, <em>Missed Alarms and 40 Million Stolen Credit Card Numbers</em> (March 2014).</li>
+<li>Target&rsquo;s 2013 annual filing and the 2017 multistate attorneys general settlement (about $18.5 million).</li>
+</ul>
+<p>Sources disagree on some details. Say which source you trust for each claim, and why.</p>
+<h2>Questions to think about as you research</h2>
+<ol>
+<li>How did the attacker get in, and why did a vendor&rsquo;s credentials work on Target&rsquo;s network?</li>
+<li>Which network and security alerts fired, when, and who saw them? What would have made someone act?</li>
+<li>Where did stolen card data sit before it left, and what did the outbound traffic look like?</li>
+<li>Which single control would have changed the outcome the most: vendor access, segmentation, POS hardening, alert handling, or egress filtering?</li>
+<li>Compare with Mitnick: what kind of trust did each attacker abuse?</li>
+</ol>
+<h2>Template</h2>
+<p>Use these headings, in this order.</p>
+<h3>1. Summary (about 100 words, 5 points)</h3>
+<p>Who attacked whom, when, and what happened. Write it so a reader who has never heard of the case can follow it. End with one sentence on why the case matters for detection.</p>
+<h3>2. Timeline (15 points)</h3>
+<p>Four to eight steps in order, as a table. Each step is one thing the attacker did.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>What the attacker did</th>
+<th>Where in the network (vendor, Target corporate, POS, outbound)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>2</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3>3. ATT&amp;CK mapping (25 points)</h3>
+<p>Map each timeline step to an ATT&amp;CK technique. Use the technique ID and name from <a href="https://attack.mitre.org">attack.mitre.org</a>. Choose the closest technique and say why.</p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Tactic</th>
+<th>Technique (ID and name)</th>
+<th>Why it fits</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Worked example for the format only: <em>Sent a phishing email to a vendor employee</em> → Initial Access → T1566 Phishing → the vendor, not Target, was the way in.</p>
+<h3>4. What a sensor would have seen (20 points)</h3>
+<p>For at least three steps, say what a sensor on the network would have recorded: packets, flows or logs. Name the layer (OSI or TCP/IP), the fields you would look at, and the Wireshark display filter you would use to find it.</p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Layer</th>
+<th>What the sensor records</th>
+<th>Display filter or log field</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Reminder from Classes 1 and 2: use <code>ip.dst</code>, <code>tcp.port</code> and <code>ftp</code> to find data leaving the network, and Statistics → Conversations to see which internal host sent the most bytes. Also answer: <strong>which alerts fired, and why did no one act on them?</strong></p>
+<h3>5. What would stop or detect it today (20 points)</h3>
+<p>At least three controls, and for each say whether it <strong>prevents</strong> the attack or <strong>detects</strong> it. Consider vendor access, segmentation, POS hardening, alert handling and outbound traffic.</p>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Prevent or detect</th>
+<th>Which step it affects</th>
+<th>Why it works</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3>6. Lessons and one AI question (10 points)</h3>
+<p>Two or three sentences on what this case teaches about third-party trust and alert handling, and one sentence comparing it with Mitnick. Then answer one question: <em>how would an attacker using AI tools change this attack, how could an AI assistant help defenders triage the alerts, and what would you still check by hand?</em></p>
+<h3>7. Sources (5 points)</h3>
+<p>At least three sources, with links. Use at least one primary or near-primary account, such as a congressional report, a company filing, a regulator document, or an investigative article. Wikipedia can help you start, but it does not count.</p>
+<h2>Grading</h2>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Points</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Summary</td>
+<td>5</td>
+</tr>
+<tr>
+<td>2. Timeline</td>
+<td>15</td>
+</tr>
+<tr>
+<td>3. ATT&amp;CK mapping</td>
+<td>25</td>
+</tr>
+<tr>
+<td>4. What a sensor would have seen</td>
+<td>20</td>
+</tr>
+<tr>
+<td>5. What would stop or detect it today</td>
+<td>20</td>
+</tr>
+<tr>
+<td>6. Lessons and AI question</td>
+<td>10</td>
+</tr>
+<tr>
+<td>7. Sources</td>
+<td>5</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>100</strong></td>
+</tr>
+</tbody>
+</table>
+<h2>Submission</h2>
+<ul>
+<li>One PDF, 2–3 pages, uploaded to Canvas by Fri Nov 6, 2026, 9:00 a.m.</li>
+<li>Late work follows the syllabus policy (10% deduction; ask before the deadline).</li>
+<li>Write in your own words. You may use AI tools to find sources or check your understanding, but check every fact and every ATT&amp;CK ID yourself. An AI answer you did not verify is not a source.</li>
+</ul>

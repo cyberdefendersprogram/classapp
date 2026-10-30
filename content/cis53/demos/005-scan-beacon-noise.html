@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scan, Beacon and Noise</title>
+<meta name="description" content="One capture with a port scan, a 60-second beacon and a legitimate AI streaming call hiding in ordinary traffic.">
+<meta name="class" content="2">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: finding, layer map, two real captures with a layer column, comparison, takeaways, files. */
+:root {
+  --bg: #F2F5F8; --surface: #FFFFFF; --fg: #0E1726; --muted: #4E5B72; --line: #D3DBE6; --accent: #0B7F75;
+  --bad: #B3261E; --bad-bg: #FBE4E2; --ok: #0B7F4A; --ok-bg: #DDF3E6; --warn: #8A5A00; --warn-bg: #FBEBC8;
+  --g-app: #D9ECFA; --g-app-ink: #0B4A75; --g-tr: #D8F1EC; --g-tr-ink: #0B5C53; --g-net: #FBEBC8; --g-net-ink: #7A4D00; --g-link: #E6E2F6; --g-link-ink: #4A3C94;
+  --display: 'IBM Plex Sans', system-ui, sans-serif; --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1220; --surface: #131D31; --fg: #E8EDF5; --muted: #9AA7BD; --line: #263550; --accent: #3FD0C0;
+    --bad: #F2A29C; --bad-bg: #4A1F1C; --ok: #8FE0B4; --ok-bg: #12402A; --warn: #F5CE82; --warn-bg: #4A3612;
+    --g-app: #14344F; --g-app-ink: #9ED0F5; --g-tr: #123F3A; --g-tr-ink: #8FE3D8; --g-net: #4A3612; --g-net-ink: #F5CE82; --g-link: #2B2650; --g-link-ink: #C3B9F5; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1220; --surface: #131D31; --fg: #E8EDF5; --muted: #9AA7BD; --line: #263550; --accent: #3FD0C0;
+  --bad: #F2A29C; --bad-bg: #4A1F1C; --ok: #8FE0B4; --ok-bg: #12402A; --warn: #F5CE82; --warn-bg: #4A3612;
+  --g-app: #14344F; --g-app-ink: #9ED0F5; --g-tr: #123F3A; --g-tr-ink: #8FE3D8; --g-net: #4A3612; --g-net-ink: #F5CE82; --g-link: #2B2650; --g-link-ink: #C3B9F5; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--display); line-height: 1.5; font-size: 16px;
+  padding-block: 32px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+main { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.1; margin: 0; text-wrap: balance; }
+h2 { font-size: 20px; margin: 0 0 8px; text-wrap: balance; }
+h3 { font-size: 17px; margin: 0; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.lede { color: var(--muted); margin-top: 8px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 20px 24px; min-width: 0; }
+.finding { background: var(--warn-bg); color: var(--warn); border-color: transparent; }
+code, .mono { font-family: var(--mono); font-size: 13px; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 700px; font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { color: var(--muted); font-weight: 600; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+td.flag { color: var(--bad); font-weight: 600; }
+tr.stop td { background: var(--bad-bg); }
+.cap { color: var(--muted); font-size: 13px; margin-top: 10px; }
+.lay { display: inline-block; border-radius: 4px; padding: 1px 7px; font-size: 12px; }
+.lay.l4 { background: var(--g-tr); color: var(--g-tr-ink); }
+.lay.l3 { background: var(--g-net); color: var(--g-net-ink); }
+.lay.l7 { background: var(--g-app); color: var(--g-app-ink); }
+.lay.l6 { background: var(--g-app); color: var(--g-app-ink); }
+.lay.l2 { background: var(--g-link); color: var(--g-link-ink); }
+
+.map { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 6px 16px; }
+.map div { padding: 8px 12px; border-radius: 6px; min-width: 0; }
+.map .hd { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 0 2px; }
+.g-app { background: var(--g-app); color: var(--g-app-ink); }
+.g-tr { background: var(--g-tr); color: var(--g-tr-ink); }
+.g-net { background: var(--g-net); color: var(--g-net-ink); }
+.g-link { background: var(--g-link); color: var(--g-link-ink); }
+.map b { font-family: var(--mono); margin-right: 8px; }
+.map small { display: block; opacity: .85; }
+.hit { outline: 2px solid var(--bad); outline-offset: -2px; }
+.hit2 { outline: 2px solid var(--ok); outline-offset: -2px; }
+
+.tag { display: inline-block; font-family: var(--mono); font-size: 12px; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; }
+.tag.bad { background: var(--bad-bg); color: var(--bad); }
+.tag.ok { background: var(--ok-bg); color: var(--ok); }
+ul.plain, ol.steps { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+pre { margin: 8px 0 0; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 12px; overflow-x: auto; font-family: var(--mono); font-size: 13px; }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 640px) { .two, .map { grid-template-columns: 1fr; } }
+
+.step{display:flex;flex-direction:column;gap:8px}
+.step h3{display:flex;gap:10px;align-items:baseline}
+.n{font-family:var(--mono);color:var(--accent);font-size:13px}
+pre.f{margin:0;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;overflow-x:auto;font-family:var(--mono);font-size:13px}
+details{border-top:1px solid var(--line);padding-top:8px}
+summary{cursor:pointer;color:var(--accent);font-weight:600}
+.dl a{color:var(--accent)}
+ul.tight{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+</style>
+</head>
+<body>
+<main>
+<header><div class="eyebrow">Class 2 demo · Lab 1 practice</div><h1>Scan, beacon and noise</h1><p class="lede">Twenty minutes of office-like traffic with three things hidden in it. Find them, say which one is malicious, and write the evidence chain.</p></header>
+<section class="card dl"><h2>Download and open</h2><ul class="tight"><li><a href="/demos/files/scan-beacon-noise.pcap" target="_blank">scan-beacon-noise.pcap</a> &mdash; 3,128 packets, about 20 minutes: web browsing, one scan, one beacon, one long streaming connection</li></ul><p class="cap">Open the file in Wireshark (File &rarr; Open) or run the tcpdump / tshark lines below. All traffic is synthetic and uses private or documentation addresses.</p></section>
+<section class="card step"><h3><span class="n">01</span>Start with the big picture.</h3><pre class="f">Statistics &gt; Protocol Hierarchy
+Statistics &gt; Conversations &gt; TCP (sort by Packets, then by Duration)</pre><details><summary>Answer</summary><p>Mostly TLS and DNS. Two conversations stand out: one host that touched over a thousand ports, and a pair with a very long duration.</p></details></section>
+<section class="card step"><h3><span class="n">02</span>Find the scanner.</h3><pre class="f">tcp.flags.syn == 1 &amp;&amp; tcp.flags.ack == 0 &amp;&amp; ip.src == 10.0.0.77
+tshark -r scan-beacon-noise.pcap -q -z conv,tcp | head -50</pre><details><summary>Answer</summary><p>10.0.0.77 sent 1,024 SYNs to ports 1&ndash;1024 on 10.0.0.10 from one source port in about four seconds. Closed ports answered RST,ACK; ports 22, 80 and 443 answered SYN,ACK and the scanner reset them. Filter the open ports: ip.src == 10.0.0.10 && tcp.flags.syn == 1 && tcp.flags.ack == 1</p></details></section>
+<section class="card step"><h3><span class="n">03</span>Find the beacon.</h3><pre class="f">ip.dst == 203.0.113.50 &amp;&amp; tcp.flags.syn == 1
+Statistics &gt; I/O Graph (add that filter, interval 10 s)</pre><details><summary>Answer</summary><p>20 connections to port 8443, about 60 seconds apart, each with a 120-byte request and an 86-byte reply. Regular timing and size is the shape of a beacon. In the I/O graph you see evenly spaced spikes.</p></details></section>
+<section class="card step"><h3><span class="n">04</span>Find the long streaming connection.</h3><pre class="f">ip.addr == 203.0.113.20 &amp;&amp; tls.handshake.extensions_server_name
+Statistics &gt; Conversations &gt; TCP</pre><details><summary>Answer</summary><p>10.0.0.5 to 203.0.113.20:443, SNI api.llm-provider.test, about 33 seconds long, 402 packets from the server with a few hundred bytes each. It looks like a heavy conversation, but the shape is different: one connection, irregular timing, and a small request followed by a long streamed response.</p></details></section>
+<section class="card step"><h3><span class="n">05</span>Which of the three is malicious? Defend your answer.</h3><pre class="f">Evidence chain: what you saw, in which frame, what it means, how confident you are.</pre><details><summary>Answer</summary><p>Scanner: very likely hostile or a misconfigured tool. Beacon: suspicious, needs the host and process. The streaming call: probably an approved AI service, but check the destination against your allowlist. Streaming responses are a classic false positive for C2.</p></details></section>
+<section class="card step"><h3><span class="n">06</span>AI angle: what would change if the beacon were written with an LLM?</h3><pre class="f">Think about jitter, size variation, destinations and protocol (HTTPS to a popular API).</pre><details><summary>Answer</summary><p>A generated beacon can add random jitter and blend into AI or cloud traffic, so strict regularity is the easy case. Baselines per host and an allowlist of AI destinations become more valuable than interval checks.</p></details></section>
+
+</main>
+</body>
+</html>

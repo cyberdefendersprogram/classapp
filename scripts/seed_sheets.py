@@ -203,6 +203,16 @@ TEST_QUIZZES_BY_COURSE = {
             "status": "published",
             "total_points": "11",
         },
+        {
+            "quiz_id": "q002",
+            "title": "Class 2 In-Class Check (Reading Traffic)",
+            "content_path": "content/cis53/quizzes/002-class2-inclass.md",
+            "open_at": "",
+            "close_at": "",
+            "attempts_allowed": "1",
+            "status": "published",
+            "total_points": "21",
+        },
     ],
 }
 
