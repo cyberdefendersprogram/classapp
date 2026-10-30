@@ -50,6 +50,8 @@ What the book gives you for today: tcpdump switches (`-n -i -s -c -w -r`, `-tttt
 
 ## Part 0 — Mitnick in Packets (Case Study 1 Review)
 
+Case Study 1 (Mitnick) is due today at 9:00 a.m. Template and instructions: [Case Studies](/case-studies/001-mitnick).
+
 In December 1994 an attacker used a SYN flood and TCP sequence number prediction to forge a session into Tsutomu Shimomura's X terminal and plant a trust entry. Walk through it:
 
 1. **Recon:** finger, showmount and RPC probes. Visible to a sensor, but nobody was watching.
@@ -87,7 +89,7 @@ Always ask: *is this unusual for this host, at this time?* That is why Week 1 ha
 
 ## Part 3 — Noisy-Capture Drill
 
-Real networks are noisy. In class we work through a pre-checked capture from malware-traffic-analysis.net:
+Real networks are noisy. In class we work through [Demo 005: Scan, beacon and noise](/demos/005-scan-beacon-noise), a 20-minute capture with a port scan, a 60-second beacon and a legitimate AI streaming call hidden in ordinary traffic. (For more practice, malware-traffic-analysis.net has pre-checked exercises.)
 
 1. Start with Conversations and Protocol Hierarchy. What is normal here?
 2. Find the host that does not fit.
