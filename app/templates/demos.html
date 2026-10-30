@@ -29,7 +29,7 @@
 <div class="tools-grid">
     {% for demo in group %}
     <a href="/demos/{{ demo.id }}" class="tool-card">
-        <h3>{{ demo.title }}</h3>
+        <h3>{% if demo.number %}<span class="demo-no">Demo {{ demo.number }}</span> {% endif %}{{ demo.title }}</h3>
         <p>{{ demo.description }}</p>
         <span class="tool-link">Open demo</span>
     </a>
@@ -48,6 +48,7 @@
 .tool-card h3 { margin: 0 0 0.5rem 0; color: #333; font-size: 1.1rem; }
 .tool-card p { margin: 0 0 1rem 0; color: #666; font-size: 0.9rem; line-height: 1.5; }
 .tool-link { color: #007bff; font-size: 0.875rem; font-weight: 500; }
+.demo-no { display: block; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #007bff; margin-bottom: 0.25rem; }
 .demo-group { margin: 2rem 0 0 0; font-size: 1.2rem; }
 .nav a.active { font-weight: 600; color: #333; }
 </style>

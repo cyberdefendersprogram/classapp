@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI on the Wire Live Script</title>
+<meta name="description" content="Presenter script for the AI segment: what an AI call looks like on the wire, using an LLM to read a capture and verifying its claims, and AI as an attacker. Reuses Demos 3 and 5.">
+<meta name="class" content="2">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: finding, layer map, two real captures with a layer column, comparison, takeaways, files. */
+:root {
+  --bg: #F2F5F8; --surface: #FFFFFF; --fg: #0E1726; --muted: #4E5B72; --line: #D3DBE6; --accent: #0B7F75;
+  --bad: #B3261E; --bad-bg: #FBE4E2; --ok: #0B7F4A; --ok-bg: #DDF3E6; --warn: #8A5A00; --warn-bg: #FBEBC8;
+  --g-app: #D9ECFA; --g-app-ink: #0B4A75; --g-tr: #D8F1EC; --g-tr-ink: #0B5C53; --g-net: #FBEBC8; --g-net-ink: #7A4D00; --g-link: #E6E2F6; --g-link-ink: #4A3C94;
+  --display: 'IBM Plex Sans', system-ui, sans-serif; --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1220; --surface: #131D31; --fg: #E8EDF5; --muted: #9AA7BD; --line: #263550; --accent: #3FD0C0;
+    --bad: #F2A29C; --bad-bg: #4A1F1C; --ok: #8FE0B4; --ok-bg: #12402A; --warn: #F5CE82; --warn-bg: #4A3612;
+    --g-app: #14344F; --g-app-ink: #9ED0F5; --g-tr: #123F3A; --g-tr-ink: #8FE3D8; --g-net: #4A3612; --g-net-ink: #F5CE82; --g-link: #2B2650; --g-link-ink: #C3B9F5; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1220; --surface: #131D31; --fg: #E8EDF5; --muted: #9AA7BD; --line: #263550; --accent: #3FD0C0;
+  --bad: #F2A29C; --bad-bg: #4A1F1C; --ok: #8FE0B4; --ok-bg: #12402A; --warn: #F5CE82; --warn-bg: #4A3612;
+  --g-app: #14344F; --g-app-ink: #9ED0F5; --g-tr: #123F3A; --g-tr-ink: #8FE3D8; --g-net: #4A3612; --g-net-ink: #F5CE82; --g-link: #2B2650; --g-link-ink: #C3B9F5; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--display); line-height: 1.5; font-size: 16px;
+  padding-block: 32px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+main { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.1; margin: 0; text-wrap: balance; }
+h2 { font-size: 20px; margin: 0 0 8px; text-wrap: balance; }
+h3 { font-size: 17px; margin: 0; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.lede { color: var(--muted); margin-top: 8px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 20px 24px; min-width: 0; }
+.finding { background: var(--warn-bg); color: var(--warn); border-color: transparent; }
+code, .mono { font-family: var(--mono); font-size: 13px; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 700px; font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { color: var(--muted); font-weight: 600; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+td.flag { color: var(--bad); font-weight: 600; }
+tr.stop td { background: var(--bad-bg); }
+.cap { color: var(--muted); font-size: 13px; margin-top: 10px; }
+.lay { display: inline-block; border-radius: 4px; padding: 1px 7px; font-size: 12px; }
+.lay.l4 { background: var(--g-tr); color: var(--g-tr-ink); }
+.lay.l3 { background: var(--g-net); color: var(--g-net-ink); }
+.lay.l7 { background: var(--g-app); color: var(--g-app-ink); }
+.lay.l6 { background: var(--g-app); color: var(--g-app-ink); }
+.lay.l2 { background: var(--g-link); color: var(--g-link-ink); }
+
+.map { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 6px 16px; }
+.map div { padding: 8px 12px; border-radius: 6px; min-width: 0; }
+.map .hd { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 0 2px; }
+.g-app { background: var(--g-app); color: var(--g-app-ink); }
+.g-tr { background: var(--g-tr); color: var(--g-tr-ink); }
+.g-net { background: var(--g-net); color: var(--g-net-ink); }
+.g-link { background: var(--g-link); color: var(--g-link-ink); }
+.map b { font-family: var(--mono); margin-right: 8px; }
+.map small { display: block; opacity: .85; }
+.hit { outline: 2px solid var(--bad); outline-offset: -2px; }
+.hit2 { outline: 2px solid var(--ok); outline-offset: -2px; }
+
+.tag { display: inline-block; font-family: var(--mono); font-size: 12px; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; }
+.tag.bad { background: var(--bad-bg); color: var(--bad); }
+.tag.ok { background: var(--ok-bg); color: var(--ok); }
+ul.plain, ol.steps { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+pre { margin: 8px 0 0; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 12px; overflow-x: auto; font-family: var(--mono); font-size: 13px; }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 640px) { .two, .map { grid-template-columns: 1fr; } }
+
+.step{display:flex;flex-direction:column;gap:8px}
+.step h3{display:flex;gap:10px;align-items:baseline}
+.n{font-family:var(--mono);color:var(--accent);font-size:13px}
+pre.f{margin:0;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;overflow-x:auto;font-family:var(--mono);font-size:13px}
+details{border-top:1px solid var(--line);padding-top:8px}
+summary{cursor:pointer;color:var(--accent);font-weight:600}
+.dl a{color:var(--accent)}
+ul.tight{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+</style>
+</head>
+<body>
+<main>
+<header><div class="eyebrow">Class 2 demo · AI presenter script</div><h1>AI on the wire: live script</h1><p class="lede">About 12 minutes. Three beats: what an AI call looks like in a capture, what an LLM does well and badly when it reads a capture, and how an attacker could use the same tools. Uses the captures from Demos 3 and 5, so nothing new to download.</p></header>
+<section class="card step"><h3><span class="n">01</span>Show an AI call on the wire (3 min). Use Demo 3.</h3><pre class="f">Open class2-filters.pcap, display filter:
+tls.handshake.extensions_server_name</pre><details open><summary>Say</summary><p>Everything inside is encrypted, but the server name in the ClientHello is not. That is how a sensor knows this host talked to an AI provider without reading a word of the prompt. Ask: what can you tell, and what can you not tell, from this one line?</p></details><details><summary>Expected answer</summary><p>You can tell who talked to which service and when. You cannot see the prompt, the response or what data left. That is why the egress allowlist and the proxy log matter more than the packet.</p></details></section>
+<section class="card step"><h3><span class="n">02</span>Show why AI traffic looks odd (3 min). Use Demo 5.</h3><pre class="f">Open scan-beacon-noise.pcap
+Statistics &gt; Conversations &gt; TCP, sort by Bytes
+Then: ip.addr == 203.0.113.20</pre><details open><summary>Say</summary><p>This one connection is the biggest in the file: 402 packets of a few hundred bytes from the server, about 33 seconds. A long streaming response looks like exfiltration or C2 to a naive rule. Streamed LLM answers are the new false positive.</p></details><details><summary>Contrast</summary><p>Now show the beacon: ten-packet connections to 203.0.113.50:8443 every 60 seconds. Same destination type, completely different shape. Shape beats size.</p></details></section>
+<section class="card step"><h3><span class="n">03</span>Let an LLM read the capture, live (4 min).</h3><pre class="f">tshark -r scan-beacon-noise.pcap -q -z conv,tcp | head -40
+tshark -r scan-beacon-noise.pcap -Y 'tcp.flags.syn==1 &amp;&amp; tcp.flags.ack==0' \
+  -T fields -e frame.time_relative -e ip.src -e ip.dst -e tcp.dstport | head -60</pre><details open><summary>Paste into an LLM with this prompt</summary><p>"You are a SOC analyst. Below is a summary of a 20-minute capture. List anything suspicious, give the evidence (host, port, timing), say how confident you are, and say what you would check next. Do not guess about anything you cannot see."</p></details><details><summary>What to point out</summary><p>It should find the 10.0.0.77 SYN scan (1,024 ports) and the 60-second beacon from 10.0.0.5 to 203.0.113.50:8443. Check every claim against the packets: ask it for frame numbers or timestamps and verify one in Wireshark. If it names a CVE, malware family or attacker you cannot see in the data, call that out as a hallucination. Only paste synthetic or sanitized data into a public AI service; real captures contain addresses, hostnames and sometimes credentials.</p></details></section>
+<section class="card step"><h3><span class="n">04</span>Flip it: AI as the attacker (2 min).</h3><pre class="f">Ask the room: if this beacon were generated by an LLM, what would you change?</pre><details><summary>Answer</summary><p>Add random jitter, vary payload sizes, use a popular HTTPS API as the destination, and send at human-like hours. The regular 60-second interval is the easy case. Defenders need per-host baselines, destination allowlists and process-level telemetry, not just interval checks.</p></details></section>
+<section class="card step"><h3><span class="n">05</span>Close with the three-part frame.</h3><pre class="f">Threats TO AI  &middot;  Threats FROM AI  &middot;  Defending WITH AI</pre><details><summary>Say</summary><p>TO: someone attacks the model or its data pipeline. FROM: attackers use AI to scale and disguise. WITH: we use AI to triage, but a human verifies every claim. Tie back to Lab 1: your evidence chain is what makes an AI's answer trustworthy.</p></details></section>
+</main>
+</body>
+</html>

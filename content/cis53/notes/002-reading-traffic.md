@@ -115,6 +115,7 @@ An app calling a hosted LLM usually shows:
 - [Demo 003: Capture vs display filters](/demos/003-capture-vs-display-filters): ten questions on one capture.
 - [Demo 004: Mitnick in packets](/demos/004-mitnick-in-packets)
 - [Demo 005: Scan, beacon and noise](/demos/005-scan-beacon-noise): find a port scan, a 60-second beacon and a legitimate AI streaming call.
+- [Demo 006: AI on the wire, live script](/demos/006-ai-on-the-wire-script): a 12-minute presenter script for the AI segment, reusing Demos 003 and 005.
 
 ## More on the AI Thread
 

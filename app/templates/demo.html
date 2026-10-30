@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{% if demo %}{{ demo.title }}{% else %}Demo Not Found{% endif %}{% endblock %}
+{% block title %}{% if demo %}{% if demo.number %}Demo {{ demo.number }}: {% endif %}{{ demo.title }}{% else %}Demo Not Found{% endif %}{% endblock %}
 
 {% block content %}
 <nav class="nav">
@@ -21,7 +21,7 @@
 </nav>
 
 {% if demo %}
-<p class="demo-bar"><a href="/demos">&larr; All demos</a> &middot; <a href="/demos/{{ demo.id }}/raw" target="_blank" rel="noopener">Open full page</a></p>
+<p class="demo-bar"><a href="/demos">&larr; All demos</a> &middot; {% if demo.number %}<strong>Demo {{ demo.number }}: {{ demo.title }}</strong> &middot; {% endif %}<a href="/demos/{{ demo.id }}/raw" target="_blank" rel="noopener">Open full page</a></p>
 <iframe class="demo-frame" src="/demos/{{ demo.id }}/raw" title="{{ demo.title }}" sandbox="allow-scripts"></iframe>
 {% else %}
 <h1>Demo not found</h1>

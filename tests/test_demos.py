@@ -55,6 +55,7 @@ class TestDemoIndex:
         meta = read_demo_meta(p)
         assert meta == {
             "id": "001-sample",
+            "number": 1,
             "class_no": 1,
             "title": "Sample & Demo",
             "description": "A sample demo.",
