@@ -35,7 +35,28 @@ Download `tls-metadata-ai-egress.pcap` from this Canvas assignment (attached her
 
 1. **Findings table** (12 points): one row per TLS session with source host, server name (SNI), TLS version, bytes sent, bytes received, and a verdict (approved, unapproved, or needs review). Use Statistics → Conversations and the display filter `tls.handshake.type == 1`.
 2. **Evidence** (6 points): for the largest upload, give the frame number of the ClientHello, the certificate subject and issuer (if visible), and the JA3 or JA4 value. Say why the certificate is or is not visible for other sessions.
-3. **One detection** (8 points): a Suricata rule, Zeek script idea, Sigma rule or SIEM query that flags large uploads to an AI service that is not on the allowlist. Name one false positive it would produce.
+3. **One detection** (8 points): write one detection (a Suricata rule, a Zeek script or `zeek-cut` hunt, a Sigma rule, or a SIEM query) that flags a large upload to an AI service that is **not on the allowlist**. Give the rule or query, say which fields of this capture it keys on, and name one false positive it would produce. Grading: logic that would match this capture 4, how you checked it against the capture 2, false positive 2.
+
+   **Worked pattern** (a different attack, the DNS tunnel from Demo 7; see the Class 3 slides). Adapt the shape, do not copy it. Yours must key on the server name and the bytes sent, not on query length.
+
+   ```
+   # Suricata: five long-label queries from one host in 60 seconds
+   alert dns $HOME_NET any -> any any (msg:"CIS53 possible DNS tunnel: long encoded label"; dns.query; pcre:"/[a-z0-9]{30,}\./i"; threshold:type threshold, track by_src, count 5, seconds 60; classtype:trojan-activity; sid:9000001; rev:1;)
+
+   # Zeek: which hosts sent long names (dns.log)
+   cat dns.log | zeek-cut id.orig_h query | awk 'length($2) > 50 {print $1}' | sort | uniq -c | sort -rn
+
+   # Sigma (Zeek dns logs)
+   title: DNS tunnel - long encoded label in TXT query
+   logsource: {product: zeek, service: dns}
+   detection:
+     selection: {qtype_name: TXT, query|re: '[a-z0-9]{30,}\.'}
+     condition: selection
+   falsepositives: [anti-spam and security products that make long TXT lookups]
+   level: medium
+   ```
+
+   Hints for the AI upload: Suricata can match the server name (`tls.sni`) but cannot add up bytes by itself, so say which part of your idea needs Zeek (`ssl.log` `server_name` joined to `conn.log` `orig_bytes` by `uid`) or a SIEM. If you cannot run Suricata or Zeek, explain your logic and test the name part with the Wireshark filter `tls.handshake.extensions_server_name`.
 4. **What you cannot know** (4 points): one sentence on what the capture does not tell you about the upload, and which log or tool would.
 
 Screenshots: the Conversations table sorted by bytes, and the packet with the evidence highlighted. Say which display filter you used (or "none").

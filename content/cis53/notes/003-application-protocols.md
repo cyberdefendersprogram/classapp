@@ -80,6 +80,18 @@ Bejtlich Ch. 10 and Ch. 11 show the investigation flow on two attack types.
 - **Client-side:** the user takes the bait (phishing, a link, a compromised site). In Ch. 11 a link in a tweet leads to a malicious Java applet, then a covert channel hidden in DNS (NULL queries, more than 65,000 records in one `dns.log`).
 - His intrusion categories: attempt = Cat 3, user-level access = Cat 2, administrator = Cat 1, C2 channel = Breach 3.
 
+## Part 7 — From Finding to Detection: Zeek, Suricata, Sigma
+
+A finding in a capture is only useful once it becomes something a sensor can run all day. We use the DNS tunnel from Demo 7 to show the same finding in three forms. Class 4 goes deeper on rule writing.
+
+- **Zeek (logs).** Zeek writes one line per DNS query to `dns.log`. The tunnel shows up as `qtype_name` TXT, a very long `query`, answer `ok` with TTL 0, and one parent domain (`t.updates-cdn.test`) repeated. Hunt it with `cat dns.log | zeek-cut id.orig_h query | awk 'length($2) > 50 {print $1}' | sort | uniq -c | sort -rn`. Bejtlich Ch. 10 and 11 do this with Bro `dns.log` (his tunnel used NULL records; ours uses TXT).
+- **Suricata (rules on live traffic).** A rule has an action, a protocol, addresses, and options. `alert dns $HOME_NET any -> any any (msg:"CIS53 possible DNS tunnel: long encoded label"; dns.query; pcre:"/[a-z0-9]{30,}\./i"; threshold:type threshold, track by_src, count 5, seconds 60; classtype:trojan-activity; sid:9000001; rev:1;)` fires when one host sends five long-label queries in a minute. In the Demo 7 capture the pattern matches only the tunnel host (10.0.0.77).
+- **Sigma (rules on logs, any SIEM).** A vendor-neutral YAML rule with a `logsource` (here Zeek `dns`), a `detection` block and `falsepositives`. Tools convert it to your SIEM's query language. Sigma has no arithmetic, so "count per host per minute" is added in the SIEM.
+
+**Choosing the tool:** Suricata sees traffic as it passes (fast, but it cannot add up bytes over a long session). Zeek records what happened so you can hunt later and join logs by `uid`. Sigma is for logs you already collect. A good detection says which one, what it keys on, and what legitimate traffic would trip it (anti-spam and security products make long TXT lookups).
+
+**Lab 2 Part 3** asks you to write one such detection for large uploads to an unapproved AI service. Adapt the pattern; key on the server name and bytes sent, not on query length.
+
 ## Feedback on Work So Far
 
 Individual scores and comments are in Canvas. This is what we discuss as a class.
