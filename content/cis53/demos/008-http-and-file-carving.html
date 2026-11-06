@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HTTP and file carving</title>
+<meta name="description" content="Use it to teach cleartext web analysis: odd user agents, a program disguised as an image, a beacon, and Export Objects with hashing (Bejtlich Ch. 11-12).">
+<meta name="class" content="3">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: finding, layer map, two real captures with a layer column, comparison, takeaways, files. */
+:root {
+  --bg: #F2F5F8; --surface: #FFFFFF; --fg: #0E1726; --muted: #4E5B72; --line: #D3DBE6; --accent: #0B7F75;
+  --bad: #B3261E; --bad-bg: #FBE4E2; --ok: #0B7F4A; --ok-bg: #DDF3E6; --warn: #8A5A00; --warn-bg: #FBEBC8;
+  --g-app: #D9ECFA; --g-app-ink: #0B4A75; --g-tr: #D8F1EC; --g-tr-ink: #0B5C53; --g-net: #FBEBC8; --g-net-ink: #7A4D00; --g-link: #E6E2F6; --g-link-ink: #4A3C94;
+  --display: 'IBM Plex Sans', system-ui, sans-serif; --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1220; --surface: #131D31; --fg: #E8EDF5; --muted: #9AA7BD; --line: #263550; --accent: #3FD0C0;
+    --bad: #F2A29C; --bad-bg: #4A1F1C; --ok: #8FE0B4; --ok-bg: #12402A; --warn: #F5CE82; --warn-bg: #4A3612;
+    --g-app: #14344F; --g-app-ink: #9ED0F5; --g-tr: #123F3A; --g-tr-ink: #8FE3D8; --g-net: #4A3612; --g-net-ink: #F5CE82; --g-link: #2B2650; --g-link-ink: #C3B9F5; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1220; --surface: #131D31; --fg: #E8EDF5; --muted: #9AA7BD; --line: #263550; --accent: #3FD0C0;
+  --bad: #F2A29C; --bad-bg: #4A1F1C; --ok: #8FE0B4; --ok-bg: #12402A; --warn: #F5CE82; --warn-bg: #4A3612;
+  --g-app: #14344F; --g-app-ink: #9ED0F5; --g-tr: #123F3A; --g-tr-ink: #8FE3D8; --g-net: #4A3612; --g-net-ink: #F5CE82; --g-link: #2B2650; --g-link-ink: #C3B9F5; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--display); line-height: 1.5; font-size: 16px;
+  padding-block: 32px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+main { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.1; margin: 0; text-wrap: balance; }
+h2 { font-size: 20px; margin: 0 0 8px; text-wrap: balance; }
+h3 { font-size: 17px; margin: 0; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.lede { color: var(--muted); margin-top: 8px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 20px 24px; min-width: 0; }
+.finding { background: var(--warn-bg); color: var(--warn); border-color: transparent; }
+code, .mono { font-family: var(--mono); font-size: 13px; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 700px; font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { color: var(--muted); font-weight: 600; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+td.flag { color: var(--bad); font-weight: 600; }
+tr.stop td { background: var(--bad-bg); }
+.cap { color: var(--muted); font-size: 13px; margin-top: 10px; }
+.lay { display: inline-block; border-radius: 4px; padding: 1px 7px; font-size: 12px; }
+.lay.l4 { background: var(--g-tr); color: var(--g-tr-ink); }
+.lay.l3 { background: var(--g-net); color: var(--g-net-ink); }
+.lay.l7 { background: var(--g-app); color: var(--g-app-ink); }
+.lay.l6 { background: var(--g-app); color: var(--g-app-ink); }
+.lay.l2 { background: var(--g-link); color: var(--g-link-ink); }
+
+.map { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 6px 16px; }
+.map div { padding: 8px 12px; border-radius: 6px; min-width: 0; }
+.map .hd { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 0 2px; }
+.g-app { background: var(--g-app); color: var(--g-app-ink); }
+.g-tr { background: var(--g-tr); color: var(--g-tr-ink); }
+.g-net { background: var(--g-net); color: var(--g-net-ink); }
+.g-link { background: var(--g-link); color: var(--g-link-ink); }
+.map b { font-family: var(--mono); margin-right: 8px; }
+.map small { display: block; opacity: .85; }
+.hit { outline: 2px solid var(--bad); outline-offset: -2px; }
+.hit2 { outline: 2px solid var(--ok); outline-offset: -2px; }
+
+.tag { display: inline-block; font-family: var(--mono); font-size: 12px; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; }
+.tag.bad { background: var(--bad-bg); color: var(--bad); }
+.tag.ok { background: var(--ok-bg); color: var(--ok); }
+ul.plain, ol.steps { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+pre { margin: 8px 0 0; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 12px; overflow-x: auto; font-family: var(--mono); font-size: 13px; }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 640px) { .two, .map { grid-template-columns: 1fr; } }
+
+.step{display:flex;flex-direction:column;gap:8px}
+.step h3{display:flex;gap:10px;align-items:baseline}
+.n{font-family:var(--mono);color:var(--accent);font-size:13px}
+pre.f{margin:0;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;overflow-x:auto;font-family:var(--mono);font-size:13px}
+details{border-top:1px solid var(--line);padding-top:8px}
+summary{cursor:pointer;color:var(--accent);font-weight:600}
+.dl a{color:var(--accent)}
+ul.tight{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+</style>
+</head>
+<body>
+<main>
+<header><div class="eyebrow">Class 3 demo · HTTP</div><h1>HTTP and file carving</h1><p class="lede">A user on 10.0.0.15 clicked a link in mail, fetched an "invoice", and then the machine started phoning home. Walk the story from the packets, carve the files, hash them, and say what you would tell the manager.</p></header>
+<section class="card dl"><h2>Download and open</h2><ul class="tight"><li><a href="/demos/files/http-carve.pcap" target="_blank">http-carve.pcap</a> &mdash; 107 packets: ordinary browsing, a fake image, a zip, and six beacon POSTs</li></ul><p class="cap">All traffic is synthetic. Hosts use private or documentation addresses and domains end in .test or .example. Nothing in the file is real malware.</p></section>
+<section class="card step"><h3><span class="n">01</span>What did this host request?</h3><pre class="f">http.request
+Add columns: http.host, http.request.uri, http.user_agent</pre><details><summary>Answer</summary><p>Ten requests: four GETs and six POSTs. Browsing to <code>parts.web.test</code> looks normal. Then <code>invoice-portal.web.test</code> serves a <code>.jpg</code> and a <code>.zip</code>, and <code>gate.cdn-sync.test</code> receives six POSTs to <code>/gate.php</code>.</p></details></section>
+<section class="card step"><h3><span class="n">02</span>Which user agent does not belong?</h3><pre class="f">http.user_agent contains "MSIE 6.0"</pre><details><summary>Answer</summary><p>The six POSTs say <code>Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)</code>, a browser from 2001, on a host whose other requests say Chrome 130. Two different clients on one machine means a second program is making web requests. User agents are easy to fake, so treat this as a lead, not proof.</p></details></section>
+<section class="card step"><h3><span class="n">03</span>Is the picture a picture?</h3><pre class="f">http.request.uri contains ".jpg"
+File &gt; Export Objects &gt; HTTP &gt; save invoice-0412.jpg
+file invoice-0412.jpg</pre><details><summary>Answer</summary><p>The server says <code>Content-Type: image/jpeg</code>, but the first two bytes of the body are <code>MZ</code> (the header of a Windows program) and <code>file</code> reports plain text, not a JPEG. The 3,082-byte body is a harmless training file. In real traffic this mismatch between declared type and content is the classic sign of a disguised executable. The request carried <code>Referer: http://mail.office.test/inbox</code>, so the user got here from webmail.</p></details></section>
+<section class="card step"><h3><span class="n">04</span>Hash what you carved.</h3><pre class="f">File &gt; Export Objects &gt; HTTP &gt; Save All
+shasum -a 256 *</pre><details><summary>Answer</summary><p>invoice-0412.jpg: <code>f35d8cea632b2d809da563ea8dd79bae683ed3f9f8cc55cf089a3144572fd09f</code><br>q3-report.zip: <code>9f6d6cf59e463297c6c9d15c2b8ae014111b14a629e7f9d14c14813c1a5a4f5d</code><br>logo.png: <code>297486d0c55438725f277695e0c18bdb7e8755d704fdddb9ff5775a8c7191380</code></p><p>The zip is not a valid archive either (<code>file</code> says only &ldquo;data&rdquo;); it is random bytes behind a zip header, just enough to give you something to hash. The six <code>gate.php</code> exports are the small POST bodies and responses.</p><p>The hash is the handle you search threat intelligence with. These are made-up files, so VirusTotal will not know them. Say so, and say what you would do next if it did know one.</p></details></section>
+<section class="card step"><h3><span class="n">05</span>Show the beacon.</h3><pre class="f">http.request.method == "POST"
+View &gt; Time Display Format &gt; Seconds Since Previous Displayed Packet</pre><details><summary>Answer</summary><p>The POSTs arrive at 19, 49, 79, 109, 140 and 170 seconds: every 30 seconds. Same host, same URI, same size (292-byte frames). The server answers <code>cmd=sleep&amp;t=30</code>, which is tasking: the controller is telling the implant how long to wait. Compare Demo 005 from Class 2.</p></details></section>
+<section class="card step"><h3><span class="n">06</span>Decode the POST body.</h3><pre class="f">Right-click frame 51 &gt; Follow &gt; HTTP Stream
+echo 'aG9zdD1XUy0wMDQyJnVzZXI9YXJpdmVyYSZzZXE9MCZpZGxlPTA=' | base64 -d</pre><details><summary>Answer</summary><p><code>host=WS-0042&amp;user=arivera&amp;seq=0&amp;idle=0</code>. The implant reports the machine name, the logged-in user and a sequence number. Base64 is not encryption: anyone with a sensor can read it. Now you know who to call and which machine to isolate.</p></details></section>
+<section class="card step"><h3><span class="n">07</span>Write the two-sentence summary for a manager.</h3><details><summary>Answer</summary><p>Example: "At 09:00:06 user arivera's workstation WS-0042 downloaded a file called invoice-0412.jpg that is really a Windows program, from a link in webmail. Starting 13 seconds later the machine contacted gate.cdn-sync.test every 30 seconds, which is how an infected machine checks in for orders; isolate it and reset the account." Check that every claim points at a packet number.</p></details></section>
+<section class="card"><h2>Discuss</h2><ul class="tight"><li>Which detection would have caught this earliest: content type versus file signature, rare user agent, or periodic POSTs to a new domain? (Bejtlich Ch. 12 describes hashing every executable that crosses the sensor with Bro.)</li><li>This was client-side: the user took the bait (Bejtlich Ch. 11). What would a server-side version of the same story look like? (Demo 010.)</li><li>If the same download came over HTTPS, which of these steps still work and which do not? (Demo 009.)</li></ul></section>
+</main>
+</body>
+</html>

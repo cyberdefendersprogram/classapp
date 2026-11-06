@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Server-side compromise: the vsftpd backdoor</title>
+<meta name="description" content="Use it to teach a full server-side compromise as a sensor sees it: scan, backdoor trigger, root shell and FTP exfiltration (Bejtlich Ch. 10; echoes Target&#x27;s cleartext FTP exfiltration).">
+<meta name="class" content="3">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: finding, layer map, two real captures with a layer column, comparison, takeaways, files. */
+:root {
+  --bg: #F2F5F8; --surface: #FFFFFF; --fg: #0E1726; --muted: #4E5B72; --line: #D3DBE6; --accent: #0B7F75;
+  --bad: #B3261E; --bad-bg: #FBE4E2; --ok: #0B7F4A; --ok-bg: #DDF3E6; --warn: #8A5A00; --warn-bg: #FBEBC8;
+  --g-app: #D9ECFA; --g-app-ink: #0B4A75; --g-tr: #D8F1EC; --g-tr-ink: #0B5C53; --g-net: #FBEBC8; --g-net-ink: #7A4D00; --g-link: #E6E2F6; --g-link-ink: #4A3C94;
+  --display: 'IBM Plex Sans', system-ui, sans-serif; --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1220; --surface: #131D31; --fg: #E8EDF5; --muted: #9AA7BD; --line: #263550; --accent: #3FD0C0;
+    --bad: #F2A29C; --bad-bg: #4A1F1C; --ok: #8FE0B4; --ok-bg: #12402A; --warn: #F5CE82; --warn-bg: #4A3612;
+    --g-app: #14344F; --g-app-ink: #9ED0F5; --g-tr: #123F3A; --g-tr-ink: #8FE3D8; --g-net: #4A3612; --g-net-ink: #F5CE82; --g-link: #2B2650; --g-link-ink: #C3B9F5; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1220; --surface: #131D31; --fg: #E8EDF5; --muted: #9AA7BD; --line: #263550; --accent: #3FD0C0;
+  --bad: #F2A29C; --bad-bg: #4A1F1C; --ok: #8FE0B4; --ok-bg: #12402A; --warn: #F5CE82; --warn-bg: #4A3612;
+  --g-app: #14344F; --g-app-ink: #9ED0F5; --g-tr: #123F3A; --g-tr-ink: #8FE3D8; --g-net: #4A3612; --g-net-ink: #F5CE82; --g-link: #2B2650; --g-link-ink: #C3B9F5; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--display); line-height: 1.5; font-size: 16px;
+  padding-block: 32px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+main { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.1; margin: 0; text-wrap: balance; }
+h2 { font-size: 20px; margin: 0 0 8px; text-wrap: balance; }
+h3 { font-size: 17px; margin: 0; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.lede { color: var(--muted); margin-top: 8px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 20px 24px; min-width: 0; }
+.finding { background: var(--warn-bg); color: var(--warn); border-color: transparent; }
+code, .mono { font-family: var(--mono); font-size: 13px; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 700px; font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { color: var(--muted); font-weight: 600; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+td.flag { color: var(--bad); font-weight: 600; }
+tr.stop td { background: var(--bad-bg); }
+.cap { color: var(--muted); font-size: 13px; margin-top: 10px; }
+.lay { display: inline-block; border-radius: 4px; padding: 1px 7px; font-size: 12px; }
+.lay.l4 { background: var(--g-tr); color: var(--g-tr-ink); }
+.lay.l3 { background: var(--g-net); color: var(--g-net-ink); }
+.lay.l7 { background: var(--g-app); color: var(--g-app-ink); }
+.lay.l6 { background: var(--g-app); color: var(--g-app-ink); }
+.lay.l2 { background: var(--g-link); color: var(--g-link-ink); }
+
+.map { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 6px 16px; }
+.map div { padding: 8px 12px; border-radius: 6px; min-width: 0; }
+.map .hd { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 0 2px; }
+.g-app { background: var(--g-app); color: var(--g-app-ink); }
+.g-tr { background: var(--g-tr); color: var(--g-tr-ink); }
+.g-net { background: var(--g-net); color: var(--g-net-ink); }
+.g-link { background: var(--g-link); color: var(--g-link-ink); }
+.map b { font-family: var(--mono); margin-right: 8px; }
+.map small { display: block; opacity: .85; }
+.hit { outline: 2px solid var(--bad); outline-offset: -2px; }
+.hit2 { outline: 2px solid var(--ok); outline-offset: -2px; }
+
+.tag { display: inline-block; font-family: var(--mono); font-size: 12px; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; }
+.tag.bad { background: var(--bad-bg); color: var(--bad); }
+.tag.ok { background: var(--ok-bg); color: var(--ok); }
+ul.plain, ol.steps { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+pre { margin: 8px 0 0; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 12px; overflow-x: auto; font-family: var(--mono); font-size: 13px; }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 640px) { .two, .map { grid-template-columns: 1fr; } }
+
+.step{display:flex;flex-direction:column;gap:8px}
+.step h3{display:flex;gap:10px;align-items:baseline}
+.n{font-family:var(--mono);color:var(--accent);font-size:13px}
+pre.f{margin:0;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;overflow-x:auto;font-family:var(--mono);font-size:13px}
+details{border-top:1px solid var(--line);padding-top:8px}
+summary{cursor:pointer;color:var(--accent);font-weight:600}
+.dl a{color:var(--accent)}
+ul.tight{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+</style>
+</head>
+<body>
+<main>
+<header><div class="eyebrow">Class 3 demo · Bejtlich Ch. 10</div><h1>Server-side compromise: the vsftpd backdoor</h1><p class="lede">Chapter 10 of Bejtlich walks through this exact class of attack on a vulnerable FTP server. This capture is a fresh reconstruction with different addresses, so you can solve it before you read his answer. Use it to practice the investigation flow: alert, session, full content, scope.</p></header>
+<section class="card dl"><h2>Download and open</h2><ul class="tight"><li><a href="/demos/files/vsftpd-backdoor-exfil.pcap" target="_blank">vsftpd-backdoor-exfil.pcap</a> &mdash; 277 packets: recon, FTP trigger, a shell on port 6200, then an outbound FTP upload</li></ul><p class="cap">All traffic is synthetic. Hosts use private or documentation addresses and domains end in .test or .example. Nothing in the file is real malware. The attack pattern follows Bejtlich Ch. 10 (and the public vsftpd 2.3.4 backdoor); the addresses, names and bytes are new.</p></section>
+<section class="card step"><h3><span class="n">01</span>Find the recon.</h3><pre class="f">ip.src == 198.51.100.23 &amp;&amp; tcp.flags.syn == 1 &amp;&amp; tcp.flags.ack == 0
+Statistics &gt; Conversations &gt; TCP</pre><details><summary>Answer</summary><p>One ICMP echo, then 30 SYNs to 30 different ports on 10.20.30.5 between 0.5 and 0.8 seconds. Closed ports answer RST,ACK; open ones answer SYN,ACK and are reset. This is Bejtlich's "phase" pattern: ping, scan, then talk to what answered. The scan includes port 6200, hold that thought.</p></details></section>
+<section class="card step"><h3><span class="n">02</span>What happened on port 6200 during the scan?</h3><pre class="f">tcp.port == 6200</pre><details><summary>Answer</summary><p>The first SYN to 6200 (frame 78, at 0.8 seconds) gets RST,ACK. Nothing is listening. Remember it: this port must not be open at this point.</p></details></section>
+<section class="card step"><h3><span class="n">03</span>Read the FTP login.</h3><pre class="f">ftp
+Right-click &gt; Follow &gt; TCP Stream on the port 21 session at 40.8 s</pre><details><summary>Answer</summary><p>The banner is <code>220 (vsFTPd 2.3.4)</code>. The attacker sends <code>USER anonymous:)</code> and <code>PASS x</code>. The server never answers 230; the connection simply stops being interesting. A username ending in a smiley face is the trigger for a backdoor that was planted in the vsftpd 2.3.4 source in 2011 (CVE-2011-2523).</p></details></section>
+<section class="card step"><h3><span class="n">04</span>Find the backdoor opening.</h3><pre class="f">tcp.port == 6200 &amp;&amp; tcp.flags.syn == 1</pre><details><summary>Answer</summary><p>Frame 91 at 41.17 seconds, about 0.3 seconds after the USER command (frame 85): a new connection to 6200, this time SYN,ACK. The same port that was closed during the scan now answers. A port that starts listening right after a login attempt is the signature of this backdoor, and no signature for the exploit is needed to see it in session data.</p></details></section>
+<section class="card step"><h3><span class="n">05</span>Read the shell.</h3><pre class="f">tcp.port == 6200 &amp;&amp; tcp.len &gt; 0
+Right-click &gt; Follow &gt; TCP Stream</pre><details><summary>Answer</summary><p>No login, no prompt: <code>id</code> returns <code>uid=0(root)</code>. Then <code>uname -a</code>, a directory listing of <code>/srv/finance</code> (budget, customers, payroll), the first lines of <code>/etc/passwd</code>, and <code>tar czf /tmp/f.tgz /srv/finance</code>. Cleartext, so a full-content sensor has the transcript. Bejtlich calls establishing this kind of channel a command-and-control channel (Breach 3 in his categories).</p></details></section>
+<section class="card step"><h3><span class="n">06</span>Find the exfiltration.</h3><pre class="f">ftp.request.command == "STOR"
+Statistics &gt; Conversations &gt; TCP, sort by bytes</pre><details><summary>Answer</summary><p>About 25 seconds later the <em>server</em> opens an outbound FTP session to 192.0.2.80: <code>USER drop</code>, <code>PASS drop123</code>, <code>TYPE I</code>, <code>PASV</code> (answer: port 40111), <code>STOR f.tgz</code>, then about 187 kB flows over the data connection. The file starts with the gzip bytes <code>1f 8b</code>. The cleartext credentials belong to the attacker's drop server, which makes them evidence you can quote. Target's stolen data left over FTP too; see Case Study 2.</p></details></section>
+<section class="card step"><h3><span class="n">07</span>Scope and detect.</h3><details><summary>Answer</summary><p>Scope: which host (10.20.30.5), which files (/srv/finance), how much (about 187 kB, compressed), to where (192.0.2.80), by whom (198.51.100.23, maybe a proxy). Detect, from cheapest to hardest: any FTP leaving the network; a server initiating outbound connections it never made before; a new listening port after a login; the vsftpd smiley username (<code>alert tcp any any -&gt; $HOME_NET 21 (msg:"vsftpd 2.3.4 backdoor trigger"; flow:to_server,established; content:"USER "; content:":)"; distance:0; sid:1000401; rev:1;)</code>, a sketch to test). Prevent: patch, remove FTP, egress filtering.</p></details></section>
+<section class="card"><h2>Discuss</h2><ul class="tight"><li>Bejtlich's chapter finds this with alerts first, then session data, then full content. In what order did you work, and why?</li><li>Which of the three data types (alert, session, full content) would still have the story if the attacker had used SSH instead of FTP? (Bejtlich Ch. 1-2.)</li><li>How does this compare with Mitnick (Demo 004) and Target (Case Study 2)? Which trust or weakness did each attacker use?</li></ul></section>
+</main>
+</body>
+</html>

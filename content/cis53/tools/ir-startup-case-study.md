@@ -2,19 +2,20 @@
 
 **CIS 53 — Intrusion Detection In-Depth**
 
-Instead of re-reading an old breach, you will research a **new company** working on detection and incident response. These companies are being built right now around the same problems this course covers: too many alerts, too little analyst time, cloud and SaaS visibility, and attacks on and by AI.
+Instead of re-reading an old breach, you will research a **new company** working on incident response: finding, investigating and containing attacks faster. These companies are being built right now around problems this course covers: too many alerts, too little analyst time, cloud and SaaS visibility, and the question of what an AI model can safely do in a SOC.
 
 ## The assignment
 
-Choose **one** company from the list below (or get another approved by the instructor). Write 600+ words (about 1–2 pages) covering:
+Choose **one** company from the list below (or get another incident-response company approved by the instructor by Tuesday, Nov 10). The Word template and the exact headings are on the Canvas assignment (Case Study 3, due Fri Nov 13, 9:00 a.m.). Write 600+ words (2–3 pages) covering:
 
-1. **The problem:** what pain point does the company say it solves, and for whom?
-2. **How it works:** what data does it collect or read (network, cloud logs, endpoint, identity, email, AI/LLM logs)? What does it detect, investigate, or automate?
-3. **Where AI is used:** be specific. What is the model doing, what do the company's materials *claim*, and what evidence do they show?
-4. **Compare to this class:** which parts could you build with Zeek, Suricata, Sigma, and a SIEM? What would you still have to do by hand?
-5. **Map to frameworks:** pick two attacker behaviors the product says it catches and map them to MITRE ATT&CK (and ATLAS for AI-related ones).
-6. **Business and stage:** funding, customers, and competitors as stated in primary sources.
-7. **Critique:** three questions you would ask in a demo, and one risk (false positives, blind spots, data privacy, over-trusting AI).
+1. **Summary:** what the company sells, who buys it, and your judgment.
+2. **The problem and the data it reads:** the pain point, and which data it collects or reads (packets, flow, logs, alerts, cloud, identity, endpoint, email, AI/LLM logs). How does it handle encrypted traffic?
+3. **How it works and where AI is used:** a table of claims, the evidence the company shows, and the source. What is the model doing, and what does a human still decide?
+4. **Build it yourself:** which parts you could build with Zeek, Suricata, Sigma and a SIEM, what you would still do by hand, and one concrete detection sketch.
+5. **Map to frameworks:** two attacker behaviors the product says it catches, mapped to MITRE ATT&CK (and ATLAS for attacks on AI).
+6. **Business and stage:** funding, customers and competitors from primary sources.
+7. **Critique:** three demo questions, one risk, and one sentence tying it to Class 3 (DNS, HTTP, TLS metadata, server-side evidence).
+8. **Sources:** four or more, with at least two primary.
 
 **Present** the highlights in 3 minutes at the last class (Dec 4), alongside the guest lecture.
 
@@ -27,7 +28,7 @@ Choose **one** company from the list below (or get another approved by the instr
 
 ## Companies to research
 
-All names and figures are as reported in secondary sources in October 2026 — verify before relying on them.
+All names and figures are as reported in secondary sources in October 2026 — verify before relying on them. Only incident-response companies are eligible; AI-security and offensive-AI startups are not part of this assignment.
 
 ### AI SOC and autonomous investigation
 
@@ -48,23 +49,6 @@ All names and figures are as reported in secondary sources in October 2026 — v
 | Mitiga | Incident readiness and response for cloud, SaaS, and hybrid environments | Funding figures conflict across sources |
 | Cado Security | Cloud-native forensics and investigation across AWS, Azure, and Google Cloud | Reported as acquired by Darktrace in 2025; confirm |
 | Ciroos | Multi-agent "AI SRE teammate" for incident diagnosis (DevOps/SRE angle) | Early stage |
-
-### Securing AI systems and agents (the "threats to AI" side of this course)
-
-| Company | What it does (as reported) | Stage / funding (as reported) |
-|---|---|---|
-| Noma Security | Security posture for AI agents | $100M Series B (Jul 2025) |
-| WitnessAI | AI security and governance | $58M Series B (Jan 2026) |
-| Runlayer | MCP security gateway | $11M seed (Nov 2025) |
-| Helmet Security | MCP infrastructure security | $9M seed (Dec 2025) |
-| Operant AI | MCP and AI runtime security | $13.5M Series A (Sep 2024) |
-| Zenity | AI agent security | Named in reports; find the details yourself |
-
-**Already acquired (good for "what happened to the startup" angles):** Protect AI (Palo Alto Networks), Lakera (Check Point), Pangea (CrowdStrike), Aim Security (Cato Networks), CalypsoAI (F5).
-
-### Offensive AI (for contrast)
-
-XBOW (autonomous offensive security) and RunSybil (AI-native offensive security). Pick one of these only if your case study explains how a defender should expect their attacks to look.
 
 ## Grading
 

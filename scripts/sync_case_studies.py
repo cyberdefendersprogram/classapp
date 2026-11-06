@@ -23,7 +23,7 @@ from dotenv import dotenv_values
 CASE_STUDIES = {
     1: (1820966, "mitnick"),
     2: (1820971, "target"),
-    3: (1820967, "apt1-or-ir-startup"),
+    3: (1820967, "ir-startup"),
     4: (1820973, "opm"),
     5: (1820975, "your-choice"),
 }

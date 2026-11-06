@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DNS: tunnel, DGA and fast flux</title>
+<meta name="description" content="Use it to teach DNS anomalies: one capture with a DNS tunnel, a DGA host and a fast-flux name hidden among normal office lookups (Bejtlich Ch. 10-11, Zeek dns.log).">
+<meta name="class" content="3">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: finding, layer map, two real captures with a layer column, comparison, takeaways, files. */
+:root {
+  --bg: #F2F5F8; --surface: #FFFFFF; --fg: #0E1726; --muted: #4E5B72; --line: #D3DBE6; --accent: #0B7F75;
+  --bad: #B3261E; --bad-bg: #FBE4E2; --ok: #0B7F4A; --ok-bg: #DDF3E6; --warn: #8A5A00; --warn-bg: #FBEBC8;
+  --g-app: #D9ECFA; --g-app-ink: #0B4A75; --g-tr: #D8F1EC; --g-tr-ink: #0B5C53; --g-net: #FBEBC8; --g-net-ink: #7A4D00; --g-link: #E6E2F6; --g-link-ink: #4A3C94;
+  --display: 'IBM Plex Sans', system-ui, sans-serif; --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1220; --surface: #131D31; --fg: #E8EDF5; --muted: #9AA7BD; --line: #263550; --accent: #3FD0C0;
+    --bad: #F2A29C; --bad-bg: #4A1F1C; --ok: #8FE0B4; --ok-bg: #12402A; --warn: #F5CE82; --warn-bg: #4A3612;
+    --g-app: #14344F; --g-app-ink: #9ED0F5; --g-tr: #123F3A; --g-tr-ink: #8FE3D8; --g-net: #4A3612; --g-net-ink: #F5CE82; --g-link: #2B2650; --g-link-ink: #C3B9F5; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1220; --surface: #131D31; --fg: #E8EDF5; --muted: #9AA7BD; --line: #263550; --accent: #3FD0C0;
+  --bad: #F2A29C; --bad-bg: #4A1F1C; --ok: #8FE0B4; --ok-bg: #12402A; --warn: #F5CE82; --warn-bg: #4A3612;
+  --g-app: #14344F; --g-app-ink: #9ED0F5; --g-tr: #123F3A; --g-tr-ink: #8FE3D8; --g-net: #4A3612; --g-net-ink: #F5CE82; --g-link: #2B2650; --g-link-ink: #C3B9F5; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--display); line-height: 1.5; font-size: 16px;
+  padding-block: 32px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+main { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.1; margin: 0; text-wrap: balance; }
+h2 { font-size: 20px; margin: 0 0 8px; text-wrap: balance; }
+h3 { font-size: 17px; margin: 0; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.lede { color: var(--muted); margin-top: 8px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 20px 24px; min-width: 0; }
+.finding { background: var(--warn-bg); color: var(--warn); border-color: transparent; }
+code, .mono { font-family: var(--mono); font-size: 13px; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 700px; font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { color: var(--muted); font-weight: 600; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+td.flag { color: var(--bad); font-weight: 600; }
+tr.stop td { background: var(--bad-bg); }
+.cap { color: var(--muted); font-size: 13px; margin-top: 10px; }
+.lay { display: inline-block; border-radius: 4px; padding: 1px 7px; font-size: 12px; }
+.lay.l4 { background: var(--g-tr); color: var(--g-tr-ink); }
+.lay.l3 { background: var(--g-net); color: var(--g-net-ink); }
+.lay.l7 { background: var(--g-app); color: var(--g-app-ink); }
+.lay.l6 { background: var(--g-app); color: var(--g-app-ink); }
+.lay.l2 { background: var(--g-link); color: var(--g-link-ink); }
+
+.map { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 6px 16px; }
+.map div { padding: 8px 12px; border-radius: 6px; min-width: 0; }
+.map .hd { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 0 2px; }
+.g-app { background: var(--g-app); color: var(--g-app-ink); }
+.g-tr { background: var(--g-tr); color: var(--g-tr-ink); }
+.g-net { background: var(--g-net); color: var(--g-net-ink); }
+.g-link { background: var(--g-link); color: var(--g-link-ink); }
+.map b { font-family: var(--mono); margin-right: 8px; }
+.map small { display: block; opacity: .85; }
+.hit { outline: 2px solid var(--bad); outline-offset: -2px; }
+.hit2 { outline: 2px solid var(--ok); outline-offset: -2px; }
+
+.tag { display: inline-block; font-family: var(--mono); font-size: 12px; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; }
+.tag.bad { background: var(--bad-bg); color: var(--bad); }
+.tag.ok { background: var(--ok-bg); color: var(--ok); }
+ul.plain, ol.steps { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+pre { margin: 8px 0 0; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 12px; overflow-x: auto; font-family: var(--mono); font-size: 13px; }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 640px) { .two, .map { grid-template-columns: 1fr; } }
+
+.step{display:flex;flex-direction:column;gap:8px}
+.step h3{display:flex;gap:10px;align-items:baseline}
+.n{font-family:var(--mono);color:var(--accent);font-size:13px}
+pre.f{margin:0;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;overflow-x:auto;font-family:var(--mono);font-size:13px}
+details{border-top:1px solid var(--line);padding-top:8px}
+summary{cursor:pointer;color:var(--accent);font-weight:600}
+.dl a{color:var(--accent)}
+ul.tight{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+</style>
+</head>
+<body>
+<main>
+<header><div class="eyebrow">Class 3 demo · DNS</div><h1>DNS: tunnel, DGA and fast flux</h1><p class="lede">One 8-minute capture of an office resolver. Four hosts behave normally. Two more are doing something else, and one name is quietly changing its answers. Find all three. This is the signal-versus-noise skill from Class 2, applied to one protocol.</p></header>
+<section class="card dl"><h2>Download and open</h2><ul class="tight"><li><a href="/demos/files/dns-tunnel-dga.pcap" target="_blank">dns-tunnel-dga.pcap</a> &mdash; 284 packets: normal lookups, a DNS tunnel, a DGA host and a fast-flux name</li></ul><p class="cap">All traffic is synthetic. Hosts use private or documentation addresses and domains end in .test or .example. Nothing in the file is real malware.</p></section>
+<section class="card step"><h3><span class="n">01</span>Who is asking, and what is normal?</h3><pre class="f">Statistics &gt; Conversations &gt; UDP
+Statistics &gt; DNS
+dns.flags.response == 0</pre><details><summary>Answer</summary><p>Six clients talk to the resolver 10.0.0.2. Hosts .11, .12 and .13 each send 17 or 18 short A and AAAA queries for names like <code>mail.office.test</code> with TTLs of 300 to 3600. That is the baseline. Hosts .14 (32 queries), .31 (45) and .77 (13) do not match it.</p></details></section>
+<section class="card step"><h3><span class="n">02</span>Find the long names.</h3><pre class="f">dns.flags.response == 0 &amp;&amp; dns.qry.name.len &gt; 50</pre><details><summary>Answer</summary><p>13 queries, all from 10.0.0.77, all type TXT (16), all to <code>*.t.updates-cdn.test</code>. Each has a counter label (<code>000</code> to <code>012</code>) and a 52-character label of letters and digits. Normal names in this file are under 30 characters. One parent domain with 13 unique child names is the tunnel signature.</p></details></section>
+<section class="card step"><h3><span class="n">03</span>Decode the payload.</h3><pre class="f">tshark -r dns-tunnel-dga.pcap -Y 'dns.qry.name contains "t.updates-cdn.test" &amp;&amp; dns.flags.response==0' -T fields -e dns.qry.name
+# join the second label of every line, upper-case it, add = padding, base32-decode</pre><details><summary>Answer</summary><p>The text starts <code>employee,salary,ssn</code> followed by rows of synthetic people. Anything a tunnel can encode can leave this way: it is data exfiltration inside a protocol that firewalls usually allow. Notice the answers: TTL 0 and the string <code>ok</code>, so the resolver cannot cache them and every chunk reaches the attacker's name server.</p><p>CyberChef (From Base32) does the same decode if students prefer a browser.</p></details></section>
+<section class="card step"><h3><span class="n">04</span>Find the NXDOMAIN storm.</h3><pre class="f">dns.flags.rcode == 3
+Statistics &gt; Conversations, then sort by packets</pre><details><summary>Answer</summary><p>44 NXDOMAIN answers, all to queries from 10.0.0.31. Names are 11 to 15 random letters such as <code>ydrgjcpajocqoi.test</code>. That is a domain generation algorithm (DGA) looking for its command server. One name resolved: <code>bryvbvkdmtor.example</code> to 198.51.100.88 (frame 134 is the answer). The next question for a hunter: did 10.0.0.31 then connect to 198.51.100.88? Not in this capture, so you would pivot to flow records.</p></details></section>
+<section class="card step"><h3><span class="n">05</span>Find the fast-flux name.</h3><pre class="f">dns.qry.name == "secure-login.bank-update.test" &amp;&amp; dns.flags.response == 1
+Add columns: dns.a, dns.resp.ttl</pre><details><summary>Answer</summary><p>10.0.0.14 asks for the same name 14 times over about 8 minutes. Every answer has a TTL of 30 and three different A records, none repeated. A real site keeps stable addresses and long TTLs; a fast-flux name rotates through compromised hosts so blocking an IP does nothing. The name itself (a login page that is about a bank update) is the phishing clue.</p></details></section>
+<section class="card step"><h3><span class="n">06</span>Turn each finding into a rule.</h3><pre class="f">Zeek dns.log: length(query) &gt; 50, or count of distinct subdomains per parent per 5 min
+Zeek dns.log: rcode_name == NXDOMAIN, count per orig_h per minute
+Zeek dns.log: TTLs &lt; 60 with a changing answer set</pre><details><summary>Answer</summary><p>Sketch each as a Zeek or SIEM query and agree on a threshold. Ask: what legitimate traffic trips each rule? (CDNs use short TTLs. Security products and anti-spam tools make long TXT lookups. A misconfigured app can generate NXDOMAINs.) Which of the three would you page someone for, and which would you only report?</p></details></section>
+<section class="card"><h2>Discuss</h2><ul class="tight"><li>Which is the strongest single indicator for each of the three behaviors? (Bejtlich Ch. 10, "Searching Bro DNS Logs"; Ch. 11, "Analyzing the Bro dns.log File"). His tunnel used NULL records (type 10); ours uses TXT. What do both have in common?</li><li>DNS over HTTPS would hide all three from this sensor. Where would you look instead? (Endpoint DNS logs, the DoH endpoint list, flow volume to the DoH provider.)</li><li>Where does an AI agent that browses or calls tools show up in DNS, and how would you tell it from a person?</li></ul></section>
+</main>
+</body>
+</html>

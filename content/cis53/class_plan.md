@@ -42,8 +42,9 @@ Fridays 9:00 a.m.–12:00 p.m. PT, online. Built from the Canvas modules, the 20
 - DNS in depth (resolution, tunneling, DGA, fast flux); HTTP; **TLS metadata** (SNI, certificates, JA3/JA4) and what encryption hides; email and phishing evidence; authentication and SMB at a high level.
 - File carving and hashing.
 - **AI thread:** shadow AI and data egress; detecting uploads to AI services; what a DLP or proxy would log.
-- Hands-on: a DNS tunnel plus a TLS capture.
-- Case study due: the IR startup research (companies list in the Tools page). Quick round-the-room "what did you pick, and why."
+- Hands-on: Demos 007-010 (DNS tunnel/DGA/fast flux, HTTP carving, TLS metadata and AI egress, vsftpd backdoor and FTP exfiltration).
+- Server-side (Bejtlich Ch. 10) and client-side (Ch. 11) compromise walkthroughs. Deck: CIS53-Week3-Application-Protocols.pptx.
+- Case study: review Target (due this morning). Case Study 3 (IR startup research, companies list in the Tools page) is assigned and due Nov 13; quick round-the-room "what are you leaning toward, and why."
 
 ## Week 4 (Nov 13) — Detection technology and architecture
 
