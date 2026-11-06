@@ -49,7 +49,7 @@ About 100 words each:
 3. In Bejtlich Ch. 10, follow the investigation from the first alert to the conclusion that the server was compromised. Which three pieces of evidence mattered most, and which data type (alert, session, full content) provided each?
 4. A host sends a large upload to an AI service over TLS 1.3. Name two things you can see and two you cannot. Where would you put a control to see the rest?
 
-**Optional (+10 points):** complete the TryHackMe room *Carnage* (a Wireshark challenge on a compromised workstation) and add one sentence on which data type found the command-and-control traffic fastest.
+**Optional (+10 points):** complete the TryHackMe room [*Carnage*](https://tryhackme.com/room/c2carnage) (a Wireshark challenge on a compromised workstation) and add one sentence on which data type found the command-and-control traffic fastest.
 
 ## What your screenshots must show
 
