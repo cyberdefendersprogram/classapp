@@ -16,7 +16,7 @@ Covers Week 3 (Class 3): DNS, HTTP, TLS metadata, and server-side compromise. Su
 Complete these rooms from your **TryHackMe assignments** (Business group `2026-Fall-CIS53`). Screenshot each room showing it as completed, with your username visible.
 
 - [DNS in Detail](https://tryhackme.com/room/dnsindetail)
-- [Data Exfiltration Detection](https://tryhackme.com/room/dataexfildetection) — DNS tunneling, FTP, HTTP and ICMP exfiltration; the same patterns as Class 3 Demos 7, 8 and 10
+- [Data Exfiltration Detection](https://tryhackme.com/room/dataexfildetection) — **optional** (extra practice, no points lost if skipped): DNS tunneling, FTP, HTTP and ICMP exfiltration; the same patterns as Class 3 Demos 7, 8 and 10
 - Wireshark: Traffic Analysis — [room](https://tryhackme.com/room/wiresharktrafficanalysis)
 
 If a room is not in your assignments, email me at vbhandari@peralta.edu with the email address tied to your TryHackMe account.
@@ -31,7 +31,7 @@ Log in at [openlab.baccc.net](https://openlab.baccc.net/) and complete **NDG Eth
 
 ## Part 3 — Find the AI egress (30 points)
 
-Download `tls-metadata-ai-egress.pcap` from [Demo 9](/demos/009-tls-metadata-and-ai-egress) on the portal. The capture is synthetic. A company wants to know which hosts send data to AI services, and whether any of it is not approved. The approved service is `api.openai.com`, used only by host `10.0.0.60`.
+Download `tls-metadata-ai-egress.pcap` from this Canvas assignment (attached here; you do not need the class portal). The capture is synthetic. A company wants to know which hosts send data to AI services, and whether any of it is not approved. The approved service is `api.openai.com`, used only by host `10.0.0.60`.
 
 1. **Findings table** (12 points): one row per TLS session with source host, server name (SNI), TLS version, bytes sent, bytes received, and a verdict (approved, unapproved, or needs review). Use Statistics → Conversations and the display filter `tls.handshake.type == 1`.
 2. **Evidence** (6 points): for the largest upload, give the frame number of the ClientHello, the certificate subject and issuer (if visible), and the JA3 or JA4 value. Say why the certificate is or is not visible for other sessions.
@@ -60,7 +60,7 @@ About 100 words each:
 | Part 3 — conversations | Statistics → Conversations → TCP sorted by bytes, with the suspect row visible |
 | Part 3 — evidence | The ClientHello or Certificate packet highlighted, with the SNI, issuer or JA4 column visible |
 
-## Before you submit (from Lab 1 feedback)
+## Please note: do the following before you submit
 
 - [ ] Each TryHackMe screenshot shows the room **completed / 100%** and **your username**. An assignments list is not proof.
 - [ ] Capture screenshots show the capture file name, the filter bar and the packet list, with the evidence highlighted.
