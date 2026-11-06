@@ -44,6 +44,9 @@ Fridays 9:00 a.m.–12:00 p.m. PT, online. Built from the Canvas modules, the 20
 - **AI thread:** shadow AI and data egress; detecting uploads to AI services; what a DLP or proxy would log.
 - Hands-on: Demos 007-010 (DNS tunnel/DGA/fast flux, HTTP carving, TLS metadata and AI egress, vsftpd backdoor and FTP exfiltration).
 - Server-side (Bejtlich Ch. 10) and client-side (Ch. 11) compromise walkthroughs. Deck: CIS53-Week3-Application-Protocols.pptx.
+- **Detection languages (first look):** the Demo 7 DNS tunnel as a Zeek `dns.log` hunt, a Suricata rule and a Sigma rule (notes Part 7; tested on the pcap with Suricata 8 and Zeek 9). Class 4 goes deeper.
+- **Feedback slides:** Case Study 1, Case Study 2 and Lab 1 class feedback, with the Target timeline cross-checked against the Senate "Kill Chain" report (Bangalore escalation is Bloomberg's account, not the report's).
+- **Assignments for this week:** Lab 2 (due Nov 13; the Data Exfiltration Detection room is optional, Carnage is +10, and the Part 3 pcap is attached in Canvas), Case Study 3 (IR startup only, due Nov 13), in-class quiz (`quizzes/003-class3-inclass.md`) and the Week 3 Canvas quiz (Class 2 content, due Nov 8). All published Nov 6.
 - Case study: review Target (due this morning). Case Study 3 (IR startup research, companies list in the Tools page) is assigned and due Nov 13; quick round-the-room "what are you leaning toward, and why."
 
 ## Week 4 (Nov 13) — Detection technology and architecture
