@@ -56,6 +56,8 @@ Download `tls-metadata-ai-egress.pcap` from this Canvas assignment (attached her
    level: medium
    ```
 
+   Test it if you can (optional): `suricata -r tls-metadata-ai-egress.pcap -S my.rules -l out` then read `out/fast.log`; `zeek -C -r tls-metadata-ai-egress.pcap` then `cat ssl.log | zeek-cut id.orig_h server_name`. The DNS pattern above was tested this way on the Demo 7 capture with Suricata 8 and Zeek 9: it alerts only for 10.0.0.77.
+
    Hints for the AI upload: Suricata can match the server name (`tls.sni`) but cannot add up bytes by itself, so say which part of your idea needs Zeek (`ssl.log` `server_name` joined to `conn.log` `orig_bytes` by `uid`) or a SIEM. If you cannot run Suricata or Zeek, explain your logic and test the name part with the Wireshark filter `tls.handshake.extensions_server_name`.
 4. **What you cannot know** (4 points): one sentence on what the capture does not tell you about the upload, and which log or tool would.
 
