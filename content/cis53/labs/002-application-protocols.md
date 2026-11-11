@@ -15,13 +15,13 @@ Covers Week 3 (Class 3): DNS, HTTP, TLS metadata, and server-side compromise. Su
 
 ## Part 1 — TryHackMe rooms (30 points)
 
-Complete these rooms from your **TryHackMe assignments** (Business group `2026-Fall-CIS53`). Screenshot each room showing it as completed, with your username visible.
+Complete these rooms from your **TryHackMe assignments** (Business group `2026-Fall-CIS53`). They appear in TryHackMe under Assignments as **CIS 53 Lab 2: DNS in Detail**, **CIS 53 Lab 2: Wireshark: Traffic Analysis** and **CIS 53 Lab 2 (optional): Data Exfiltration Detection**, all due Nov 13. Screenshot each room showing it as completed, with your username visible.
 
 - [DNS in Detail](https://tryhackme.com/room/dnsindetail)
 - [Data Exfiltration Detection](https://tryhackme.com/room/dataexfildetection) — **optional** (extra practice, no points lost if skipped): DNS tunneling, FTP, HTTP and ICMP exfiltration; the same patterns as Class 3 Demos 7, 8 and 10
 - Wireshark: Traffic Analysis — [room](https://tryhackme.com/room/wiresharktrafficanalysis)
 
-If a room is not in your assignments, email me at vbhandari@peralta.edu with the email address tied to your TryHackMe account.
+If a room is not in your assignments (check that you joined the class group first), still do the room from the link above and email me at vbhandari@peralta.edu with the email address tied to your TryHackMe account.
 
 ## Part 2 — NetLab (20 points)
 
