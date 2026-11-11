@@ -7,6 +7,8 @@
 
 Covers Week 3 (Class 3): DNS, HTTP, TLS metadata, and server-side compromise. Submit everything as a single PDF.
 
+**Template:** download `CIS53-Lab2-Template.docx` from the Canvas assignment (source: `content/cis53/templates/CIS53-Lab2-Template.docx`), fill it in, and submit one PDF.
+
 **Before you take any screenshots:** crop or black out any passwords, tokens, or personal data. Never submit credentials. Use only the lab environments and capture files we provide — do not capture or scan any other network.
 
 **Reading:** Bejtlich, *The Practice of Network Security Monitoring*, Ch. 10 (Server-side Compromise) and Ch. 11 (Client-side Compromise), plus the OWASP Top 10 for LLM Applications.
