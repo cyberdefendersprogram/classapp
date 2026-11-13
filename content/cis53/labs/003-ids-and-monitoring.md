@@ -7,6 +7,8 @@
 
 Covers Weeks 3 and 4: IDS and IPS, rules, Zeek logs, and detecting attacks on AI apps. Submit everything as a single PDF.
 
+**Template:** download `CIS53-Lab3-Template.docx` from the Canvas assignment (source: `content/cis53/templates/CIS53-Lab3-Template.docx`), fill it in, and submit one PDF.
+
 **Reading:** Roddie et al., *Practical Threat Detection Engineering*, Ch. 1 (Fundamentals) and Ch. 2 (the detection life cycle, especially Test); Bejtlich, *The Practice of Network Security Monitoring*, Ch. 9.
 
 **Before you take any screenshots:** crop or black out any passwords, tokens, or personal data. Never submit credentials. Use only the lab environments we provide — do not capture or scan any other network.
