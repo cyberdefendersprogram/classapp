@@ -1,0 +1,28 @@
+title: Inside host uploads a file to an outside web server
+id: 5b1c7a0e-9d3f-4e58-8a41-0c53a1f4c001
+status: experimental
+description: Zeek http.log shows a POST to an /upload path from an internal address to a non-private address.
+references:
+    - https://learning.oreilly.com/library/view/practical-threat-detection/9781801076715/
+author: CIS 53
+date: 2026-11-13
+logsource:
+    product: zeek
+    service: http
+detection:
+    selection:
+        method: POST
+        uri|contains: '/upload'
+        id.orig_h|cidr: '10.0.0.0/8'
+    filter_internal_dest:
+        id.resp_h|cidr:
+            - '10.0.0.0/8'
+            - '172.16.0.0/12'
+            - '192.168.0.0/16'
+    condition: selection and not filter_internal_dest
+falsepositives:
+    - Staff using approved cloud storage or a vendor portal; add the destination to an allowlist after review.
+level: medium
+tags:
+    - attack.exfiltration
+    - attack.t1048

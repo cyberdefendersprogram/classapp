@@ -1,2 +1,94 @@
-<!--case-study {"number": 4, "title": "CIS 53 Intrusion Detection OPM Case Study (Week 4)", "due_at": "2026-11-14T07:59:00Z", "canvas_url": "https://peralta.instructure.com/courses/89432/assignments/1820973"}-->
-<p>Research and write a case study on the <a class="inline_disabled" href="https://en.wikipedia.org/wiki/Office_of_Personnel_Management_data_breach" target="_blank">OPM data breach</a>.<br><br><span>1-2 page free form write-up at-least 600 words.</span></p>
+<!--case-study {"number": 4, "title": "CIS 53 Intrusion Detection OPM Case Study (Week 4)", "due_at": "2026-11-20T17:00:00Z", "canvas_url": "https://peralta.instructure.com/courses/89432/assignments/1820973"}-->
+<p><strong>Due Friday, November 20, 2026, 9:00 a.m.</strong> <br>Follow the template below. <br><strong>Download the Word template:</strong> <a class="instructure_file_link" title="CIS53-OPM-Case-Study-Template.docx" href="https://peralta.instructure.com/courses/89432/files/15238773/download?wrap=1" target="_blank" data-api-endpoint="https://peralta.instructure.com/api/v1/courses/89432/files/15238773" data-api-returntype="File">CIS53-OPM-Case-Study-Template.docx</a>. Fill it in, delete the gray instructions, and submit it as a PDF.</p>
+<h2>The assignment</h2>
+<p>Research the 2014&ndash;2015 breach of the U.S. Office of Personnel Management (OPM). Write a case study that maps the intrusion to MITRE ATT&amp;CK, explains why it ran undetected for so long, says what a sensor could and could not have seen, and then <strong>writes one detection</strong> for a step of the attack. This is the &ldquo;the sensor was in the wrong place and the traffic was encrypted&rdquo; case. It connects to Class 4 (rules, Zeek logs and monitoring architecture), to Class 3 (what TLS hides and what stays visible), to Roddie <em>Practical Threat Detection Engineering</em> Ch. 1&ndash;2 (what makes a detection good, and how to test it), and to Bejtlich Ch. 9 (what an analyst does with an alert).</p>
+<h2>Start here (then verify)</h2>
+<ul>
+<li>U.S. House Committee on Oversight and Government Reform, <em>The OPM Data Breach: How the Government Jeopardized Our National Security for More than a Generation</em> (September 7, 2016), and its two-page &ldquo;Timeline of Key Events,&rdquo; both at oversight.house.gov. The main primary source. It was written by the majority staff; the Democratic minority published a separate response, so read both.</li>
+<li>Brian Krebs, <em>Congressional Report Slams OPM on Data Breach</em> (krebsonsecurity.com, September 7, 2016).</li>
+<li>U.S. Government Accountability Office, <em>Information Security: Agencies Need to Improve Controls over Selected High-Impact Systems</em> (GAO-16-501, May 2016), which covers OPM and three other agencies.</li>
+<li>Foreign Policy, <em>How OPM Bilked a Security Contractor That Confirmed a Major Hack</em> (September 2016), for the disputed account of who first found the second intrusion.</li>
+</ul>
+<p>Sources disagree on some details: the dates of the first access, which tool or person first spotted the second attacker, and the final record counts. Say which source you trust for each claim, and why.</p>
+<h2>Questions to think about as you research</h2>
+<ol>
+<li>How many separate intrusions were there, and why did removing the first attacker not end the problem?</li>
+<li>How did the second attacker get in without malware being the first step, and what did the contractor&rsquo;s credentials allow?</li>
+<li>What did the network sensors see, and what did the encrypted traffic hide? Where was the traffic finally noticed, and by whom?</li>
+<li>How long did the data theft last (background-investigation records, personnel records, fingerprints), and which signal would have shortened that most?</li>
+<li>Compare with Target: there the alerts fired and were ignored; here, what was missing before any alert could fire?</li>
+</ol>
+<h2>Template</h2>
+<p>Use these headings, in this order.</p>
+<h3>1. Summary (about 100 words, 5 points)</h3>
+<p>Who attacked whom, when, and what was taken. Write it so a reader who has never heard of the case can follow it. End with one sentence on why the case matters for detection.</p>
+<h3>2. Timeline (15 points)</h3>
+<p>Five to eight steps in order, as a table. Each step is one thing the attacker did or one thing the defenders found. Note where sources disagree on a date.</p>
+<h3>3. ATT&amp;CK mapping (20 points)</h3>
+<p>Map each timeline step to an ATT&amp;CK technique. Use the technique ID and name from <a href="https://attack.mitre.org">attack.mitre.org</a>. Choose the closest technique and say why.</p>
+<p>Worked example for the format only: <em>Logged in with a contractor&rsquo;s valid credentials</em> &rarr; Initial Access &rarr; T1078 Valid Accounts &rarr; the attacker did not need malware to get in.</p>
+<h3>4. Why no one saw it, and what a sensor would have seen (20 points)</h3>
+<p>For at least three steps, say what a sensor would have recorded, the layer (OSI or TCP/IP), and the Wireshark display filter or log field you would use. Then answer: for most of the theft the data left over encrypted connections. What could a sensor still see (names, sizes, timing, certificates), what could it not see, and where would you place a sensor and decrypt traffic to close the gap?</p>
+<h3>5. One detection you would write (25 points)</h3>
+<p>Pick one step and write one detection for it: a Suricata rule, a Zeek log query, a Sigma rule, or plain pseudocode. Syntax need not be perfect; the reasoning must be. State:</p>
+<ul>
+<li>the requirement (what must be detected and why), as Roddie Ch. 2 describes it;</li>
+<li>the data source (packets, Zeek logs, endpoint or authentication logs);</li>
+<li>what the rule keys on (a name, a size, a time, a behavior);</li>
+<li>one thing that would trigger it by mistake, and how you would tune it;</li>
+<li>the known-bad and known-good data you would test it on.</li>
+</ul>
+<p>Demos 11&ndash;13 on the CIS 53 portal show a worked example of each part.</p>
+<h3>6. Lessons and one AI question (10 points)</h3>
+<p>Two or three sentences on what this case teaches about sensor placement, encrypted traffic and how long attackers stay hidden, and one sentence comparing it with Target (alerts ignored) and Mitnick (trust abused). Then answer one question: <em>how would an attacker using AI tools change this attack, how could an AI assistant help defenders find the odd outbound sessions, and what would you still check by hand?</em></p>
+<h3>7. Sources (5 points)</h3>
+<p>At least three sources, with links. Use at least one primary or near-primary account, such as a congressional or inspector general report, a GAO report, or an investigative article. Wikipedia can help you start, but it does not count.</p>
+<h2>Grading</h2>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Points</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Summary</td>
+<td>5</td>
+</tr>
+<tr>
+<td>2. Timeline</td>
+<td>15</td>
+</tr>
+<tr>
+<td>3. ATT&amp;CK mapping</td>
+<td>20</td>
+</tr>
+<tr>
+<td>4. Why no one saw it, and what a sensor would have seen</td>
+<td>20</td>
+</tr>
+<tr>
+<td>5. One detection you would write</td>
+<td>25</td>
+</tr>
+<tr>
+<td>6. Lessons and AI question</td>
+<td>10</td>
+</tr>
+<tr>
+<td>7. Sources</td>
+<td>5</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>100</strong></td>
+</tr>
+</tbody>
+</table>
+<h2>Submission</h2>
+<ul>
+<li>One PDF, 2&ndash;3 pages, uploaded to Canvas by Fri Nov 20, 2026, 9:00 a.m.</li>
+<li>Late work follows the syllabus policy (10% deduction; ask before the deadline).</li>
+<li>Write in your own words. You may use AI tools to find sources or check your understanding, but check every fact and every ATT&amp;CK ID yourself. An AI answer you did not verify is not a source.</li>
+</ul>

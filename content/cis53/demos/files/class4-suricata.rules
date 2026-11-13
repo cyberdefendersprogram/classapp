@@ -1,0 +1,11 @@
+# CIS 53 Class 4 demo rules. Run:  suricata -r rule-lab.pcap -S class4-suricata.rules -l out -k none   then read out/fast.log
+# v1: too broad. Fires on staff uploading a timesheet to the intranet as well as the bad upload.
+alert http any any -> any any (msg:"CIS53 v1 upload"; http.method; content:"POST"; http.uri; content:"/upload"; sid:9100001; rev:1;)
+# v2: tuned. Direction and destination added; only an inside host posting to an outside host.
+alert http $HOME_NET any -> $EXTERNAL_NET any (msg:"CIS53 v2 upload to outside host"; flow:established,to_server; http.method; content:"POST"; http.uri; content:"/upload"; startswith; classtype:policy-violation; sid:9100002; rev:2;)
+# Beacon: five GET /check?id= requests from one host inside ten minutes.
+alert http $HOME_NET any -> $EXTERNAL_NET any (msg:"CIS53 beacon: repeated GET /check"; flow:established,to_server; http.method; content:"GET"; http.uri; content:"/check?id="; startswith; threshold:type threshold, track by_src, count 5, seconds 600; classtype:trojan-activity; sid:9100003; rev:1;)
+# TLS: the upload is encrypted, so the HTTP rules are blind. The SNI is still visible.
+alert tls $HOME_NET any -> $EXTERNAL_NET any (msg:"CIS53 TLS to files.cdn-sync.test"; flow:established,to_server; tls.sni; content:"files.cdn-sync.test"; nocase; endswith; classtype:trojan-activity; sid:9100004; rev:1;)
+# Anti-example: a user agent alone is a weak signal. Fires on the build server's health checks too.
+alert http any any -> any any (msg:"CIS53 python-requests user agent"; http.user_agent; content:"python-requests"; sid:9100005; rev:1;)

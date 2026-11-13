@@ -1,0 +1,25 @@
+title: LLM agent sends data to a host outside the approved list
+id: 5b1c7a0e-9d3f-4e58-8a41-0c53a1f4c002
+status: experimental
+description: A support agent's tool-call log shows http_post, send_email or similar to a host that is not on the approved list.
+author: CIS 53
+date: 2026-11-13
+logsource:
+    product: llm_agent
+    category: tool_call
+detection:
+    selection:
+        event: tool_call
+        tool:
+            - http_post
+            - send_email
+            - upload_file
+    filter_approved:
+        dest_host|endswith: '.corp.test'
+    condition: selection and not filter_approved
+falsepositives:
+    - A new approved vendor that is not yet on the list.
+level: high
+tags:
+    - atlas.AML.T0051
+    - attack.exfiltration

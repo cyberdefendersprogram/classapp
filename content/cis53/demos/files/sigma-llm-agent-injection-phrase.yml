@@ -1,0 +1,20 @@
+title: Tool result contains instruction-like text
+id: 5b1c7a0e-9d3f-4e58-8a41-0c53a1f4c003
+status: experimental
+description: A fetched page or file contains a phrase used in prompt-injection attacks. Low fidelity on its own; use it to enrich, not to page someone.
+author: CIS 53
+date: 2026-11-13
+logsource:
+    product: llm_agent
+    category: tool_call
+detection:
+    selection:
+        result_preview|contains:
+            - 'ignore previous instructions'
+            - 'ignore all previous instructions'
+    condition: selection
+falsepositives:
+    - Security blogs, training material and this course's own slides.
+level: low
+tags:
+    - atlas.AML.T0051

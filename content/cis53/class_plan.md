@@ -56,6 +56,7 @@ Fridays 9:00 a.m.–12:00 p.m. PT, online. Built from the Canvas modules, the 20
 - Architecture: taps/SPAN, cloud visibility (VPC Flow Logs, traffic mirroring, GuardDuty), TLS blind spots, retention.
 - **AI thread:** attacks on LLM apps and agents (prompt injection, tool abuse) and the telemetry that exposes them; what a normal agent log looks like.
 - **Final-format demo:** solve a network level live, thinking aloud, with hints.
+- **Built for Class 4:** deck `CIS53-Week4-Detection-Rules-and-Architecture.pptx` (43 slides), Demos 11–13, in-class quiz `004-class4-inclass.md`, Case Study 4 (OPM, new template), Lab 3 (due Nov 20, 9:00 a.m.) and a rebuilt Week 4 Canvas quiz (due Nov 15).
 
 ## Week 5 (Nov 20) — Intelligence, hunting, and AI-assisted analysis; Final released
 

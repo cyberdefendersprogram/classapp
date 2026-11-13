@@ -22,7 +22,7 @@ Friday, November 13, 2026 · 9:00 a.m.–12:00 p.m. PT (online)
 
 ## Books + Reading
 
-Required — Bejtlich, *The Practice of Network Security Monitoring*, Ch. 9: NSM Operations. Required — Roddie et al., *Practical Threat Detection Engineering*, Ch. 1: Fundamentals of Detection Engineering. Required — Suricata Documentation, Rules: Introduction. Optional — NSM Ch. 4: Distributed Deployment; Sigma Rules basics.
+Required — Bejtlich, *The Practice of Network Security Monitoring*, Ch. 9: NSM Operations. Required — Roddie et al., *Practical Threat Detection Engineering*, Ch. 1 (Fundamentals: the three qualities of good detection, the Pyramid of Pain) and Ch. 2 (the detection life cycle, especially Test with known-bad and known-good data). Required — Suricata Documentation, Rules: Introduction. Optional — NSM Ch. 4: Distributed Deployment; Sigma Rules basics.
 
 **Reading questions:**
 1. How does an analyst decide whether an alert is worth escalating, and what should be recorded?
@@ -47,15 +47,15 @@ A Suricata/Snort rule has a **header** (action, protocol, source, ports, directi
 alert http $HOME_NET any -> $EXTERNAL_NET any (msg:"Suspicious upload to unknown host"; flow:established,to_server; http.method; content:"POST"; http.uri; content:"/upload"; sid:1000001; rev:1;)
 ```
 
-Live exercise: write a rule for a pattern in a provided capture, run it against the capture, then **tune** it: narrow it, check what else it matches, and decide what you would do with the alert. Suricata and Snort 3 syntax are close; we use Suricata documentation.
+**Demo 11** ([write and tune a Suricata rule](/demos/011-write-and-tune-a-suricata-rule)) uses `rule-lab.pcap` and `class4-suricata.rules` (sids 9100001–9100005): a too-broad rule (3 alerts), the tuned rule (1), a beacon threshold (1), a TLS SNI rule for the same upload over HTTPS (1), and a user-agent rule that shows a weak indicator (15 alerts). Tested with Suricata 8.0.8. Suricata and Snort 3 syntax are close; we use Suricata documentation.
 
 ## Part 3 — Zeek
 
-Zeek turns traffic into structured logs: `conn.log`, `dns.log`, `http.log`, `ssl.log`, `files.log`. Every connection has a **uid** you can use to join logs. Question flow: start from an alert or odd `conn.log` row, take the uid, and read the matching DNS, HTTP and TLS records.
+Zeek turns traffic into structured logs: `conn.log`, `dns.log`, `http.log`, `ssl.log`, `files.log`. Every connection has a **uid** you can use to join logs. Question flow: start from an alert or odd `conn.log` row, take the uid, and read the matching DNS, HTTP and TLS records. **Demo 12** ([from alert to uid](/demos/012-zeek-from-alert-to-uid)) follows the same incident from the Suricata alert through `conn.log`, `http.log`, `dns.log` and `ssl.log` (tested with Zeek 9.0.1).
 
 ## Part 4 — Sigma and the SIEM
 
-**Sigma** is a vendor-neutral format for log detections, so a rule can be translated to different SIEMs. A SIEM collects logs, lets you search, and fires alerts. Triage steps: scope (which host, user, time), enrich (intelligence, asset context), decide (benign, suspicious, confirmed), and document.
+**Sigma** is a vendor-neutral format for log detections, so a rule can be translated to different SIEMs. A SIEM collects logs, lets you search, and fires alerts. Triage steps: scope (which host, user, time), enrich (intelligence, asset context), decide (benign, suspicious, confirmed), and document. **Demo 13** ([Sigma and an AI agent log](/demos/013-sigma-and-an-ai-agent-log)) converts three Sigma rules with pySigma to Splunk and Lucene and runs them against `agent-tool-calls.jsonl`.
 
 ## Part 5 — Architecture
 
@@ -71,14 +71,27 @@ Zeek turns traffic into structured logs: `conn.log`, `dns.log`, `http.log`, `ssl
 - **Telemetry that exposes it:** the agent's tool-call log, outbound requests to new domains, unusual data volumes, and prompts or responses containing secrets.
 - **Know normal first:** what a healthy agent's log looks like (which tools, which destinations, how often).
 
-Map to **MITRE ATLAS** as well as ATT&CK.
+Map to **MITRE ATLAS** (AML.T0051, LLM prompt injection) as well as ATT&CK.
 
 ## Final-Format Demo
 
-We solve a network-based level live, thinking aloud and using hints, so you see the format before the Final opens next week.
+We solve a network-based level live, thinking aloud and using hints, so you see the format before the Final is released next week.
 
 ---
 
 ## Lab 3
 
-[Lab 3 on Canvas](https://peralta.instructure.com/courses/89432/assignments/1820972) — due Fri Nov 13, 11:59 p.m. PT. TryHackMe IDS, Snort and Zeek rooms; a NetLab alert-review lab; and a short log-detection answer on prompt injection.
+[Lab 3 on Canvas](https://peralta.instructure.com/courses/89432/assignments/1820972) — due **Fri Nov 20, 9:00 a.m. PT**. TryHackMe IDS Fundamentals, Snort and Network Monitoring with Zeek (assigned in the Business group as "CIS 53 Lab 3: …"); a NetLab alert-review lab; and Part 3 on `agent-tool-calls.jsonl`: Prompt Injection room, a detection you write and run, and a 150-word short answer.
+
+## Case Study 4 — OPM
+
+[Case Study 4 on Canvas](https://peralta.instructure.com/courses/89432/assignments/1820973) — due **Fri Nov 20, 9:00 a.m. PT**. The OPM breach, rebuilt for 2026 with a new Word template and a required section where you write one detection (requirement, data source, rule or query, false positive, test data).
+
+## Quizzes
+
+- **In-class quiz** (portal): `quizzes/004-class4-inclass.md`, 11 questions.
+- **Week 4 Canvas quiz:** Class 3 content, due Sun Nov 15, 11:59 p.m. PT.
+
+## Feedback from Weeks 1–3
+
+Covered in class from the grading notes: no late penalty on late Lab 1, Case Studies 1 and 2; resubmission and regrade open; ATT&CK IDs must match names; complete filters; alert timeline for Target; AI use is allowed with disclosure.

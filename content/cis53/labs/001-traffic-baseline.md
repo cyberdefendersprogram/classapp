@@ -23,7 +23,10 @@ If you don't see these in your TryHackMe assignments, email me at vbhandari@pera
 
 Log in at [openlab.baccc.net](https://openlab.baccc.net/) and complete **NDG Security+ v4 → Lab 22: Capturing Network Traffic**.
 
-- Screenshot a capture you made, with the filter bar visible.
+- Screenshot 1 (2a): the whole Wireshark window showing your 100-packet capture, with the packet list visible.
+- Screenshot 2 (2a): the Wireshark window with a display filter of your choice applied, with the filter bar visible.
+- Fill in the capture filter and display filter cells in the record table of the template. Blank cells cost points.
+- If the template is confusing, ask **before the deadline**.
 - Screenshot one TCP conversation and point out the handshake.
 - If the lab will not start or the steps do not match the screen, tell us **before the deadline** with a screenshot of the problem. You will not be penalized for a lab that is broken.
 
@@ -40,7 +43,7 @@ About 100–150 words each:
 | Item | A good screenshot shows |
 |---|---|
 | Part 1 — each room | The room page marked 100% / completed, with your TryHackMe username visible |
-| Part 2 — capture | The Wireshark window with your capture file, the filter bar, and packet list |
+| Part 2 — capture (2a) | Two screenshots: the whole Wireshark window with your 100-packet capture, and the window with a display filter of your choice applied (filter bar visible) |
 | Part 2 — TCP stream | The three-way handshake (SYN, SYN/ACK, ACK) highlighted or in a flow graph |
 
 ## Submission
