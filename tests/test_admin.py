@@ -502,3 +502,74 @@ class TestGradingCSV:
         assert "stu_001" in lines[1]
         assert ",8," in lines[1] or lines[1].endswith(",8")  # Quiz 1 score
         assert ",0" in lines[1]  # Quiz 2 score (no submission)
+
+
+def _progress_records():
+    def rec(uid, name, aid, status, score="", late=0):
+        return {
+            "canvas_user_id": uid,
+            "name": name,
+            "email": f"{name.lower()}@example.com",
+            "last_activity_at": "2026-11-13T17:00:00Z",
+            "assignment_id": aid,
+            "assignment": f"Assignment {aid}",
+            "due_at": f"2026-11-0{aid}T17:00:00Z",
+            "points_possible": 100,
+            "status": status,
+            "score": score,
+            "late": late,
+            "submitted_at": "",
+            "synced_at": "2026-11-13T21:00:00Z",
+        }
+
+    return [
+        rec(1, "Ok", 1, "graded", 90),
+        rec(1, "Ok", 2, "upcoming"),
+        rec(2, "Ghost", 1, "missing"),
+        rec(2, "Ghost", 2, "missing"),
+        rec(3, "Behind", 1, "graded", 80, 1),
+        rec(3, "Behind", 2, "missing"),
+    ]
+
+
+class TestStudentProgress:
+    def test_priority_ranking(self):
+        from app.services.progress import build_progress
+
+        view = build_progress(_progress_records())
+        assert [s.name for s in view.students] == ["Ghost", "Behind", "Ok"]
+        assert [s.level for s in view.students] == ["high", "low", "none"]
+        assert view.students[0].nothing_submitted
+        assert not view.students[2].nothing_submitted  # upcoming work is not "missing"
+        assert view.synced_at == "2026-11-13T21:00:00Z"
+
+    def test_student_with_only_upcoming_work_is_not_flagged(self):
+        from app.services.progress import build_progress
+
+        recs = [
+            r for r in _progress_records() if r["canvas_user_id"] == 1 and r["assignment_id"] == 2
+        ]
+        assert build_progress(recs).students[0].level == "none"
+
+    @patch("app.routers.admin.get_sheets_client")
+    @patch("app.dependencies.get_sheets_client")
+    def test_page_and_csv_for_admin(self, mock_dep, mock_router, client):
+        mock_dep.return_value.get_config.return_value = "admin@example.com"
+        mock_router.return_value.get_canvas_progress.return_value = _progress_records()
+        cookies = {"session": create_session_token("admin@example.com", "stu_admin")}
+
+        page = client.get("/admin/progress", cookies=cookies)
+        assert page.status_code == 200
+        assert "ghost@example.com" in page.text
+        assert page.text.index("Ghost") < page.text.index("Behind")
+
+        csv_resp = client.get("/admin/progress/csv", cookies=cookies)
+        assert csv_resp.status_code == 200
+        assert csv_resp.text.splitlines()[1].startswith("high,Ghost,ghost@example.com")
+
+    @patch("app.dependencies.get_sheets_client")
+    def test_non_admin_forbidden(self, mock_dep, client):
+        mock_dep.return_value.get_config.return_value = "admin@example.com"
+        cookies = {"session": create_session_token("user@example.com", "stu_001")}
+        assert client.get("/admin/progress", cookies=cookies).status_code == 403
+        assert client.get("/admin/progress/csv", cookies=cookies).status_code == 403

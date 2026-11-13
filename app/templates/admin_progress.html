@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Student Progress - Admin{% endblock %}
+
+{% block content %}
+<nav class="nav">
+    <a href="/home">Home</a>
+    <a href="/admin/progress">Student Progress</a>
+    <a href="/admin/analytics">Analytics</a>
+    <a href="/admin/grading">In-Class Quiz Grades</a>
+    <a href="/admin/canvas-grades">Canvas Gradebook</a>
+    <a href="/admin/presentations">Presentations</a>
+    <a href="/admin/final-projects">Final Projects</a>
+    <a href="/admin/book-reading">Book Reading</a>
+</nav>
+
+<h1>Student Progress</h1>
+
+<p class="text-muted">
+    Canvas submission status for every student, highest check-in priority first.
+    {% if view.synced_at %}Snapshot from {{ view.synced_at }} UTC.{% endif %}
+    Refresh with <code>scripts/sync_canvas_progress.py --apply</code>. Contains student names, emails
+    and grades: use it only to reach out to students.
+</p>
+
+{% if not view.students %}
+<p class="text-muted">No Canvas progress has been synced yet.</p>
+{% else %}
+{% set high = view.students | selectattr("level", "equalto", "high") | list %}
+{% set medium = view.students | selectattr("level", "equalto", "medium") | list %}
+{% set low = view.students | selectattr("level", "equalto", "low") | list %}
+<div class="summary">
+    <div><strong>{{ view.students | length }}</strong> students</div>
+    <div class="lvl-high"><strong>{{ high | length }}</strong> nothing submitted</div>
+    <div class="lvl-medium"><strong>{{ medium | length }}</strong> 3 or more missing</div>
+    <div class="lvl-low"><strong>{{ low | length }}</strong> 1–2 missing</div>
+</div>
+
+<div style="margin: 1rem 0;">
+    {% set reach = high + medium %}
+    {% if reach %}
+    <a class="btn btn-outline btn-sm"
+       href="mailto:?bcc={{ reach | map(attribute='email') | join(',') }}&subject=CIS%2053%20check-in">
+        Email the {{ reach | length }} highest-priority students (Bcc)</a>
+    {% endif %}
+    <a href="/admin/progress/csv" class="btn btn-outline btn-sm">Download CSV</a>
+</div>
+
+<div class="table-container">
+    <table class="grading-table">
+        <thead>
+            <tr>
+                <th class="sticky-col">Student</th>
+                <th>Priority</th>
+                <th>Done</th>
+                <th>Missing</th>
+                <th>Last Canvas activity</th>
+                {% for a in view.assignments %}
+                <th class="quiz-col" title="{{ a.name }}">{{ a.name | replace("CIS 53 Intrusion Detection", "") | replace("CIS 53", "") | trim | truncate(22, True, "…") }}<br><small>due {{ a.due_at[5:10] }}</small></th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in view.students %}
+            <tr class="row-{{ s.level }}">
+                <td class="sticky-col">
+                    {{ s.name }}<br>
+                    <a href="mailto:{{ s.email }}?subject=CIS%2053%20check-in">{{ s.email }}</a>
+                </td>
+                <td><span class="pill pill-{{ s.level }}">{% if s.level == "high" %}nothing submitted{% elif s.level == "none" %}on track{% else %}{{ s.level }}{% endif %}</span></td>
+                <td class="score-cell">{{ s.done }}/{{ s.due }}</td>
+                <td class="score-cell">{{ s.missing }}</td>
+                <td>{{ s.last_activity_at[:10] if s.last_activity_at else "never" }}</td>
+                {% for a in view.assignments %}
+                {% set c = s.cells.get(a.id) %}
+                <td class="score-cell st-{{ c.status if c else 'none' }}">
+                    {% if c %}{% if c.status == "graded" %}{{ c.score }}{% elif c.status == "submitted" %}in{% elif c.status == "missing" %}missing{% elif c.status == "excused" %}exc{% else %}–{% endif %}{% if c.late %} (late){% endif %}{% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<p class="text-muted" style="margin-top: 0.75rem;">
+    <strong>in</strong> = submitted, not graded yet. <strong>–</strong> = not due yet.
+    A student with no activity date has never opened the Canvas course.
+</p>
+{% endif %}
+{% endblock %}
+
+{% block head %}
+<style>
+    .table-container { overflow-x: auto; margin-top: 1rem; }
+    .grading-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .grading-table th, .grading-table td {
+        padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid #eee; white-space: nowrap;
+    }
+    .grading-table th { font-weight: 500; color: #666; background: #f8f9fa; position: sticky; top: 0; }
+    .grading-table tbody tr:hover { background: #f8f9fa; }
+    .sticky-col { position: sticky; left: 0; background: #fff; z-index: 1; }
+    .grading-table th.sticky-col { background: #f8f9fa; z-index: 2; }
+    .quiz-col { text-align: center; min-width: 90px; }
+    .score-cell { text-align: center; }
+    .btn-sm { padding: 0.375rem 0.75rem; font-size: 0.875rem; width: auto; display: inline-block; }
+    .summary { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 1rem; }
+    .summary div { padding: 0.5rem 0.9rem; background: #f8f9fa; border-radius: 6px; }
+    .lvl-high strong { color: #b3261e; }
+    .lvl-medium strong { color: #8a5a00; }
+    .pill { padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.75rem; background: #e8edf5; }
+    .pill-high { background: #fbe4e2; color: #b3261e; font-weight: 600; }
+    .pill-medium { background: #fbebc8; color: #8a5a00; }
+    .pill-low { background: #fdf6e3; color: #8a5a00; }
+    .st-missing { color: #b3261e; font-weight: 600; }
+    .st-upcoming, .st-none { color: #999; }
+    .row-high td.sticky-col { box-shadow: inset 4px 0 0 #b3261e; }
+</style>
+{% endblock %}

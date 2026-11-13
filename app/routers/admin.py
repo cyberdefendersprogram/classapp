@@ -11,6 +11,7 @@ from app.dependencies import AdminSession, templates
 from app.services.analytics import compute_quiz_analytics, get_best_submissions
 from app.services.grades import ASSIGNMENTS
 from app.services.presentations import build_presentation_rows
+from app.services.progress import build_progress
 from app.services.quiz_parser import get_parsed_quiz
 from app.services.sheets import get_sheets_client
 
@@ -208,6 +209,38 @@ async def grading_csv(session: AdminSession):
         iter([output.getvalue()]),
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=grades.csv"},
+    )
+
+
+@router.get("/progress", response_class=HTMLResponse)
+async def progress_page(request: Request, session: AdminSession):
+    """Check-in list: each student's Canvas progress and email, nothing-submitted first."""
+    view = build_progress(get_sheets_client().get_canvas_progress())
+    return templates.TemplateResponse(
+        "admin_progress.html",
+        {"request": request, "session": session, "view": view},
+    )
+
+
+@router.get("/progress/csv")
+async def progress_csv(session: AdminSession):
+    """Download the check-in list as CSV."""
+    view = build_progress(get_sheets_client().get_canvas_progress())
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(
+        ["Priority", "Name", "Email", "Done", "Missing", "Last Canvas activity"]
+        + [a["name"] for a in view.assignments]
+    )
+    for s in view.students:
+        writer.writerow(
+            [s.level, s.name, s.email, s.done, s.missing, s.last_activity_at]
+            + [s.cells[a["id"]].status if a["id"] in s.cells else "" for a in view.assignments]
+        )
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=student_progress.csv"},
     )
 
 

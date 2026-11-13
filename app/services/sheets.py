@@ -394,6 +394,15 @@ class SheetsClient:
             logger.error("Failed to get roster count: %s", e)
             return 0
 
+    @cached(ttl_seconds=CACHE_TTL_ROSTER, prefix="canvas_progress")
+    def get_canvas_progress(self) -> list[dict]:
+        """Rows of the Canvas_Progress tab (one per student per assignment), or [] if absent."""
+        try:
+            return self._get_worksheet("Canvas_Progress").get_all_records()
+        except Exception as e:
+            logger.error("Failed to get Canvas progress: %s", e)
+            return []
+
     @cached(ttl_seconds=CACHE_TTL_ROSTER, prefix="all_roster")
     def get_all_roster(self) -> list[RosterEntry]:
         """Get all roster entries."""
