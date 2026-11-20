@@ -90,6 +90,10 @@ We solve an AI-agent exfiltration level live. Then the rules for the Final:
 - [Demo 17: AI-assisted triage](/demos/017-ai-assisted-triage-check-the-model): check a confident model answer claim by claim against the logs.
 - [Demo 18: Practice the Final](/demos/018-practice-the-final-tls-beacon-and-ai-agent-levels): two practice levels in the Final's format (a default-certificate C2 beacon and an AI triage bot that obeyed a poisoned issue), with downloads and a self-check quiz (`/quiz/q050`).
 
+## Tools for today
+
+Reference pages with commands, scenarios and quizzes: [Scapy](/tools/scapy) (craft packets to test a rule), [Atomic Red Team](/tools/atomic-red-team) (run one ATT&CK technique and check your logs) and [CALDERA](/tools/caldera) (run a whole adversary chain). Lab-only tools: use them only on the environments we provide.
+
 ## Recent AI events we will use (verify before you rely on any detail)
 
 - **AI against AI tools:** EchoLeak (CVE-2025-32711), a no-click prompt injection in Microsoft 365 Copilot; the malicious prompt in the Amazon Q Developer extension 1.84.0 (AWS-2025-015); "Clinejection" (Feb 2026), prompt injection through an AI issue-triage bot.
