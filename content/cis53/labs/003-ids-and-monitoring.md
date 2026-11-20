@@ -56,5 +56,5 @@ Check every cell and every filter or rule you write for consistency with your ow
 
 - One PDF with all screenshots and your short answers.
 - Short answers: keep each to the length stated; write in your own words and be ready to explain them.
-- Late submissions follow the syllabus's 10% deduction policy. You may resubmit improved work for a regrade.
+- There is no late penalty on this lab (the NetLab Lab 08 Security Onion pod had expired certificates; see the Nov 19 announcement for the workaround). You may resubmit improved work for a regrade.
 - You may use AI tools to *study*, but anything an AI tells you about a tool, a command or an ATT&CK ID is unverified until you have tried it or looked it up. If any text is AI output, disclose it and attach the prompts.
