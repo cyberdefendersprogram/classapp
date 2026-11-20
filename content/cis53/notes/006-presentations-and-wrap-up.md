@@ -10,29 +10,32 @@ Friday, December 4, 2026 · 9:00 a.m.–12:00 p.m. PT (online)
 
 ## Today's Agenda
 
-- Student presentations (3 minutes each)
-- Guest lecture (speaker TBD)
+- 9:00–10:00 a.m.: guest lecture (speaker TBD)
+- 10:00 a.m.–12:00 p.m.: Presentation Final, 5 minutes each plus 1 minute of spot questions
 - Course wrap-up and next steps
 - Final reminders
 
 ---
 
-## Presentations
+## Presentations (the Presentation Final)
 
-Each student gives a 3-minute highlight of their IR Startup Research or APT1 case study (or Final findings if time allows). Suggested structure:
+Each student presents three pieces of work as one story, in **5 minutes**, then answers **1 minute of spot questions** about their answers on the Final and their case studies. Use the template, **CIS53-Final-Presentation-Template.pptx** (five content slides with minutes on each), and upload your slides to Canvas by **9:00 a.m.** so they are loaded before 10:00.
 
-1. **The company or case in one sentence.**
-2. **What it does or how it worked** — the data it reads, and where AI is used (or how the intrusion unfolded).
-3. **What you found:** claims versus evidence, and two ATT&CK/ATLAS mappings.
-4. **One question you would ask in a demo, or one detection you would build.**
+| Slide | Time | What it shows |
+|---|---|---|
+| 1. Case Study 3 | 1 min | The company, the claim you tested, your verdict and the evidence |
+| 2. Case Study 5: the incident | 1.5 min | Three dated beats, ATT&CK or ATLAS IDs, the Pyramid of Pain rung, source confidence |
+| 3. Case Study 5: what you built | 1 min | Your rule, hunt or control, a known-bad and a known-good test, one false positive |
+| 4. Your Final work | 1 min | One level you solved: the question, the evidence on screen, the false lead you ruled out |
+| 5. Monday morning | 0.5 min | One change you would make at work |
 
-Keep to time. Slides are optional; one page or screen is enough.
+Keep to time; the next presenter starts immediately. Expect spot questions such as "show me where that is in the capture" or "what would change your answer?"
 
 Audience job: write one question for a classmate in the Zoom chat. Participation counts toward the grade.
 
 ## Guest Lecture
 
-Speaker and topic to be announced in Canvas.
+9:00–10:00 a.m. Speaker and topic to be announced in Canvas.
 
 ## Wrap-Up
 
@@ -44,7 +47,7 @@ Speaker and topic to be announced in Canvas.
 
 - The Final closes **Sunday, December 6, 11:59 p.m. PT**.
 - Submit complete evidence for each level; late work is deducted per the syllabus.
-- No AI tools on the Final unless the instructions say so.
+- The Final is open book (notes, course materials and the web), but work alone and use no AI tools unless the instructions say so.
 - Please complete the course feedback; it directly shapes next term.
 
 Thank you. It has been a pleasure teaching you this term.

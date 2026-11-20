@@ -17,7 +17,7 @@ Choose **one** company from the list below (or get another incident-response com
 7. **Critique:** three demo questions, one risk, and one sentence tying it to Class 3 (DNS, HTTP, TLS metadata, server-side evidence).
 8. **Sources:** four or more, with at least two primary.
 
-**Present** the highlights in 3 minutes at the last class (Dec 4), alongside the guest lecture.
+**Present** it on Dec 4 as slide 1 of the Presentation Final (1 minute of a 5-minute talk plus 1 minute of spot questions).
 
 ## How to research
 

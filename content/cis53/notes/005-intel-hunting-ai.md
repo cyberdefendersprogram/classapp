@@ -101,7 +101,7 @@ These feed Case Study 5, where you choose an incident from a catalogue.
 ## Assignments
 
 - **Lab 4:** [Lab 4 on Canvas](https://peralta.instructure.com/courses/89432/assignments/1820969), due **Friday, December 4, 9:00 a.m.** Includes the TryHackMe Pyramid of Pain and Intro to Cyber Threat Intel rooms, the SOC Simulator scenario "Phishing unfolding", Scapy on NetLab, the Unit 42 RedLine quiz, and an AI-triage exercise built on Demo 17.
-- **Case Study 5:** [Case Study 5 on Canvas](https://peralta.instructure.com/courses/89432/assignments/1820975), due **Friday, December 4, 9:00 a.m.** Pick one incident from the catalogue (breach detection, hunting, or attacks on AI systems). No presentation. Propose your own incident by Wed Nov 25.
+- **Case Study 5:** [Case Study 5 on Canvas](https://peralta.instructure.com/courses/89432/assignments/1820975), due **Friday, December 4, 9:00 a.m.** Pick one incident from the catalogue (breach detection, hunting, or attacks on AI systems). You present it on Dec 4 as part of the Presentation Final. Propose your own incident by Wed Nov 25.
 - **Week 5 quiz:** covers Class 4, due Sunday, Nov 22.
 - **Class 5 in-class quiz** on the portal.
 - **Company Research:** the Case Study 3 highlights page is on the portal; read it before your 5-minute presentation on Dec 4.
