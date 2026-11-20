@@ -643,6 +643,26 @@ class SheetsClient:
             rows, key=lambda r: (str(r.get("company", "")).lower(), str(r.get("student", "")))
         )
 
+    @cached(ttl_seconds=CACHE_TTL_ROSTER, prefix="incident_research")
+    def get_incident_research(self) -> list[dict]:
+        """Published rows of the Incident_Research tab, or [] if the class has no such tab.
+
+        One row per student's Case Study 5 incident (Detect, Hunt or Defend AI).
+        """
+        try:
+            records = self._get_worksheet("Incident_Research").get_all_records()
+        except Exception as e:
+            logger.info("No Incident_Research rows: %s", e)
+            return []
+        rows = [
+            r
+            for r in records
+            if str(r.get("published", "")).strip().lower() in {"true", "yes", "1"}
+        ]
+        return sorted(
+            rows, key=lambda r: (str(r.get("incident", "")).lower(), str(r.get("student", "")))
+        )
+
     # -------------------------------------------------------------------------
     # Final Projects methods (individual mode — one student, one topic)
     # -------------------------------------------------------------------------

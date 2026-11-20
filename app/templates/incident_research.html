@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Incident Research{% endblock %}
+
+{% block content %}
+<nav class="nav">
+    <a href="/home">Home</a>
+    <a href="/schedule">Schedule</a>
+    <a href="/quizzes">Quizzes</a>
+    <a href="/tools">Tools</a>
+    <a href="/labs">Labs</a>
+    <a href="/case-studies">Case Studies</a>
+    <a href="/company-research">Company Research</a>
+    <a href="/incident-research" class="active">Incident Research</a>
+    <a href="/demos">Demos</a>
+    {% set reading_link = nav_reading_link() %}
+    {% if reading_link %}<a href="{{ reading_link.url }}">{{ reading_link.label }}</a>{% endif %}
+    <a href="/final-projects">Final Projects</a>
+    {% if grades_released() %}<a href="/grades">Canvas Grades</a>{% endif %}
+    <a href="/me">Profile</a>
+    {% if is_admin %}<a href="/admin/analytics">Admin</a>{% endif %}
+    <a href="/auth/logout">Sign Out</a>
+</nav>
+
+<h1>Incident Research</h1>
+<p class="text-muted mb-3">Highlights from Case Study 5. Each card is one student's incident, trimmed to the parts worth discussing. Read two or three before your Dec 4 presentation and notice how each writer separated what the sources showed from what they only repeated.</p>
+
+{% if rows %}
+<div class="scroll">
+<table class="cr-table">
+    <thead><tr><th>Incident</th><th>Student</th><th>Track</th><th>Bottom line</th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+    <tr><td><a href="#ir-{{ loop.index }}">{{ r.incident }}</a></td><td>{{ r.student }}</td><td>{{ r.track }}</td><td>{{ r.bottom_line }}</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+
+<div class="cr-grid">
+{% for r in rows %}
+<article class="cr-card" id="ir-{{ loop.index }}">
+    <p class="cr-by">{{ r.student }}</p>
+    <h2>{{ r.incident }}</h2>
+    <p class="cr-by">{{ r.track }}</p>
+    <p class="cr-verdict">{{ r.bottom_line }}</p>
+    <dl>
+        {% if r.timeline %}<dt>Timeline</dt><dd>{{ r.timeline }}</dd>{% endif %}
+        {% if r.attack_mapping %}<dt>ATT&amp;CK (and ATLAS) mapping</dt><dd>{{ r.attack_mapping }}</dd>{% endif %}
+        {% if r.evidence %}<dt>What the evidence looked like</dt><dd>{{ r.evidence }}</dd>{% endif %}
+        {% if r.deliverable %}<dt>Detection, hunt or control</dt><dd>{{ r.deliverable }}</dd>{% endif %}
+        {% if r.intel_quality %}<dt>How good was the intelligence?</dt><dd>{{ r.intel_quality }}</dd>{% endif %}
+    </dl>
+    {% if r.lesson %}<p class="cr-link">{{ r.lesson }}</p>{% endif %}
+    {% if r.ai_question %}<p class="cr-link"><strong>AI question:</strong> {{ r.ai_question }}</p>{% endif %}
+</article>
+{% endfor %}
+</div>
+{% else %}
+<p class="text-muted">No incident research has been published yet. Highlights are added after Case Study 5 is submitted.</p>
+{% endif %}
+
+<style>
+.scroll { overflow-x: auto; margin-bottom: 1.5rem; }
+.cr-table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+.cr-table th, .cr-table td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid #e9ecef; vertical-align: top; }
+.cr-table th { color: #666; font-weight: 600; }
+.cr-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+@media (min-width: 900px) { .cr-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.cr-card { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 1.25rem 1.5rem; min-width: 0; }
+.cr-card h2 { margin: 0 0 0.5rem 0; font-size: 1.2rem; }
+.cr-by { margin: 0; color: #666; font-size: 0.85rem; }
+.cr-verdict { font-weight: 500; margin: 0 0 0.75rem 0; }
+.cr-card dt { font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: #666; margin-top: 0.75rem; }
+.cr-card dd { margin: 0.15rem 0 0 0; line-height: 1.5; }
+.cr-link { margin: 0.75rem 0 0 0; font-size: 0.9rem; color: #555; }
+.nav a.active { font-weight: 600; color: #333; }
+</style>
+{% endblock %}
