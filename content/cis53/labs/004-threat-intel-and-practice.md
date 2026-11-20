@@ -5,7 +5,7 @@
 **Due:** Friday, December 4, 2026, 9:00 a.m.
 **Canvas:** [Lab 4 assignment](https://peralta.instructure.com/courses/89432/assignments/1820969)
 
-Covers Weeks 4 and 5. Submit everything as a single PDF. Part 4 builds on the Class 5 material (Demo 17). The Final opens at the end of Class 5 (Nov 20) and closes Sun Dec 6, so start this lab early.
+Covers Weeks 4 and 5. Parts 1 and 2 are required and total 100 points; everything marked Optional is bonus. Submit everything as a single PDF. The optional AI-triage section builds on the Class 5 material (Demo 17). The Final opens at the end of Class 5 (Nov 20) and closes Sun Dec 6, so start this lab early.
 
 **Template:** download `CIS53-Lab4-Template.docx` from the Canvas assignment (source: `content/cis53/templates/CIS53-Lab4-Template.docx`), fill it in, and submit one PDF.
 
@@ -13,7 +13,7 @@ Covers Weeks 4 and 5. Submit everything as a single PDF. Part 4 builds on the Cl
 
 **Before you take any screenshots:** crop or black out any passwords, tokens, or personal data. Never submit credentials. Use only the lab environments we provide — do not capture or scan any other network.
 
-## Part 1 — TryHackMe (40 points)
+## Part 1 — TryHackMe (60 points, 20 each)
 
 Complete these from your **TryHackMe assignments** (Business group `2026-Fall-CIS53`). Screenshot each one showing the **"Room completed!"** screen, or the room page with the green 100% bar.
 
@@ -23,7 +23,7 @@ Complete these from your **TryHackMe assignments** (Business group `2026-Fall-CI
 
 If a room or the scenario is not in your assignments (check that you joined the class group first), still do it from the link above and email me at vbhandari@peralta.edu with the email address tied to your TryHackMe account.
 
-## Part 2 — NetLab (25 points)
+## Part 2 — NetLab (40 points)
 
 Complete **NDG Ethical Hacking v2 (Series-1) → Lab 02: Packet Crafting with Scapy**.
 
@@ -31,11 +31,11 @@ Complete **NDG Ethical Hacking v2 (Series-1) → Lab 02: Packet Crafting with Sc
 - In 2–3 sentences, explain how crafted traffic helps you test a detection rule. Use Class 5 Demo 16 ("Craft packets to test your rule") as your example: say what the seven variants showed.
 - This lab is older. If a step fails, try again, then tell us **before the deadline** with a screenshot of the problem. You will not be penalized for a lab that is broken.
 
-## Part 3 — Practice for the Final (20 points)
+## Optional — Practice for the Final (bonus 20 points)
 
 Work the Unit 42 Wireshark quiz ["Crossing the Line: RedLine Stealer"](https://unit42.paloaltonetworks.com/wireshark-quiz-redline-stealer/) (August 2023). The page links the pcap (a ZIP with the password `infected`; open it only in your lab VM, never on your own computer's desktop). The answers are published elsewhere: do not look them up, because the Final will not have them. Submit your answers to the quiz questions and one screenshot of the evidence behind the answer you are most confident in.
 
-## Part 4 — AI-assisted triage (15 points)
+## Optional — AI-assisted triage (bonus 15 points)
 
 In Class 5 we checked a model's triage answer against the logs (Demo 17). Now do it yourself on a new set.
 
@@ -47,7 +47,7 @@ In Class 5 we checked a model's triage answer against the logs (Demo 17). Now do
 
 Grading: the claims table 6, the mistake write-up 5, the incident grouping 2, prompt and answer attached 2.
 
-## Optional (extra credit)
+## Optional (extra credit, 10 each)
 
 TryHackMe: [Yara](https://tryhackme.com/room/yara) and [Log Analysis with SIEM](https://tryhackme.com/room/loganalysiswithsiem); or any 2025 exercise from [malware-traffic-analysis.net](https://www.malware-traffic-analysis.net/training-exercises.html).
 
@@ -58,12 +58,12 @@ TryHackMe: [Yara](https://tryhackme.com/room/yara) and [Log Analysis with SIEM](
 | Part 1: each room | The "Room completed!" screen, or the room page with the green 100% bar |
 | Part 1: SOC Simulator | The score and feedback summary after you ended the scenario |
 | Part 2: Scapy | The crafted packet and the same packet in Wireshark |
-| Part 3: Redline | Your answers, plus one screenshot of the evidence |
-| Part 4 | The prompt, the AI's answer, your claims table and the write-up |
+| Optional: Redline | Your answers, plus one screenshot of the evidence |
+| Optional: AI triage | The prompt, the AI's answer, your claims table and the write-up |
 
 ## Submission
 
 - One PDF with all screenshots and your short answers.
 - Short answers: keep each to the length stated; write in your own words and be ready to explain them.
 - Late submissions follow the syllabus's 10% deduction policy.
-- You may use AI tools to *study*, and you must use one in Part 4. Anything an AI tells you about a tool, a command or an ATT&CK ID is unverified until you have tried it or looked it up. Disclose any AI-written text and attach the prompts.
+- You may use AI tools to *study*, and you use one in the optional AI-triage section. Anything an AI tells you about a tool, a command or an ATT&CK ID is unverified until you have tried it or looked it up. Disclose any AI-written text and attach the prompts.

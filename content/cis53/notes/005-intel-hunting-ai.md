@@ -69,7 +69,7 @@ A detection you never tested is a guess. **Scapy** lets you craft packets to tri
 - Could you check each claim against a log line or packet?
 - What must never be pasted into a tool (credentials, personal data, production secrets)?
 
-Treat the model as a fast junior analyst whose work you always check. You will document one of its mistakes in Lab 4.
+Treat the model as a fast junior analyst whose work you always check. In Lab 4 you can document one of its mistakes (optional bonus).
 
 ## Final-Format Demo and Briefing
 
@@ -100,7 +100,7 @@ These feed Case Study 5, where you choose an incident from a catalogue.
 
 ## Assignments
 
-- **Lab 4:** [Lab 4 on Canvas](https://peralta.instructure.com/courses/89432/assignments/1820969), due **Friday, December 4, 9:00 a.m.** Includes the TryHackMe Pyramid of Pain and Intro to Cyber Threat Intel rooms, the SOC Simulator scenario "Phishing unfolding", Scapy on NetLab, the Unit 42 RedLine quiz, and an AI-triage exercise built on Demo 17.
+- **Lab 4:** [Lab 4 on Canvas](https://peralta.instructure.com/courses/89432/assignments/1820969), due **Friday, December 4, 9:00 a.m.** Includes the TryHackMe Pyramid of Pain and Intro to Cyber Threat Intel rooms, the SOC Simulator scenario "Phishing unfolding", and Scapy on NetLab (100 points: TryHackMe 60, NetLab 40). The Unit 42 RedLine quiz and an AI-triage exercise built on Demo 17 are optional bonus.
 - **Case Study 5:** [Case Study 5 on Canvas](https://peralta.instructure.com/courses/89432/assignments/1820975), due **Friday, December 4, 9:00 a.m.** Pick one incident from the catalogue (breach detection, hunting, or attacks on AI systems). You present it on Dec 4 as part of the Presentation Final. Propose your own incident by Wed Nov 25.
 - **Week 5 quiz:** covers Class 4, due Sunday, Nov 22.
 - **Class 5 in-class quiz** on the portal.
