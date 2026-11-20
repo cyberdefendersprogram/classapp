@@ -5,7 +5,7 @@
 **Due:** Friday, December 4, 2026, 9:00 a.m.
 **Canvas:** [Lab 4 assignment](https://peralta.instructure.com/courses/89432/assignments/1820969)
 
-Covers Weeks 4 and 5. Submit everything as a single PDF. Part 4 builds on the Class 5 material (Demo 17). The Final opens at the end of Class 5 (Nov 20) and closes Sun Dec 6, so start this lab early.
+Covers Weeks 4 and 5. Submit everything as a single PDF. Part 4 builds on the Class 5 material (Demo 17). The Final opens at the end of Class 5 (Nov 20) and closes Fri Dec 4 at 9:00 a.m., so start this lab early.
 
 **Template:** download `CIS53-Lab4-Template.docx` from the Canvas assignment (source: `content/cis53/templates/CIS53-Lab4-Template.docx`), fill it in, and submit one PDF.
 

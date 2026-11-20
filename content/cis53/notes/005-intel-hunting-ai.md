@@ -75,7 +75,7 @@ Treat the model as a fast junior analyst whose work you always check. You will d
 
 We solve an AI-agent exfiltration level live. Then the rules for the Final:
 
-- **Released:** today, 12:00 p.m. PT. **Closes:** Sunday, Dec 6, 11:59 p.m. PT.
+- **Released:** today, 12:00 p.m. PT. **Closes:** Friday, Dec 4, 9:00 a.m. PT (open book).
 - Multi-level, evidence-based; hints are available for each level.
 - **No AI tools** on the Final unless the instructions say so.
 - Show your evidence: packet numbers, log lines, hashes.
@@ -108,4 +108,4 @@ These feed Case Study 5, where you choose an incident from a catalogue.
 
 ## Presentations
 
-Dec 4 is the Final Level 6 presentation (5 to 7 minutes each: Case Study 3, Case Study 5 and your Final work, then spot questions) plus a guest lecture. Sign-up slots are assigned in class today.
+Dec 4 is the Presentation Final (5 to 7 minutes each: Case Study 3, Case Study 5 and your Final work, then spot questions) plus a guest lecture. Sign-up slots are assigned in class today.

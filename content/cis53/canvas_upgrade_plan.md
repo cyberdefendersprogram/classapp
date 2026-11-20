@@ -16,7 +16,7 @@ Status: DRAFT. Nothing here has been pushed to Canvas. Push as unpublished draft
 
 DECISION NEEDED: Final Levels 1-5 currently unlock Nov 20 and are due Nov 22 (Canvas).
 Proposed: unlock Nov 20 (head start), class Dec 4 is the capstone presentation and
-Level 6, all levels due Sun Dec 6 11:59pm PT.
+the Presentation Final, all levels due Fri Dec 4 9:00am PT.
 
 ## 2. Theme: detect threats to, from, and with AI
 
@@ -30,7 +30,7 @@ rather than adding new graded items.
 | 3 | Lab 2 (DNS/protocols) + APT1 case study | Add Part D: AI egress lab (below). Replace APT1 with the AI incident case-study menu (below). |
 | 4 | IDS/IPS Lab + OPM case study | Add Part D: Suricata and Sigma rules against LLM-app logs (below). |
 | 5 | Lab + IDS Hands-on Quiz + YourChoice case study | Add AI-assisted triage task. Rewrite quiz (below). YourChoice must map to ATT&CK and, if AI-related, ATLAS. |
-| 6 | Final Levels 1-5 | Keep. Add Level 6: compromised AI agent (below). |
+| 6 | Final Levels 1-5 | Keep. Add the Presentation Final (separate from the levels): compromised AI agent (below). |
 
 ## 3. Draft content
 
@@ -76,7 +76,7 @@ Keep Q1 (signature) and Q3 (false positive). Replace the rest:
 - Add (20): Name two signals that would indicate LLM-API data exfiltration at the network layer and one thing encryption hides. (Re-weight so total stays 120.)
 - Remove the Google Scholar paper-counting question. Keep "how would you protect your IDS" as an optional 10-point bonus.
 
-### 3f. Final Level 6 - Compromised Agent (10 pts)
+### 3f. Presentation Final - Compromised Agent (10 pts)
 
 New synthetic evidence set (`level6.zip`, password = an answer from Level 5):
 `agent_egress.pcap`, `llm_app_logs.jsonl`, `zeek_logs/`. Questions in the Level 1-5 style: signal or noise; which tool call is anomalous; which prompt carried the injection; what data left and where; did the attacker succeed; which control would have stopped it; ATT&CK and ATLAS mapping. Evidence must be built and verified before release.
