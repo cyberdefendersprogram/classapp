@@ -70,7 +70,7 @@ Fridays 9:00 a.m.–12:00 p.m. PT, online. Built from the Canvas modules, the 20
 ## Week 6 (Dec 4) — Presentations and guest lecture
 
 - Guest lecture, 9 to 10 a.m.
-- Student presentations (the Presentation Final), 10 a.m. to 12 p.m.: Case Study 3, Case Study 5 and your Final work, plus spot questions. 22 students in 120 minutes is about 5.4 minutes each, so the 5 to 7 minute format has to shrink (for example 4 minutes plus 1.5 minutes of questions).
+- Student presentations (the Presentation Final), 10 a.m. to 12 p.m.: 5 minutes each plus 1 minute of spot questions (Case Study 3, Case Study 5 and your Final work). 22 students at 6 minutes is 132 minutes, so keep changeovers instant (slides loaded in advance) and cut anyone who runs over.
 - Wrap-up: how the course fits together, next steps (SOC L1/L2 paths, certifications), reminder that the Final closes Sunday, Dec 6, 11:59 p.m. (work is due in class on Dec 4, with extra time until Sunday)
 
 ## Still to decide
