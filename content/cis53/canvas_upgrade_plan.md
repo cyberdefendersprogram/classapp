@@ -14,9 +14,9 @@ Status: DRAFT. Nothing here has been pushed to Canvas. Push as unpublished draft
 | - | Nov 27 | No class (Thanksgiving) | - |
 | 6 | Dec 4 | Intrusion Detection Challenge (Final) | Week 6 |
 
-DECISION NEEDED: Final Levels 1-5 currently unlock Nov 20 and are due Nov 22 (Canvas).
-Proposed: unlock Nov 20 (head start), class Dec 4 is the capstone presentation and
-the Presentation Final, all levels due Sun Dec 6 11:59pm PT.
+DECIDED: Final Levels 1-5 unlock Nov 20 at 12:00 PT and close Sun Dec 6 11:59pm PT (work is
+due in class Dec 4, with extra time until Sunday). Open book, no AI. Dec 4 is the
+Presentation Final: guest lecture 9-10, presentations 10-12 (5 minutes plus 1 minute of questions).
 
 ## 2. Theme: detect threats to, from, and with AI
 
