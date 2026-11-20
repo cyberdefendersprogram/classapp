@@ -56,11 +56,16 @@ def parse_quiz_content(content: str, quiz_id: str) -> Quiz:
     """
     # Extract frontmatter
     title = "Untitled Quiz"
+    links: list[tuple[str, str]] = []
     frontmatter_match = FRONTMATTER_PATTERN.match(content)
     if frontmatter_match:
         try:
             frontmatter = yaml.safe_load(frontmatter_match.group(1))
             title = frontmatter.get("title", title)
+            for item in frontmatter.get("links") or []:
+                label, url = str(item.get("label", "")), str(item.get("url", ""))
+                if label and (url.startswith("/") or url.startswith("https://")):
+                    links.append((label, url))
         except yaml.YAMLError as e:
             logger.warning("Failed to parse frontmatter: %s", e)
 
@@ -82,7 +87,7 @@ def parse_quiz_content(content: str, quiz_id: str) -> Quiz:
         if question:
             questions.append(question)
 
-    return Quiz(quiz_id=quiz_id, title=title, questions=questions)
+    return Quiz(quiz_id=quiz_id, title=title, questions=questions, links=links)
 
 
 def parse_question(q_id: str, q_type: str, points: int, content: str) -> Question | None:

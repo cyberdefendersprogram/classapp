@@ -30,6 +30,12 @@
     </p>
 </div>
 
+{% if quiz.links %}
+<p style="margin-bottom: 1.5rem;">
+    {% for label, url in quiz.links %}<a href="{{ url }}">{{ label }}</a>{% if not loop.last %} &bull; {% endif %}{% endfor %}
+</p>
+{% endif %}
+
 <form method="post" action="/quiz/{{ quiz.quiz_id }}">
     {% for question in quiz.questions %}
     <div class="question" style="background: #f9f9f9; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem;">

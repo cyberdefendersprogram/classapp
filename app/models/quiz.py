@@ -29,6 +29,7 @@ class Quiz:
     title: str
     questions: list[Question] = field(default_factory=list)
     total_points: int = 0
+    links: list[tuple[str, str]] = field(default_factory=list)  # (label, url) shown above the form
 
     def __post_init__(self):
         """Calculate total points if not set."""
