@@ -622,6 +622,27 @@ class SheetsClient:
 
         return result
 
+    @cached(ttl_seconds=CACHE_TTL_ROSTER, prefix="company_research")
+    def get_company_research(self) -> list[dict]:
+        """Published rows of the Company_Research tab, or [] if the class has no such tab.
+
+        One row per student's company case study. Keeping it in the class's own sheet means
+        a new class starts with an empty page.
+        """
+        try:
+            records = self._get_worksheet("Company_Research").get_all_records()
+        except Exception as e:
+            logger.info("No Company_Research rows: %s", e)
+            return []
+        rows = [
+            r
+            for r in records
+            if str(r.get("published", "")).strip().lower() in {"true", "yes", "1"}
+        ]
+        return sorted(
+            rows, key=lambda r: (str(r.get("company", "")).lower(), str(r.get("student", "")))
+        )
+
     # -------------------------------------------------------------------------
     # Final Projects methods (individual mode — one student, one topic)
     # -------------------------------------------------------------------------

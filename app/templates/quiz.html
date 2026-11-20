@@ -10,6 +10,7 @@
     <a href="/tools">Tools</a>
     <a href="/labs">Labs</a>
     <a href="/case-studies">Case Studies</a>
+    {% if company_research_available() %}<a href="/company-research">Company Research</a>{% endif %}
     <a href="/demos">Demos</a>
     {% if grades_released() %}<a href="/grades">Canvas Grades</a>{% endif %}
     <a href="/me">Profile</a>

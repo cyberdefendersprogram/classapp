@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hunt: one quiet beacon in thirty minutes of Zeek logs</title>
+<meta name="description" content="Use it to teach the hunting loop (hypothesis, data, query, validate): no alert fired, a regularity query over conn.log lists three suspects, and context removes two of them (Roddie Ch. 10; Brown and Roberts Ch. 2).">
+<meta name="class" content="5">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: finding, layer map, two real captures with a layer column, comparison, takeaways, files. */
+:root {
+  --bg: #F2F5F8; --surface: #FFFFFF; --fg: #0E1726; --muted: #4E5B72; --line: #D3DBE6; --accent: #0B7F75;
+  --bad: #B3261E; --bad-bg: #FBE4E2; --ok: #0B7F4A; --ok-bg: #DDF3E6; --warn: #8A5A00; --warn-bg: #FBEBC8;
+  --g-app: #D9ECFA; --g-app-ink: #0B4A75; --g-tr: #D8F1EC; --g-tr-ink: #0B5C53; --g-net: #FBEBC8; --g-net-ink: #7A4D00; --g-link: #E6E2F6; --g-link-ink: #4A3C94;
+  --display: 'IBM Plex Sans', system-ui, sans-serif; --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1220; --surface: #131D31; --fg: #E8EDF5; --muted: #9AA7BD; --line: #263550; --accent: #3FD0C0;
+    --bad: #F2A29C; --bad-bg: #4A1F1C; --ok: #8FE0B4; --ok-bg: #12402A; --warn: #F5CE82; --warn-bg: #4A3612;
+    --g-app: #14344F; --g-app-ink: #9ED0F5; --g-tr: #123F3A; --g-tr-ink: #8FE3D8; --g-net: #4A3612; --g-net-ink: #F5CE82; --g-link: #2B2650; --g-link-ink: #C3B9F5; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1220; --surface: #131D31; --fg: #E8EDF5; --muted: #9AA7BD; --line: #263550; --accent: #3FD0C0;
+  --bad: #F2A29C; --bad-bg: #4A1F1C; --ok: #8FE0B4; --ok-bg: #12402A; --warn: #F5CE82; --warn-bg: #4A3612;
+  --g-app: #14344F; --g-app-ink: #9ED0F5; --g-tr: #123F3A; --g-tr-ink: #8FE3D8; --g-net: #4A3612; --g-net-ink: #F5CE82; --g-link: #2B2650; --g-link-ink: #C3B9F5; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--display); line-height: 1.5; font-size: 16px;
+  padding-block: 32px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+main { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.1; margin: 0; text-wrap: balance; }
+h2 { font-size: 20px; margin: 0 0 8px; text-wrap: balance; }
+h3 { font-size: 17px; margin: 0; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.lede { color: var(--muted); margin-top: 8px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 20px 24px; min-width: 0; }
+.finding { background: var(--warn-bg); color: var(--warn); border-color: transparent; }
+code, .mono { font-family: var(--mono); font-size: 13px; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 700px; font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { color: var(--muted); font-weight: 600; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+td.flag { color: var(--bad); font-weight: 600; }
+tr.stop td { background: var(--bad-bg); }
+.cap { color: var(--muted); font-size: 13px; margin-top: 10px; }
+.lay { display: inline-block; border-radius: 4px; padding: 1px 7px; font-size: 12px; }
+.lay.l4 { background: var(--g-tr); color: var(--g-tr-ink); }
+.lay.l3 { background: var(--g-net); color: var(--g-net-ink); }
+.lay.l7 { background: var(--g-app); color: var(--g-app-ink); }
+.lay.l6 { background: var(--g-app); color: var(--g-app-ink); }
+.lay.l2 { background: var(--g-link); color: var(--g-link-ink); }
+
+.map { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 6px 16px; }
+.map div { padding: 8px 12px; border-radius: 6px; min-width: 0; }
+.map .hd { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 0 2px; }
+.g-app { background: var(--g-app); color: var(--g-app-ink); }
+.g-tr { background: var(--g-tr); color: var(--g-tr-ink); }
+.g-net { background: var(--g-net); color: var(--g-net-ink); }
+.g-link { background: var(--g-link); color: var(--g-link-ink); }
+.map b { font-family: var(--mono); margin-right: 8px; }
+.map small { display: block; opacity: .85; }
+.hit { outline: 2px solid var(--bad); outline-offset: -2px; }
+.hit2 { outline: 2px solid var(--ok); outline-offset: -2px; }
+
+.tag { display: inline-block; font-family: var(--mono); font-size: 12px; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; }
+.tag.bad { background: var(--bad-bg); color: var(--bad); }
+.tag.ok { background: var(--ok-bg); color: var(--ok); }
+ul.plain, ol.steps { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+pre { margin: 8px 0 0; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 12px; overflow-x: auto; font-family: var(--mono); font-size: 13px; }
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 640px) { .two, .map { grid-template-columns: 1fr; } }
+
+.step{display:flex;flex-direction:column;gap:8px}
+.step h3{display:flex;gap:10px;align-items:baseline}
+.n{font-family:var(--mono);color:var(--accent);font-size:13px}
+pre.f{margin:0;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;overflow-x:auto;font-family:var(--mono);font-size:13px}
+details{border-top:1px solid var(--line);padding-top:8px}
+summary{cursor:pointer;color:var(--accent);font-weight:600}
+.dl a{color:var(--accent)}
+ul.tight{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+</style>
+</head>
+
+<body>
+<main>
+<header><div class="eyebrow">Class 5 demo · Hunting</div><h1>Hunt: one quiet beacon in thirty minutes of Zeek logs</h1><p class="lede">No alert fired on this capture (try it). Your hypothesis: <i>a host is calling out to a rare destination on a schedule</i>. The data is Zeek <code>conn.log</code>. The query is one awk script. The hard part is validation.</p></header>
+<section class="card dl"><h2>Download and open</h2><ul class="tight"><li><a href="/demos/files/class5-hunt.pcap" target="_blank">class5-hunt.pcap</a> &mdash; 30 minutes, nine hosts, office noise plus one beacon and three decoys</li></ul></section>
+<section class="card step"><h3><span class="n">01</span>Confirm that the sensor was quiet.</h3><pre class="f">mkdir o &amp;&amp; suricata -r class5-hunt.pcap -S class5-suricata.rules -l o -k none &amp;&amp; wc -l o/fast.log
+zeek -r class5-hunt.pcap</pre><details><summary>Answer</summary><p>Zero alerts from <code>class5-suricata.rules</code>. (Run the Class 4 rules instead and you get 60 alerts, every one from the weak <code>python-requests</code> user agent rule on the build server 10.0.0.60, and none from the kiosk.) The beacon is a GET for a one-pixel image, so no upload rule and no URI rule matches. Hunting starts where alerts stop. Zeek writes <code>conn.log</code>, <code>dns.log</code>, <code>http.log</code>, <code>ssl.log</code>, <code>files.log</code> and <code>ntp.log</code>.</p></details></section>
+<section class="card step"><h3><span class="n">02</span>Hypothesis and query: which pairs talk on a schedule?</h3><pre class="f">zeek-cut ts id.orig_h id.resp_h id.resp_p proto &lt; conn.log | sort -k2,2 -k3,3 -k4,4 -k1,1n | awk &#x27;
+{ k=$2&quot; &quot;$3&quot; &quot;$4&quot;/&quot;$5 }
+k==pk { d=$1-pt; n[k]++; s[k]+=d; ss[k]+=d*d }
+{ pk=k; pt=$1 }
+END { for (k in n) if (n[k]&gt;=8) { m=s[k]/n[k]; sd=sqrt(ss[k]/n[k]-m*m);
+  printf &quot;%-42s n=%3d mean=%6.1fs cv=%.2f\n&quot;, k, n[k]+1, m, sd/m } }&#x27; | sort -t= -k4 -n</pre><details><summary>Answer</summary><p>For each source, destination and port the script finds the gap between connections, then reports the mean gap and the coefficient of variation (cv, the standard deviation divided by the mean). A low cv means very regular. The top of the list:</p><pre class='f'>10.0.0.15 10.0.0.2 123/udp       n= 29 mean= 64.0s cv=0.00
+10.0.0.60 10.0.0.51 80/tcp       n= 60 mean= 30.0s cv=0.00
+10.0.0.52 203.0.113.99 80/tcp    n= 21 mean= 87.4s cv=0.04</pre><p>Three suspects. Human browsing sits at cv 0.3 to 0.9. Note the real beacon has some jitter (cv 0.04), so a filter that demands cv 0.00 would have found only the decoys.</p></details></section>
+<section class="card step"><h3><span class="n">03</span>Validate with context: who are these hosts?</h3><pre class="f">zeek-cut id.orig_h id.resp_h id.resp_p &lt; conn.log | sort | uniq -c | sort -rn | grep -E &#x27;10.0.0.(15|60|52)&#x27;
+# inventory: .15 front-office PC, .60 build server, .52 reception kiosk</pre><details><summary>Answer</summary><p>Suspect 1 is a PC talking to the internal time server on UDP 123: clock sync. Suspect 2 is the build server polling an internal API: a health check. Both destinations are inside the network. Suspect 3 is a <b>reception kiosk</b> calling an <b>outside</b> address every 87 seconds. A kiosk that only runs a browser has no reason to do that. Context took three leads down to one.</p></details></section>
+<section class="card step"><h3><span class="n">04</span>Look at what the beacon sends and gets back.</h3><pre class="f">zeek-cut host uri user_agent &lt; http.log | grep assets-front | head -3
+zeek-cut id.resp_h orig_bytes resp_bytes &lt; conn.log | grep 203.0.113.99 | sort | uniq -c</pre><details><summary>Answer</summary><p>Every request is <code>GET /static/px.gif?c=&lt;6 hex&gt;</code> to <code>cdn.assets-front.test</code>, always 164 bytes out and 107 back, with a normal desktop Chrome user agent. The random query value defeats caching and carries a tag. The first DNS lookup of the name came at 09:00:29, right before the first request. Constant sizes and a constant interval are the beacon's fingerprint.</p></details></section>
+<section class="card step"><h3><span class="n">05</span>Check the AI agent, the third decoy.</h3><pre class="f">zeek-cut ts id.orig_h id.resp_h id.resp_p resp_bytes &lt; conn.log | awk &#x27;$2==&quot;10.0.0.77&quot; &amp;&amp; $4==443&#x27;</pre><details><summary>Answer</summary><p>The support agent host 10.0.0.77 makes six TLS sessions to <code>api.llm-vendor.test</code>, each receiving 60 to 220 KB at irregular times. It only appears in the regularity query if you lower the count threshold to 5, and then with a high cv. Streaming model answers look different from a beacon: big, bursty, irregular. It is on the approved list, so it closes. This is the Class 2 false-positive lesson again.</p></details></section>
+<section class="card step"><h3><span class="n">06</span>Turn the hunt into a detection.</h3><pre class="f"># Suricata: threshold on a specific destination is an IoC. What generalizes?
+# Candidate: internal host with a browser UA, 5+ GETs to one outside host, constant 164/107 byte exchanges
+# Where would you run it? (Zeek script, SIEM scheduled search)</pre><details><summary>Answer</summary><p>The last step of the hunting loop is to record and automate. A scheduled SIEM search over <code>conn.log</code> for one inside host making 8 or more connections to one outside host with cv under 0.15 would have found this on day one. Expect decoys and keep a short allowlist, with an owner and a review date for each entry.</p></details></section>
+<section class="card"><h2>Discuss</h2><ul class="tight"><li>Which assumption in the query would a patient attacker break first (jitter, count, interval)? How would you change the query?</li><li>Roddie Ch. 10 asks what turns raw threat information into something you can act on. What did context add here that the numbers alone could not?</li><li>What would you write in the ticket for the kiosk before you isolate it, and who would you ask first?</li></ul></section>
+</main>
+</body>
+</html>

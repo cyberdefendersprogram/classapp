@@ -1,0 +1,2 @@
+# CIS 53 Demo 16. One rule, seven ways to carry the request. Which ones does it catch?
+alert http $HOME_NET any -> $EXTERNAL_NET any (msg:"CIS53 scapy test: poll URI"; flow:established,to_server; http.uri; content:"/api/v1/poll?id="; startswith; sid:9200020; rev:1;)

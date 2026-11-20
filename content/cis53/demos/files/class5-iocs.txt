@@ -1,0 +1,5 @@
+# CIS 53 Demo 14: the indicator list an analyst wrote after wave 1.
+# One IP, one domain, one hash. Lowest rungs of the Pyramid of Pain.
+ip      198.51.100.77
+domain  sync.cdn-sync.test
+sha256  1ec5106ceda989a99a8f6ed7dd5b5f7bdce84ce3f3cbf21af67a1319b53dd49c   (update.bin)

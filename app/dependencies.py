@@ -185,7 +185,13 @@ def grades_released() -> bool:
     return value in {"true", "yes", "1", "on"}
 
 
+def company_research_available() -> bool:
+    """Show the Company Research nav link only when this class's sheet has published rows."""
+    return bool(get_sheets_client().get_company_research())
+
+
 # Exposed to templates so nav blocks can render the right reading link without
 # every route having to thread it through their context dict.
 templates.env.globals["nav_reading_link"] = nav_reading_link
 templates.env.globals["grades_released"] = grades_released
+templates.env.globals["company_research_available"] = company_research_available

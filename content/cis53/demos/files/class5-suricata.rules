@@ -1,0 +1,10 @@
+# CIS 53 Class 5 demo rules. Run:  suricata -r class5-wave2.pcap -S class5-suricata.rules -l out -k none   then read out/fast.log
+# Put the hash list next to the rules file: Suricata looks for class5-sha256.list in the rules directory.
+# --- Bottom of the Pyramid: indicators from wave 1 (Demo 14). Easy to write, easy for the attacker to change.
+alert ip $HOME_NET any -> 198.51.100.77 any (msg:"CIS53 IoC ip 198.51.100.77"; sid:9200001; rev:1;)
+alert dns $HOME_NET any -> any any (msg:"CIS53 IoC domain sync.cdn-sync.test"; dns.query; content:"sync.cdn-sync.test"; nocase; sid:9200002; rev:1;)
+alert http $EXTERNAL_NET any -> $HOME_NET any (msg:"CIS53 IoC file hash of wave 1 update.bin"; flow:established,to_client; filesha256:class5-sha256.list; sid:9200003; rev:1;)
+# --- Behavior: a host polls /api/v1/poll?id=<8 hex> five times in ten minutes. Same in both waves.
+alert http $HOME_NET any -> $EXTERNAL_NET any (msg:"CIS53 behavior: periodic poll to outside host"; flow:established,to_server; http.method; content:"GET"; http.uri; content:"/api/v1/poll?id="; startswith; pcre:"/id=[0-9a-f]{8}$/"; threshold:type threshold, track by_src, count 5, seconds 600; classtype:trojan-activity; sid:9200010; rev:1;)
+# --- Anti-example: user agent alone. The attacker changed it between waves.
+alert http $HOME_NET any -> $EXTERNAL_NET any (msg:"CIS53 UA python-requests/2.31.0 only"; flow:established,to_server; http.user_agent; content:"python-requests/2.31.0"; sid:9200011; rev:1;)

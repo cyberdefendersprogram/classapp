@@ -1,122 +1,62 @@
-<!--case-study {"number": 5, "title": "CIS 53 Intrusion Detection YourChoice Case Study (Week 5)", "due_at": "2026-11-21T07:59:00Z", "canvas_url": "https://peralta.instructure.com/courses/89432/assignments/1820975"}-->
-<p><strong>Objective:</strong><br>Students will investigate a major cybersecurity breach of their choice from the last 10 years to understand its broader implications ("forest") and technical specifics ("trees"). This assignment encourages critical thinking, practical application of security frameworks, and concise communication.</p>
-<hr>
-<h3>Part 1: Written Paper Submission</h3>
-<p><strong>Length:</strong> 3-5 pages (excluding references)<br><br></p>
-<p><strong>Paper Structure:</strong></p>
-<ol>
-<li>
-<p><strong>Introduction (10%)</strong></p>
+<!--case-study {"number": 5, "title": "CIS 53 Case Study 5: Detect, Hunt or Defend AI (Pick One Incident)", "due_at": "2026-12-04T17:00:00Z", "canvas_url": "https://peralta.instructure.com/courses/89432/assignments/1820975"}-->
+<p><strong>Due Friday, December 4, 2026, 9:00 a.m.</strong> <br>Follow the template. <strong>Download the Word template:</strong> <a href="https://peralta.instructure.com/courses/89432/files/15265468/download?wrap=1">CIS53-Case-Study-5-Template.docx</a>. Fill it in, delete the gray instructions, and submit it as a PDF (2&ndash;4 pages).</p>
+<h2>The assignment</h2>
+<p>Pick <strong>one incident</strong> from the catalogue below. There are three tracks. Each track asks for a different <em>deliverable</em>, but all three use the same skeleton: a timeline, a mapping to ATT&amp;CK (and ATLAS for attacks on AI), the Pyramid of Pain, what the evidence looked like, and an honest rating of how good your sources are. The goal is not to retell the news. It is to show what a defender could have <strong>seen</strong>, what they could not, and what you would <strong>build</strong>.</p>
 <ul>
-<li>Brief overview of the case study (e.g., Equifax, Stuxnet, SolarWinds, Colonial Pipeline, etc.).</li>
-<li>Highlight the breach’s significance and why it was chosen.</li>
-<li>State the objectives of the paper: understanding both the "forest" and "trees."</li>
+<li><strong>Track A, breach detection:</strong> write and test one detection (Suricata, Zeek, Sigma or a SIEM search).</li>
+<li><strong>Track B, hunting and intelligence:</strong> write one hunt: hypothesis, data, query, validation, and the decoys that would also match.</li>
+<li><strong>Track C, attacks on AI systems:</strong> write one detection or control for an AI system&rsquo;s own logs (tool calls, prompts, egress) and the guardrail that would have prevented the harm.</li>
 </ul>
-</li>
-<li>
-<p><strong>Background (20%)</strong></p>
+<p>This replaces the old &ldquo;any breach from the last 10 years&rdquo; paper and the 5-minute presentation. Dec 4 is for the Case Study 3 highlights and the guest lecture. You may propose another incident (a recent one is welcome) by Wednesday, Nov 25; it must have at least two primary sources.</p>
+<h2>How the class connects</h2>
 <ul>
-<li>Describe the victim organization or target.</li>
-<li>Contextualize the breach in terms of industry, geopolitical relevance, or technological landscape.</li>
+<li><strong>Class 5 demos on the portal:</strong> Demo 14 (Pyramid of Pain), Demo 15 (hunting a beacon), Demo 16 (testing a rule with Scapy), Demo 17 (checking an AI triage answer). Demo 13 shows Sigma over an agent log.</li>
+<li><strong>Reading:</strong> Roddie et al., <em>Practical Threat Detection Engineering</em>, Ch. 6&ndash;7 (indicators versus behavior), Ch. 9 (validation) and Ch. 10 (using threat intelligence); Brown and Roberts, <em>Intelligence-Driven Incident Response</em>, Ch. 2 (data versus intelligence, source quality, confidence).</li>
+<li><strong>Earlier classes:</strong> Class 3 (what encryption hides) and Class 4 (rules, Zeek logs, where sensors sit).</li>
 </ul>
-</li>
-<li>
-<p><strong>Attack Lifecycle Analysis (30%)</strong></p>
+<h2>The catalogue</h2>
+<p><em>Compiled on November 19, 2026 from secondary reports. Details and dates may be wrong or may have changed. Treat the &ldquo;Start here&rdquo; column as a list of places to look, find each source yourself, and say which one you trust when they disagree. Do not rely on the one-line descriptions as facts.</em></p>
+<h3>Track A: Breach detection</h3>
+<table><thead><tr><th>#</th><th>Incident</th><th>Why it is here</th><th>Start here (then verify)</th></tr></thead><tbody>
+<tr><td>A1</td><td><strong>Equifax (2017)</strong></td><td>Attackers stayed inside for 76 days partly because the device that inspected encrypted traffic had an expired certificate. The classic “the sensor was blind” case.</td><td>House Oversight Committee majority staff report on the Equifax breach (Dec 10, 2018); GAO report on the Equifax breach response (2018); Equifax’s own statements. Sources disagree on record counts and a start date; say which you trust.</td></tr>
+<tr><td>A2</td><td><strong>SolarWinds / SUNBURST (2020)</strong></td><td>A trojanized software update that phoned home over DNS with encoded subdomains. Connects straight to Demo 7 (DNS tunneling, DGA).</td><td>CISA Alert AA20-352A; Mandiant (FireEye) analysis of the SolarWinds supply-chain compromise (Dec 2020); Microsoft’s incident write-up (Dec 2020).</td></tr>
+<tr><td>A3</td><td><strong>MOVEit Transfer (2023)</strong></td><td>A zero-day in a file-transfer product, a web shell on the server, and mass data theft. Server-side evidence, not network evidence.</td><td>CISA and FBI joint advisory AA23-158A; the vendor’s advisory for CVE-2023-34362; Mandiant and Microsoft write-ups on the web shell.</td></tr>
+<tr><td>A4</td><td><strong>Vercel and a third-party AI tool, Context.ai (disclosed April 2026)</strong></td><td>A Vercel employee had granted broad permissions to a third-party AI tool. After that tool’s vendor was compromised, an attacker took over the employee’s Google Workspace account and reached environment variables that were not marked sensitive. An identity and OAuth case, not a malware case.</td><td>Vercel’s security bulletin (April 19, 2026) and its updates; Context.ai’s statement; The Register (April 20, 2026); Trend Micro research on the incident. Sources disagree on when and how the vendor was first compromised; say which you trust.</td></tr>
+<tr><td>A5</td><td><strong>Amazon Q Developer extension, version 1.84.0 (July 2025)</strong></td><td>A malicious instruction slipped into a coding assistant’s source through an over-permissioned build token and shipped to users. The payload did not run because of a syntax error, but it could have wiped files.</td><td>AWS Security Bulletins AWS-2025-015 and AWS-2025-016 (CVE-2025-8217); The Register and SC Media coverage of July 2025.</td></tr>
+</tbody></table>
+<h3>Track B: Hunting and intelligence</h3>
+<table><thead><tr><th>#</th><th>Incident</th><th>Why it is here</th><th>Start here (then verify)</th></tr></thead><tbody>
+<tr><td>B1</td><td><strong>Volt Typhoon (2023–2024)</strong></td><td>A state actor living off the land, using built-in tools and valid accounts so there is little malware to find. Hunting is the only way.</td><td>CISA, NSA and FBI joint advisory AA24-038A (Feb 2024) and its hunting guidance.</td></tr>
+<tr><td>B2</td><td><strong>Salt Typhoon in telecom and other networks (2025)</strong></td><td>Long-term access through compromised routers and other network devices. What can a defender see on a device with no agent?</td><td>CISA, NSA, FBI and partner advisory AA25-239A, “Countering Chinese State-Sponsored Actors Compromise of Networks Worldwide” (Aug 27, 2025).</td></tr>
+<tr><td>B3</td><td><strong>XZ Utils backdoor (2024)</strong></td><td>A backdoor in a compression library found by a developer who noticed SSH logins were slightly slow. The hunt that started from a performance anomaly.</td><td>Andres Freund’s original post on the oss-security mailing list (March 29, 2024); NVD entry for CVE-2024-3094.</td></tr>
+<tr><td>B4</td><td><strong>GTG-1002: the first reported AI-orchestrated espionage campaign (reported Nov 2025)</strong></td><td>Anthropic reported that a state-sponsored group used an AI coding agent to run most of an intrusion against about 30 organizations. What does AI-speed activity look like in logs, and what did the report not provide (it published no indicators)?</td><td>Anthropic’s report “Disrupting the first reported AI orchestrated cyber espionage campaign” (Nov 2025); MITRE ATT&CK campaign C0062; BleepingComputer’s coverage of researchers’ doubts.</td></tr>
+<tr><td>B5</td><td><strong>“exploit_agent”: an AI exploit-building framework (Google threat intelligence, Nov 16, 2026)</strong></td><td>Reported only days ago. Google’s threat intelligence group (GTIG) and Mandiant described a staging server running a multi-agent framework that used several models to compare patches and turn them into exploit code. Some headlines called it the first fully automated attack; GTIG itself said it had not seen fully autonomous pipelines used against real targets. The gap between headline and report is the assignment.</td><td>GTIG’s own report on its Google Cloud threat-intelligence blog (find the primary post); CSO Online, BleepingComputer and Help Net Security coverage. Compare each outlet’s claim with the primary report and rate your confidence in section 6.</td></tr>
+</tbody></table>
+<h3>Track C: Attacks on AI systems</h3>
+<table><thead><tr><th>#</th><th>Incident</th><th>Why it is here</th><th>Start here (then verify)</th></tr></thead><tbody>
+<tr><td>C1</td><td><strong>EchoLeak in Microsoft 365 Copilot (CVE-2025-32711, 2025)</strong></td><td>A crafted email could make Copilot leak organizational data with no click by the user. The “scope violation” where untrusted text reaches a privileged assistant.</td><td>Aim Security’s write-up; Microsoft’s CVE entry for CVE-2025-32711 (CVSS 9.3, fixed server-side in May 2025); Dark Reading and SecurityWeek coverage.</td></tr>
+<tr><td>C2</td><td><strong>“Clinejection”: prompt injection through an AI issue-triage bot (disclosed Feb 2026)</strong></td><td>An AI bot that triaged GitHub issues put the issue title into its prompt, so an attacker’s title could make it run commands. Combined with a shared build cache, that led to an unauthorized release of the Cline tool on Feb 17, 2026. A CI/CD supply-chain path through an agent.</td><td>Adnan Khan’s original write-up “Clinejection” (Feb 2026); the project’s GitHub security advisory; Cloud Security Alliance research note; Snyk’s analysis. Secondary posts disagree on some details (for example the number of affected machines); prefer the researcher’s own account.</td></tr>
+<tr><td>C3</td><td><strong>Malicious MCP servers and packages (Sept 2025 – 2026)</strong></td><td>Packages that register a rogue tool server with a coding assistant, so tool descriptions tell the agent to read keys and files. The agent’s own log is the evidence.</td><td>The first reported malicious MCP server (postmark-mcp, Sept 2025) and the 2026 typosquatting findings reported by Socket and others; MITRE ATLAS entries on supply-chain compromise.</td></tr>
+<tr><td>C4</td><td><strong>Calendar-invite prompt injection against Gemini (disclosed Jan 2026)</strong></td><td>Text hidden in a meeting invite made an assistant write private meeting details into an event the attacker could read.</td><td>Miggo Security’s disclosure (Jan 19, 2026) and Google’s response; independent coverage. Check what Google confirmed.</td></tr>
+<tr><td>C5</td><td><strong>Data-leak flaws in Salesforce Agentforce and Microsoft Copilot (2026)</strong></td><td>Researchers showed prompt injections that could have leaked customer data from enterprise agents; both vendors patched.</td><td>Capsule Security’s research; Dark Reading’s report; the vendors’ advisories and the CVE entry (CVE-2026-21520, check NVD).</td></tr>
+</tbody></table>
+<h2>Template sections</h2>
+<p>Use these headings, in this order (details are in the Word template).</p>
+<h3>Bottom line up front</h3><p>Two sentences a manager could read in 20 seconds: what happened and the one change to monitoring you would make on Monday morning.</p>
+<h3>1. Summary and why you chose it (5 points)</h3><p>About 100 words, for a reader who has never heard of the incident.</p>
+<h3>2. Timeline (15 points)</h3><p>Five to eight dated steps as a table. Note where sources disagree.</p>
+<h3>3. ATT&amp;CK (and ATLAS) mapping and the Pyramid of Pain (20 points)</h3><p>One technique per step with the ID and name, and the rung of the Pyramid of Pain at which you would detect that step, with a reason (Roddie Ch. 6&ndash;7; Demo 14).</p>
+<h3>4. What the evidence looked like (15 points)</h3><p>For at least three steps: the data source (packet, flow, Zeek or server log, endpoint, cloud audit, identity, or AI tool-call log), what it records, and what it cannot see.</p>
+<h3>5. Your track deliverable (25 points)</h3><p>The detection, hunt or control for your track, with the test you ran and the result. Show known-bad and known-good data and one false positive. Offline test files made with Scapy are fine; never send crafted traffic to anything but a lab host you were given.</p>
+<h3>6. How good is the intelligence? (10 points)</h3><p>Three key claims, each with the source, how it was collected, its date, and your confidence (high, moderate or low) with a reason. For recent events say what is still unconfirmed (Brown and Roberts Ch. 2).</p>
+<h3>7. Lessons and one AI question (5 points)</h3><p>What the incident teaches, and how an attacker using AI tools would change it, or how an AI assistant on the defender&rsquo;s side would help and what you would check before trusting it.</p>
+<h3>8. Sources (5 points)</h3><p>Four or more, with links and access dates, at least two of them primary (an advisory, a vendor or victim report, a court filing, a CVE or vendor bulletin). Wikipedia does not count.</p>
+<h2>Grading</h2>
+<table><thead><tr><th>Section</th><th>Points</th></tr></thead><tbody>
+<tr><td>Bottom line and 1. Summary</td><td>5</td></tr><tr><td>2. Timeline</td><td>15</td></tr><tr><td>3. Mapping and Pyramid of Pain</td><td>20</td></tr><tr><td>4. What the evidence looked like</td><td>15</td></tr><tr><td>5. Track deliverable</td><td>25</td></tr><tr><td>6. Intelligence quality</td><td>10</td></tr><tr><td>7. Lessons and AI question</td><td>5</td></tr><tr><td>8. Sources</td><td>5</td></tr><tr><td><strong>Total</strong></td><td><strong>100</strong></td></tr></tbody></table>
+<h2>Submission</h2>
 <ul>
-<li>Detailed analysis of the breach using the <strong>MITRE ATT&amp;CK framework</strong> or similar security models.</li>
-<li>Discuss <strong>Tactics, Techniques, and Procedures (TTPs)</strong> used by attackers.</li>
-<li>Highlight key <strong>Indicators of Compromise (IOCs)</strong> and how they were identified or could have been detected.</li>
-<li>Explain any vulnerabilities exploited and methods used (e.g., spear-phishing, supply chain attack, zero-day vulnerabilities).</li>
-</ul>
-</li>
-<li>
-<p><strong>Impacts and Aftermath (20%)</strong></p>
-<ul>
-<li>Analyze the broader impact: financial, reputational, regulatory, or societal.</li>
-<li>Summarize legal and regulatory changes (if any) that followed.</li>
-<li>Discuss lessons learned and industry changes triggered by the breach.</li>
-</ul>
-</li>
-<li>
-<p><strong>Recommendations and Mitigations (15%)</strong></p>
-<ul>
-<li>Suggest practical actions to prevent or mitigate similar breaches.</li>
-<li>Propose detection strategies students can use in the lab (e.g., writing detection rules, monitoring specific logs).</li>
-</ul>
-</li>
-<li>
-<p><strong>Conclusion (5%)</strong></p>
-<ul>
-<li>Summarize findings and highlight the interplay between understanding the big picture (forest) and mastering technical details (trees).</li>
-</ul>
-</li>
-<li>
-<p><strong>References (Mandatory)</strong></p>
-<ul>
-<li>Cite all sources using APA or MLA format.</li>
-</ul>
-</li>
-</ol>
-<hr>
-<h3>Part 2: Class Presentation</h3>
-<p><strong>Length:</strong> 5 minutes<br><strong>Presentation Date:</strong> Final Class</p>
-<p><strong>Presentation Structure:</strong></p>
-<ol>
-<li>
-<p><strong>Introduction (1 minute):</strong></p>
-<ul>
-<li>Briefly introduce the breach and why it was significant.</li>
-</ul>
-</li>
-<li>
-<p><strong>Key Findings (3 minutes):</strong></p>
-<ul>
-<li>Discuss the TTPs, IOCs, and notable lessons learned.</li>
-<li>Highlight how the breach changed security practices or policy.</li>
-</ul>
-</li>
-<li>
-<p><strong>Takeaway (1 minute):</strong></p>
-<ul>
-<li>Share one key insight students can apply in practice (e.g., use of a specific MITRE technique or real-world detection example).</li>
-</ul>
-</li>
-</ol>
-<p><strong>Tips for Presenters:</strong></p>
-<ul>
-<li>Use visuals or diagrams to explain complex ideas (e.g., MITRE heatmaps, attack timelines).</li>
-<li>Practice to stay within the time limit.</li>
-<li>Be ready to answer questions from peers or instructors.</li>
-</ul>
-<hr>
-<h3>Suggested Case Studies:</h3>
-<ol>
-<li>
-<strong>Equifax (2017):</strong> Exploitation of unpatched Apache Struts vulnerability leading to PII compromise of 147 million people.</li>
-<li>
-<strong>Stuxnet (2010):</strong> Nation-state malware targeting Iranian nuclear centrifuges; illustrates cyber-physical attacks.</li>
-<li>
-<strong>SolarWinds (2020):</strong> Supply chain attack affecting numerous organizations and U.S. government agencies.</li>
-<li>
-<strong>Colonial Pipeline (2021):</strong> Ransomware attack causing critical infrastructure shutdown.</li>
-<li>
-<strong>Uber (2022):</strong> Multi-factor authentication fatigue attack compromising systems and revealing organizational weaknesses.</li>
-<li>
-<strong>Capital One (2019):</strong> Cloud misconfiguration breach exposing 100 million credit applications.</li>
-</ol>
-<hr>
-<h3>Grading Rubric</h3>
-<p><strong>Paper (100 points):</strong></p>
-<ul>
-<li>Depth of analysis: 40%</li>
-<li>Clarity and organization: 20%</li>
-<li>Use of MITRE framework and technical depth: 20%</li>
-<li>References and citation: 10%</li>
-<li>Grammar and presentation: 10%</li>
-</ul>
-<p><strong>Presentation (50 points):</strong></p>
-<ul>
-<li>Content clarity and conciseness: 50%</li>
-<li>Use of visuals and examples: 30%</li>
-<li>Engagement and delivery: 20%</li>
+<li>One PDF, 2&ndash;4 pages, uploaded to Canvas by Fri Dec 4, 2026, 9:00 a.m.</li>
+<li>Late work follows the syllabus policy (10% deduction; ask before the deadline).</li>
+<li>Write in your own words. You may use AI tools to find sources or check your understanding, but check every fact and every ATT&amp;CK or ATLAS ID yourself, and list any AI-written text in your disclosure. An AI answer you did not verify is not a source.</li>
 </ul>

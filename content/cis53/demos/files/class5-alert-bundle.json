@@ -1,0 +1,59 @@
+{
+  "note": "Synthetic. Built from class5-hunt.pcap. All hosts, names and times are invented. Times are Pacific, 2026-11-20.",
+  "assets": {
+    "10.0.0.15": "Staff workstation (front office)",
+    "10.0.0.50": "Intranet web server",
+    "10.0.0.51": "Internal API server (api.corp.test)",
+    "10.0.0.52": "Reception kiosk PC (browser only, no admin tools)",
+    "10.0.0.60": "Build server (runs scripts that poll the internal API)",
+    "10.0.0.77": "Support AI agent host (approved to call api.llm-vendor.test)"
+  },
+  "approved_ai_services": ["api.llm-vendor.test"],
+  "alerts": [
+    {
+      "id": "A1",
+      "rule": "Regular-interval outbound connections (SIEM hunt query)",
+      "src": "10.0.0.52", "dst": "203.0.113.99", "dst_port": 80,
+      "evidence": "21 connections between 09:00:30 and 09:29:38; mean gap 87.4 s, coefficient of variation 0.04; each 164 bytes out, 107 bytes back",
+      "http": "GET cdn.assets-front.test /static/px.gif?c=<6 hex chars> ; user agent: a desktop Chrome string",
+      "intel": "No reputation data for 203.0.113.99 or cdn.assets-front.test"
+    },
+    {
+      "id": "A2",
+      "rule": "Regular-interval connections (SIEM hunt query)",
+      "src": "10.0.0.60", "dst": "10.0.0.51", "dst_port": 80,
+      "evidence": "60 connections, one every 30.0 s, coefficient of variation 0.00",
+      "http": "GET api.corp.test /api/health ; user agent python-requests/2.31.0",
+      "intel": "Internal address"
+    },
+    {
+      "id": "A3",
+      "rule": "Regular-interval connections (SIEM hunt query)",
+      "src": "10.0.0.15", "dst": "10.0.0.2", "dst_port": 123,
+      "evidence": "29 UDP exchanges, one every 64.0 s, coefficient of variation 0.00",
+      "intel": "Internal resolver and time server"
+    },
+    {
+      "id": "A4",
+      "rule": "High-volume TLS session to an external service",
+      "src": "10.0.0.77", "dst": "198.51.100.30", "dst_port": 443,
+      "evidence": "6 TLS sessions between 09:02 and 09:26; about 751,700 bytes received in total, 2.5 to 9 KB sent per session; each lasts under a second in the capture",
+      "tls": "SNI api.llm-vendor.test",
+      "intel": "api.llm-vendor.test is on the approved AI services list"
+    },
+    {
+      "id": "A5",
+      "rule": "DNS query for a first-seen domain",
+      "src": "10.0.0.52", "dst": "10.0.0.2", "dst_port": 53,
+      "evidence": "Query cdn.assets-front.test (A) at 09:00:29, answer 203.0.113.99, TTL 60; no earlier query for this name in the 30-day log",
+      "intel": "None"
+    },
+    {
+      "id": "A6",
+      "rule": "Scripting-library user agent in HTTP",
+      "src": "10.0.0.60", "dst": "10.0.0.51", "dst_port": 80,
+      "evidence": "python-requests/2.31.0 on 60 requests to api.corp.test /api/health",
+      "intel": "Internal address"
+    }
+  ]
+}

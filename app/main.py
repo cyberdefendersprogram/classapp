@@ -12,6 +12,7 @@ from app.routers import (
     book_reading,
     case_studies,
     claim,
+    company_research,
     demos,
     grades,
     health,
@@ -62,6 +63,7 @@ app.include_router(quizzes.router)
 app.include_router(tools.router)
 app.include_router(demos.router)
 app.include_router(case_studies.router)
+app.include_router(company_research.router)
 app.include_router(labs.router)
 app.include_router(grades.router)
 app.include_router(book_reading.router)

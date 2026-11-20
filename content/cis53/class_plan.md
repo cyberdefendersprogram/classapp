@@ -65,6 +65,7 @@ Fridays 9:00 a.m.–12:00 p.m. PT, online. Built from the Canvas modules, the 20
 - **Final-format demo:** an AI-agent exfiltration level.
 - Final briefing: format, hints policy, rules, no AI on the Final. Released at the end of class (12:00 p.m.).
 - Assign presentation slots for Dec 4.
+- **Built for Class 5:** deck `CIS53-Week5-Intelligence-Hunting-and-AI-Triage.pptx`, Demos 14–17 (`scripts/make_class5_pcaps.py`), in-class quiz `005-class5-inclass.md` (25 pts), Company Research page (rows live in the `Company_Research` tab of the class sheet), Case Study 5 rebuilt as a 15-incident catalogue in three tracks (Detect, Hunt, Defend AI) with a new template and no presentation (due Dec 4), Lab 4 rewritten and moved to Dec 4 (AI-triage Part 4 with `lab4-alert-bundle.json`, answer key in `labs/solutions/`), and the Week 5 Canvas quiz rebuilt on Class 4 content (due Nov 22).
 
 ## Week 6 (Dec 4) — Presentations and guest lecture
 

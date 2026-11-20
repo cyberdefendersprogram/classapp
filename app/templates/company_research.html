@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Company Research{% endblock %}
+
+{% block content %}
+<nav class="nav">
+    <a href="/home">Home</a>
+    <a href="/schedule">Schedule</a>
+    <a href="/quizzes">Quizzes</a>
+    <a href="/tools">Tools</a>
+    <a href="/labs">Labs</a>
+    <a href="/case-studies">Case Studies</a>
+    <a href="/company-research" class="active">Company Research</a>
+    <a href="/demos">Demos</a>
+    {% set reading_link = nav_reading_link() %}
+    {% if reading_link %}<a href="{{ reading_link.url }}">{{ reading_link.label }}</a>{% endif %}
+    <a href="/final-projects">Final Projects</a>
+    {% if grades_released() %}<a href="/grades">Canvas Grades</a>{% endif %}
+    <a href="/me">Profile</a>
+    {% if is_admin %}<a href="/admin/analytics">Admin</a>{% endif %}
+    <a href="/auth/logout">Sign Out</a>
+</nav>
+
+<h1>Company Research</h1>
+<p class="text-muted mb-3">Highlights from the incident-response startup case study. Each card is one student's work, trimmed to the parts worth discussing. Read two or three before your 3-minute presentation and notice what each writer checked and what they only repeated from the company.</p>
+
+{% if rows %}
+<div class="scroll">
+<table class="cr-table">
+    <thead><tr><th>Company</th><th>Student</th><th>What it sells</th><th>Data it reads</th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+    <tr><td><a href="#cr-{{ loop.index }}">{{ r.company }}</a></td><td>{{ r.student }}</td><td>{{ r.what_it_sells }}</td><td>{{ r.data_read }}</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+
+<div class="cr-grid">
+{% for r in rows %}
+<article class="cr-card" id="cr-{{ loop.index }}">
+    <p class="cr-by">{{ r.student }}</p>
+    <h2>{{ r.company }}</h2>
+    <p class="cr-verdict">{{ r.verdict }}</p>
+    <dl>
+        {% if r.ai_role %}<dt>Where AI is used</dt><dd>{{ r.ai_role }}</dd>{% endif %}
+        {% if r.build_it %}<dt>Build it yourself</dt><dd>{{ r.build_it }}</dd>{% endif %}
+        {% if r.attack_mapping %}<dt>ATT&amp;CK mapping</dt><dd>{{ r.attack_mapping }}</dd>{% endif %}
+        {% if r.demo_question %}<dt>A demo question worth asking</dt><dd>{{ r.demo_question }}</dd>{% endif %}
+        {% if r.risk %}<dt>Risk</dt><dd>{{ r.risk }}</dd>{% endif %}
+    </dl>
+    {% if r.class_link %}<p class="cr-link">{{ r.class_link }}</p>{% endif %}
+</article>
+{% endfor %}
+</div>
+{% else %}
+<p class="text-muted">No company research has been published yet.</p>
+{% endif %}
+
+<style>
+.scroll { overflow-x: auto; margin-bottom: 1.5rem; }
+.cr-table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+.cr-table th, .cr-table td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid #e9ecef; vertical-align: top; }
+.cr-table th { color: #666; font-weight: 600; }
+.cr-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+@media (min-width: 900px) { .cr-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.cr-card { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 1.25rem 1.5rem; min-width: 0; }
+.cr-card h2 { margin: 0 0 0.5rem 0; font-size: 1.2rem; }
+.cr-by { margin: 0; color: #666; font-size: 0.85rem; }
+.cr-verdict { font-weight: 500; margin: 0 0 0.75rem 0; }
+.cr-card dt { font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: #666; margin-top: 0.75rem; }
+.cr-card dd { margin: 0.15rem 0 0 0; line-height: 1.5; }
+.cr-link { margin: 0.75rem 0 0 0; font-size: 0.9rem; color: #555; }
+.nav a.active { font-weight: 600; color: #333; }
+</style>
+{% endblock %}
