@@ -42,7 +42,7 @@ Speaker and topic to be announced in Canvas.
 
 ## Final Reminders
 
-- The Final closes **Friday, December 4, 9:00 a.m. PT**.
+- The Final closes **Sunday, December 6, 11:59 p.m. PT**.
 - Submit complete evidence for each level; late work is deducted per the syllabus.
 - No AI tools on the Final unless the instructions say so.
 - Please complete the course feedback; it directly shapes next term.

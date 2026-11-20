@@ -30,7 +30,7 @@ Class Portal dates are authoritative.
 | Nov 13 | 4 | IDS/IPS, Suricata, Zeek, Sigma; agent logs | Lab 3 due |
 | Nov 20 | 5 | Threat intel, hunting, AI-assisted triage | Lab 4 due; **Final released 12:00 pm** |
 | Nov 27 | — | No class (Thanksgiving) | |
-| Dec 4 | 6 | Student presentations and guest lecture | Final closes Fri Dec 4 at 9:00 a.m., 11:59 pm |
+| Dec 4 | 6 | Student presentations and guest lecture | Final closes Sun Dec 6, 11:59 pm |
 
 ## Today's Agenda
 

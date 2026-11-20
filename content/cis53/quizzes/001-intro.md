@@ -25,7 +25,7 @@ Which tools will we use hands-on? (Select all that apply)
 When is the Final released, and how long is it open?
 
 - [ ] Nov 6, open one week
-- [x] Nov 20 at 12:00 p.m. PT, open until Friday Dec 4 at 9:00 a.m. PT
+- [x] Nov 20 at 12:00 p.m. PT, open until Sunday Dec 6 at 11:59 p.m. PT
 - [ ] Dec 4, open 24 hours
 - [ ] It is given in class on the last day
 

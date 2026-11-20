@@ -16,7 +16,7 @@ Status: DRAFT. Nothing here has been pushed to Canvas. Push as unpublished draft
 
 DECISION NEEDED: Final Levels 1-5 currently unlock Nov 20 and are due Nov 22 (Canvas).
 Proposed: unlock Nov 20 (head start), class Dec 4 is the capstone presentation and
-the Presentation Final, all levels due Fri Dec 4 9:00am PT.
+the Presentation Final, all levels due Sun Dec 6 11:59pm PT.
 
 ## 2. Theme: detect threats to, from, and with AI
 

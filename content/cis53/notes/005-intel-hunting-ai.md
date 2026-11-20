@@ -75,7 +75,7 @@ Treat the model as a fast junior analyst whose work you always check. You will d
 
 We solve an AI-agent exfiltration level live. Then the rules for the Final:
 
-- **Released:** today, 12:00 p.m. PT. **Closes:** Friday, Dec 4, 9:00 a.m. PT (open book).
+- **Released:** today, 12:00 p.m. PT. **Closes:** Sunday, Dec 6, 11:59 p.m. PT (open book).
 - Multi-level, evidence-based; hints are available for each level.
 - **No AI tools** on the Final unless the instructions say so.
 - Show your evidence: packet numbers, log lines, hashes.
