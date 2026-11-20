@@ -45,7 +45,7 @@
         </div>
 
         <div class="question-text" style="margin-bottom: 1rem;">
-            {{ question.text }}
+            {{ question.text|quiz_text }}
         </div>
 
         {% if question.type == 'mcq_single' %}

@@ -1,11 +1,13 @@
 """Shared dependencies for FastAPI application."""
 
 import logging
+import re
 from pathlib import Path
 from typing import Annotated
 
 from fastapi import Cookie, Depends, HTTPException, status
 from fastapi.templating import Jinja2Templates
+from markupsafe import Markup, escape
 
 from app.db.sqlite import get_cached_student, set_cached_student
 from app.models.roster import RosterEntry
@@ -17,6 +19,19 @@ logger = logging.getLogger(__name__)
 # Templates directory
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+
+_MD_LINK = re.compile(r"\[([^\]]+)\]\((/[^)\s]*|https://[^)\s]*)\)")
+_MD_BOLD = re.compile(r"\*\*(.+?)\*\*")
+
+
+def quiz_text(text: str) -> Markup:
+    """Escape question text, then allow **bold** and [label](/path or https://url) links."""
+    html = str(escape(text))
+    html = _MD_LINK.sub(lambda m: f'<a href="{m.group(2)}">{m.group(1)}</a>', html)
+    return Markup(_MD_BOLD.sub(r"<strong>\1</strong>", html))
+
+
+templates.env.filters["quiz_text"] = quiz_text
 
 
 def get_current_session(
