@@ -19,15 +19,15 @@ Friday, December 4, 2026 · 9:00 a.m.–12:00 p.m. PT (online)
 
 ## Presentations (the Presentation Final)
 
-Each student presents three pieces of work as one story, in **5 minutes**, then answers **1 minute of spot questions** about their answers on the Final and their case studies. Use the template, **CIS53-Final-Presentation-Template.pptx** (five content slides with minutes on each), and upload your slides to Canvas by **9:00 a.m.** so they are loaded before 10:00.
+Each student presents their Case Study 3 company, their Case Study 5 incident and their Final work in **5 minutes**, then answers **1 minute of spot questions** about their answers on the Final and their case studies. Use the template, **CIS53-Final-Presentation-Template.pptx** (five content slides with minutes on each), and upload your slides to Canvas by **9:00 a.m.** so they are loaded before 10:00.
 
 | Slide | Time | What it shows |
 |---|---|---|
 | 1. Case Study 3 | 1 min | The company, the claim you tested, your verdict and the evidence |
-| 2. Case Study 5: the incident | 1.5 min | Three dated beats, ATT&CK or ATLAS IDs, the Pyramid of Pain rung, source confidence |
-| 3. Case Study 5: what you built | 1 min | Your rule, hunt or control, a known-bad and a known-good test, one false positive |
-| 4. Your Final work | 1 min | One level you solved: the question, the evidence on screen, the false lead you ruled out |
-| 5. Monday morning | 0.5 min | One change you would make at work |
+| 2. Case Study 5: the incident | 1.5 min | A short dated timeline, ATT&CK or ATLAS IDs, the Pyramid of Pain rung, source confidence |
+| 3. Case Study 5: what you built | 1 min | Your rule, hunt or control, a known-bad and a known-good test, a false positive you saw |
+| 4. Your Final work | 1 min | A Final level you solved: the question, the evidence on screen, the false lead you ruled out |
+| 5. Wrap up | 0.5 min | The change you would make to monitoring, and something you could not confirm |
 
 Keep to time; the next presenter starts immediately. Expect spot questions such as "show me where that is in the capture" or "what would change your answer?"
 
