@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice the Final: a TLS beacon level and an AI-agent level</title>
+<meta name="description" content="Two practice levels in the Final's format: hunt a command-and-control beacon by its default certificate and schedule, and trace an AI triage bot that obeyed a poisoned GitHub issue (the 2026 Clinejection pattern). Instant answers on the portal quiz.">
+<meta name="class" content="5">
+<style>
+:root { --bg:#F2F5F8; --surface:#FFFFFF; --fg:#0E1726; --muted:#4E5B72; --line:#D3DBE6; --accent:#0B7F75; --warn:#8A5A00; --warn-bg:#FBEBC8; --code-bg:#0E1726; --code-fg:#E8EDF5; --display:'IBM Plex Sans',system-ui,sans-serif; --mono:ui-monospace,Menlo,Consolas,monospace; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#0B1220; --surface:#131D31; --fg:#E8EDF5; --muted:#9AA7BD; --line:#263550; --accent:#3FD0C0; --warn:#F5CE82; --warn-bg:#4A3612; --code-bg:#070C16; color-scheme:dark; } }
+:root[data-theme="dark"] { --bg:#0B1220; --surface:#131D31; --fg:#E8EDF5; --muted:#9AA7BD; --line:#263550; --accent:#3FD0C0; --warn:#F5CE82; --warn-bg:#4A3612; --code-bg:#070C16; color-scheme:dark; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font-family:var(--display); line-height:1.55; }
+main { max-width:900px; margin:0 auto; padding:28px 16px 56px; }
+h1 { font-size:1.9rem; line-height:1.2; margin:0 0 8px; }
+h2 { font-size:1.25rem; margin:30px 0 10px; }
+h3 { font-size:1.02rem; margin:0 0 6px; }
+p { margin:0 0 12px; }
+.lede { color:var(--muted); font-size:1.05rem; }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; }
+.card { background:var(--surface); border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:6px; padding:14px 16px; }
+.card.warn { border-left-color:var(--warn); }
+.callout { background:var(--warn-bg); color:var(--warn); border-radius:6px; padding:10px 14px; font-weight:600; margin:14px 0; }
+a.btn { display:inline-block; background:var(--accent); color:#fff; text-decoration:none; font-weight:600; padding:9px 16px; border-radius:6px; margin:4px 8px 4px 0; }
+:root[data-theme="dark"] a.btn { color:#06201d; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) a.btn { color:#06201d; } }
+pre { background:var(--code-bg); color:var(--code-fg); padding:12px 14px; border-radius:6px; overflow-x:auto; font-family:var(--mono); font-size:.86rem; margin:8px 0 14px; }
+code { font-family:var(--mono); font-size:.9em; }
+ul { margin:0 0 12px; padding-left:20px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Practice the Final: a TLS beacon level and an AI-agent level</h1>
+<p class="lede">The Final has five levels, and Dec 4 adds a sixth: your in-class presentation, where I ask spot questions about your answers. Levels 3 and 5 are captures with questions whose answers come from the evidence, plus one written judgment question that I grade by hand. This practice set has two levels in the same style. The data is different from yours, so nothing here is an answer to the real thing.</p>
+
+<div class="callout">All traffic is invented (private and documentation addresses, <code>.test</code> names). On the real Final you work alone and use no AI tools, and I ask spot questions about your answers in class on Dec 4. Here, try it first without AI.</div>
+
+<h2>Download</h2>
+<p>
+<a class="btn" href="/demos/files/final-practice-level3.zip">Level 3 practice (2.8 MB)</a>
+<a class="btn" href="/demos/files/final-practice-level5.zip">Level 5 practice (1.2 MB)</a>
+</p>
+<p>The practice zips have no password. On the real Final, Level 3's zip is unlocked by what you found in Level 2.</p>
+
+<div class="grid">
+<div class="card">
+<h3>Level 3 practice: the default certificate</h3>
+<p>About 15 minutes of office traffic, almost all of it encrypted. Threat intelligence says one outside server is a C2 server. Two hosts call out on a fixed schedule over TLS 1.2, and only one is the beacon. You never see the messages. You see who talks, when, how often, what the ClientHello offers, and what each server's certificate says about itself.</p>
+</div>
+<div class="card warn">
+<h3>Level 5 practice: the bot and the issue</h3>
+<p>An AI bot triages GitHub issues, as in the February 2026 Clinejection attack. You get its network capture, its tool-call log and its approved-destinations list. Two issues contain instruction-like text and only one made the bot leak tokens. Find the issue, the file, the destination and the timing.</p>
+</div>
+</div>
+
+<h2>Starter commands</h2>
+<p>These only show you where to look. You still have to read the output and decide.</p>
+<pre># Level 3: who sends ClientHellos, to which server name, and when
+tshark -r level3.pcap -Y "tls.handshake.type==1" \
+  -T fields -e frame.time_epoch -e ip.src -e tls.handshake.extensions_server_name
+
+# Level 3: the cipher suites one ClientHello offers, and a server certificate
+tshark -r level3.pcap -Y "tls.handshake.type==1 &amp;&amp; ip.src==10.0.0.15" -V | less
+tshark -r level3.pcap -Y "tls.handshake.type==11" -V | less
+
+# Level 5: every HTTP request, with timing and size
+tshark -r level5.pcap -Y "http.request" \
+  -T fields -e frame.time_relative -e http.request.method -e http.host -e http.request.uri -e http.content_length
+
+# Level 5: the issues the bot read, and its own log
+tshark -r level5.pcap -Y "http.response" -T fields -e http.file_data
+cat agent-tool-calls.jsonl; cat approved-hosts.txt</pre>
+
+<h2>A method that works on both</h2>
+<ul>
+<li><strong>Count first.</strong> How many connections, hosts and names? An odd count is a lead.</li>
+<li><strong>Look at timing.</strong> Human browsing is bursty. A fixed gap is a schedule (Demo 15's regularity idea).</li>
+<li><strong>Separate lookalikes.</strong> A second host also runs on a schedule, and a second issue also contains attack text. What else is different (certificate, cipher list, message sizes, what the bot did next)?</li>
+<li><strong>Write down the evidence.</strong> Packet numbers, filters, log lines. Several Final questions ask you to prove it.</li>
+</ul>
+
+<h2>Check yourself</h2>
+<p>The portal quiz has 16 questions (8 per level), and it shows which you got right. The real Final adds a written judgment question to each level, worth 2 points, graded by hand. Practise it on your own: explain in 3 to 5 sentences why your answer beats the lookalike, with evidence.</p>
+<p><a class="btn" href="/quiz/q050">Open the practice quiz</a></p>
+<p>Then go further: ask an AI tool to analyze the same capture and use Demo 17's method to check each of its claims against the evidence.</p>
+</main>
+</body>
+</html>

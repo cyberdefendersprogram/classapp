@@ -69,7 +69,7 @@ Fridays 9:00 a.m.–12:00 p.m. PT, online. Built from the Canvas modules, the 20
 
 ## Week 6 (Dec 4) — Presentations and guest lecture
 
-- Student presentations: 3-minute startup case-study highlights (and Final findings if time allows).
+- Student presentations (Final Level 6): 5 to 7 minutes each (Case Study 3, Case Study 5 and your Final work) plus 1 to 2 minutes of spot questions. With 22 students this fills most of the class, so the guest lecture needs its own slot. Template: CIS53-Final-Presentation-Template.pptx.
 - Guest lecture (open: who? Last year was a Wiz speaker).
 - Wrap-up: how the course fits together, next steps (SOC L1/L2 paths, certifications), reminder that the Final closes Sunday, Dec 6, 11:59 p.m.
 

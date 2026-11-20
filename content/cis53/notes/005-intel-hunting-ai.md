@@ -103,8 +103,8 @@ These feed Case Study 5, where you choose an incident from a catalogue.
 - **Case Study 5:** [Case Study 5 on Canvas](https://peralta.instructure.com/courses/89432/assignments/1820975), due **Friday, December 4, 9:00 a.m.** Pick one incident from the catalogue (breach detection, hunting, or attacks on AI systems). No presentation. Propose your own incident by Wed Nov 25.
 - **Week 5 quiz:** covers Class 4, due Sunday, Nov 22.
 - **Class 5 in-class quiz** on the portal.
-- **Company Research:** the Case Study 3 highlights page is on the portal; read it before your 3-minute presentation.
+- **Company Research:** the Case Study 3 highlights page is on the portal; read it before your 5 to 7 minute presentation on Dec 4.
 
 ## Presentations
 
-Dec 4 is the Case Study 3 startup highlights (3 minutes each) plus a guest lecture. Sign-up slots are assigned in class today.
+Dec 4 is the Final Level 6 presentation (5 to 7 minutes each: Case Study 3, Case Study 5 and your Final work, then spot questions) plus a guest lecture. Sign-up slots are assigned in class today.
