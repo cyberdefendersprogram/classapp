@@ -4,7 +4,7 @@ title: Final Practice (Level 3 and Level 5 style)
 
 ## Q1 [numeric, 1pt]
 
-**Level 3 practice (final-practice-level3.zip).** How many TLS ClientHello packets are in the capture? (Wireshark filter: tls.handshake.type == 1)
+**Level 3 practice (final-practice-level3.zip).** Downloads and starter commands are on the portal at /demos/018-practice-the-final-tls-beacon-and-ai-agent-levels. How many TLS ClientHello packets are in the capture? (Wireshark filter: tls.handshake.type == 1)
 
 answer: 99
 
@@ -56,7 +56,7 @@ answer: defaultc2
 
 ## Q9 [numeric, 1pt]
 
-**Level 5 practice (final-practice-level5.zip).** Two issues the agent fetched contain instruction-like text, but only one led to a leak. What is the issue number of the one that led to the leak? (digits only)
+**Level 5 practice (final-practice-level5.zip).** Downloads and starter commands are on the same demo page (/demos/018-practice-the-final-tls-beacon-and-ai-agent-levels). Two issues the agent fetched contain instruction-like text, but only one led to a leak. What is the issue number of the one that led to the leak? (digits only)
 
 answer: 2204
 

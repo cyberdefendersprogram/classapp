@@ -88,6 +88,7 @@ We solve an AI-agent exfiltration level live. Then the rules for the Final:
 - [Demo 15: Hunt the beacon in conn.log](/demos/015-hunt-the-beacon-in-conn-log): no alert fired; a regularity query finds three suspects, context removes two.
 - [Demo 16: Craft packets to test your rule](/demos/016-craft-packets-to-test-your-rule): Scapy builds seven variants offline; one rule misses one, and the fix is one word.
 - [Demo 17: AI-assisted triage](/demos/017-ai-assisted-triage-check-the-model): check a confident model answer claim by claim against the logs.
+- [Demo 18: Practice the Final](/demos/018-practice-the-final-tls-beacon-and-ai-agent-levels): two practice levels in the Final's format (a default-certificate C2 beacon and an AI triage bot that obeyed a poisoned issue), with downloads and a self-check quiz (`/quiz/q050`).
 
 ## Recent AI events we will use (verify before you rely on any detail)
 
