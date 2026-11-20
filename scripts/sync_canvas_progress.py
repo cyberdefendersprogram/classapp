@@ -13,6 +13,10 @@ Columns:
 status: excused | graded | submitted | missing (past due, nothing turned in) |
         upcoming (not due yet, nothing turned in)
 
+Final Level 3 and Level 5 come in A/B/C variants. If the sheet has a "Final_Versions" tab
+(canvas_user_id, student, version, level3_quiz_id, level5_quiz_id), each student only gets rows
+for their own variant of those levels; without it every variant is listed for everyone.
+
 Only published assignments that take a submission are included (attendance and other
 no-submission items are skipped). Students are all active student enrollments.
 
@@ -43,6 +47,7 @@ from google.oauth2.service_account import Credentials
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 TAB = "Canvas_Progress"
+VERSIONS_TAB = "Final_Versions"
 HEADERS = [
     "canvas_user_id",
     "name",
@@ -96,7 +101,22 @@ def submission_status(sub: dict | None, due_at: str | None, now: datetime) -> st
     return "upcoming"
 
 
-def build_rows(canvas: Canvas, now: datetime) -> list[list]:
+def load_variants(ss) -> dict[int, set[int]] | None:
+    """Return {canvas_user_id: {assigned variant assignment ids}} from Final_Versions, or None."""
+    try:
+        records = ss.worksheet(VERSIONS_TAB).get_all_records()
+    except gspread.WorksheetNotFound:
+        return None
+    return {
+        int(r["canvas_user_id"]): {int(r["level3_quiz_id"]), int(r["level5_quiz_id"])}
+        for r in records
+        if r.get("canvas_user_id") and r.get("level3_quiz_id") and r.get("level5_quiz_id")
+    } or None
+
+
+def build_rows(
+    canvas: Canvas, now: datetime, variants: dict[int, set[int]] | None = None
+) -> list[list]:
     users = canvas.get(
         f"/courses/{canvas.course}/users",
         enrollment_type=["student"],
@@ -111,12 +131,17 @@ def build_rows(canvas: Canvas, now: datetime) -> list[list]:
     subs = canvas.get(f"/courses/{canvas.course}/students/submissions", student_ids=["all"])
     by_key = {(s["user_id"], s["assignment_id"]): s for s in subs}
     stamp = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+    # Every variant assignment id: a student is only shown the ones in their own set.
+    all_variant_ids = set().union(*variants.values()) if variants else set()
 
     rows = []
     for u in sorted(users, key=lambda u: (u.get("sortable_name") or u["name"]).lower()):
         enrollment = (u.get("enrollments") or [{}])[0]
         email = u.get("email") or u.get("login_id") or ""
+        mine = variants.get(u["id"]) if variants else None
         for a in assignments:
+            if mine is not None and a["id"] in all_variant_ids and a["id"] not in mine:
+                continue
             s = by_key.get((u["id"], a["id"]))
             status = submission_status(s, a.get("due_at"), now)
             rows.append(
@@ -160,13 +185,16 @@ def main() -> None:
         cenv["CANVAS_TOKEN"],
         args.course_id,
     )
-    rows = build_rows(canvas, datetime.now(UTC))
+    creds = Credentials.from_service_account_file(args.service_account, scopes=SCOPES)
+    ss = gspread.authorize(creds).open_by_key(args.sheet_id)
+    variants = load_variants(ss)
+    rows = build_rows(canvas, datetime.now(UTC), variants)
     students = {r[0] for r in rows}
     assignments = {r[4] for r in rows}
     print(f"Canvas: {len(students)} students x {len(assignments)} assignments = {len(rows)} rows")
-
-    creds = Credentials.from_service_account_file(args.service_account, scopes=SCOPES)
-    ss = gspread.authorize(creds).open_by_key(args.sheet_id)
+    print(
+        f"Final variants: {'filtered per student' if variants else 'not filtered (no Final_Versions)'}"
+    )
     print(f"Sheet: {ss.title} / {TAB}")
     if not args.apply:
         print("Dry-run: nothing written. Pass --apply to write.")
