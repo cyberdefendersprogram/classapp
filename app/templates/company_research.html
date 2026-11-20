@@ -3,24 +3,7 @@
 {% block title %}Company Research{% endblock %}
 
 {% block content %}
-<nav class="nav">
-    <a href="/home">Home</a>
-    <a href="/schedule">Schedule</a>
-    <a href="/quizzes">Quizzes</a>
-    <a href="/tools">Tools</a>
-    <a href="/labs">Labs</a>
-    <a href="/case-studies">Case Studies</a>
-    <a href="/company-research" class="active">Company Research</a>
-    <a href="/incident-research">Incident Research</a>
-    <a href="/demos">Demos</a>
-    {% set reading_link = nav_reading_link() %}
-    {% if reading_link %}<a href="{{ reading_link.url }}">{{ reading_link.label }}</a>{% endif %}
-    <a href="/final-projects">Final Projects</a>
-    {% if grades_released() %}<a href="/grades">Canvas Grades</a>{% endif %}
-    <a href="/me">Profile</a>
-    {% if is_admin %}<a href="/admin/analytics">Admin</a>{% endif %}
-    <a href="/auth/logout">Sign Out</a>
-</nav>
+{% include "_nav.html" %}
 
 <h1>Company Research</h1>
 <p class="text-muted mb-3">Highlights from the incident-response startup case study. Each card is one student's work, trimmed to the parts worth discussing. Read two or three before your Dec 4 presentation and notice what each writer checked and what they only repeated from the company.</p>

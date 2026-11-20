@@ -1,0 +1,39 @@
+{#- Shared student navigation. Groups keep the bar short; each group opens a small menu. -#}
+{%- set p = request.url.path if request is defined and request else '' -%}
+{%- set reading_link = nav_reading_link() -%}
+{%- set cr = company_research_available() -%}
+{%- set learn_active = p.startswith('/demo') or p.startswith('/tools') or p.startswith('/reading') or p.startswith('/book-reading') -%}
+{%- set work_active = p.startswith('/quiz') or p.startswith('/lab') or p.startswith('/case-stud') or p.startswith('/final-projects') or p.startswith('/grades') -%}
+{%- set research_active = p.startswith('/company-research') or p.startswith('/incident-research') -%}
+<nav class="nav" aria-label="Main">
+    <a href="/home"{% if p == '/home' %} class="active"{% endif %}>Home</a>
+    <a href="/schedule"{% if p.startswith('/schedule') %} class="active"{% endif %}>Schedule</a>
+    <details class="nav-group{% if learn_active %} active{% endif %}">
+        <summary>Learn</summary>
+        <div class="nav-menu">
+            <a href="/demos"{% if p.startswith('/demo') %} class="active"{% endif %}>Demos</a>
+            <a href="/tools"{% if p.startswith('/tools') %} class="active"{% endif %}>Tools</a>
+            {% if reading_link %}<a href="{{ reading_link.url }}"{% if p.startswith('/reading') or p.startswith('/book-reading') %} class="active"{% endif %}>{{ reading_link.label }}</a>{% endif %}
+        </div>
+    </details>
+    <details class="nav-group{% if work_active %} active{% endif %}">
+        <summary>Assignments</summary>
+        <div class="nav-menu">
+            <a href="/quizzes"{% if p.startswith('/quiz') %} class="active"{% endif %}>Quizzes</a>
+            <a href="/labs"{% if p.startswith('/lab') %} class="active"{% endif %}>Labs</a>
+            <a href="/case-studies"{% if p.startswith('/case-stud') %} class="active"{% endif %}>Case Studies</a>
+            <a href="/final-projects"{% if p.startswith('/final-projects') %} class="active"{% endif %}>Final Projects</a>
+            {% if grades_released() %}<a href="/grades"{% if p.startswith('/grades') %} class="active"{% endif %}>Canvas Grades</a>{% endif %}
+        </div>
+    </details>
+    <details class="nav-group{% if research_active %} active{% endif %}">
+        <summary>Student Research</summary>
+        <div class="nav-menu">
+            {% if cr %}<a href="/company-research"{% if p.startswith('/company-research') %} class="active"{% endif %}>Company Research</a>{% endif %}
+            <a href="/incident-research"{% if p.startswith('/incident-research') %} class="active"{% endif %}>Incident Research</a>
+        </div>
+    </details>
+    <a href="/me"{% if p.startswith('/me') %} class="active"{% endif %}>Profile</a>
+    {% if is_admin %}<a href="/admin/progress">Admin</a>{% endif %}
+    <a href="/auth/logout">Sign Out</a>
+</nav>

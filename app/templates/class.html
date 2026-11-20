@@ -34,23 +34,7 @@
         <div class="flash info">{{ info }}</div>
         {% endif %}
 
-        <nav class="nav">
-            <a href="/home">Home</a>
-            <a href="/schedule">Schedule</a>
-            <a href="/quizzes">Quizzes</a>
-            <a href="/tools">Tools</a>
-            <a href="/labs">Labs</a>
-            <a href="/case-studies">Case Studies</a>
-            {% if company_research_available() %}<a href="/company-research">Company Research</a>{% endif %}
-            <a href="/demos">Demos</a>
-            {% set reading_link = nav_reading_link() %}
-            {% if reading_link %}<a href="{{ reading_link.url }}">{{ reading_link.label }}</a>{% endif %}
-    <a href="/final-projects">Final Projects</a>
-            {% if grades_released() %}<a href="/grades">Canvas Grades</a>{% endif %}
-    <a href="/me">Profile</a>
-            {% if is_admin %}<a href="/admin/analytics">Admin</a>{% endif %}
-            <a href="/auth/logout">Sign Out</a>
-        </nav>
+{% include "_nav.html" %}
 
         <h1>{{ title }}</h1>
 
